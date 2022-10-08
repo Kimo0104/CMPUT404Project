@@ -12,7 +12,7 @@ Tokon
 Contributors / Licensing
 ========================
 
-Copyright 2022 Kimo0104 firasalchalabi cheetiantey
+Copyright 2022 Kimo0104 firasalchalabi cheetiantey Mahajabin-Tokon
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
