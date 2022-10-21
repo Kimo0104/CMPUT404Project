@@ -1,13 +1,14 @@
+from email.policy import default
 from django.db import models
 
 class Authors(models.Model):
     host = models.CharField(max_length=255)
     display_name = models.CharField(max_length=32)
-    github_url = models.CharField(max_length=255)
-    profile_image = models.CharField(max_length=255)
+    github_url = models.CharField(max_length=255, blank = True, null = True)
+    profile_image = models.CharField(max_length=255, blank = True, null = True)
     username = models.CharField(max_length=32)
     password = models.CharField(max_length=32)
-    accepted = models.BooleanField()
+    accepted = models.BooleanField(default=False)
 
 class Posts(models.Model):
     PLAINTEXT = 'PT'
@@ -20,11 +21,13 @@ class Posts(models.Model):
     description_type = models.CharField(
         max_length = 2,
         choices = choices,
-        default = PLAINTEXT
+        default = PLAINTEXT, 
+        blank = True, 
+        null = True  
     )
-    description = models.TextField()
+    description = models.TextField(blank = True, null = True)
     date = models.DateField()
-    image_url = models.CharField(max_length=255)
+    image_url = models.CharField(max_length=255, blank = True, null = True)
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
 
 class Comments(models.Model):
