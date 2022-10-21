@@ -17,7 +17,8 @@
     "test-react": "react-scripts test",
     "eject-react": "react-scripts eject",
     "setup-db-role": "psql -U postgres -c \"CREATE ROLE socialdistribution WITH LOGIN PASSWORD 'cmput404'; ALTER ROLE socialdistribution CREATEDB;\"",
-    "create-db": "psql -d postgres -U socialdistribution -c \"CREATE DATABASE socialdistribution;\""
+    "create-db": "psql -d postgres -U socialdistribution -c \"CREATE DATABASE socialdistribution;\"",
+    "reset-db": "psql -d postgres -U socialdistribution -c \"DROP DATABASE socialdistribution WITH (FORCE);\""
   },
   "eslintConfig": {
     "extends": [
