@@ -22,3 +22,8 @@ yarn-debug.log*
 yarn-error.log*
 
 /venv
+/backend/backend/__pycache__
+/backend/backend/.env
+/backend/db.sqlite3
+/backend/database/__pycache__
+/backend/database/migrations/__pycache__
