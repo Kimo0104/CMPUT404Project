@@ -7,7 +7,7 @@ class Authors(models.Model):
     displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255)
-    accepted = models.BooleanField(default = True)
+    accepted = models.BooleanField(blank = True, default = True)
     profileImage = models.CharField(max_length = 255)
 
 class Posts(models.Model):
@@ -32,10 +32,10 @@ class Posts(models.Model):
     contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT, blank = True, null = True)
     content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
-    count = models.IntegerField(default = 0)
+    count = models.IntegerField(default = 0, blank = True)
     published = models.DateTimeField(auto_now_add=True, blank=True)
     visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
-    unlisted = models.BooleanField(default = False)
+    unlisted = models.BooleanField(default = False, blank = True)
 
 
 class Followers(models.Model):
