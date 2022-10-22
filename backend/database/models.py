@@ -39,8 +39,49 @@ class Posts(models.Model):
     unlisted = models.BooleanField(default = False)
 
 
-class Comments(models.Model):
-    comment = models.TextField()
-    commenter = models.ForeignKey(Authors, on_delete = models.CASCADE)
-    post = models.ForeignKey(Posts, on_delete = models.CASCADE)
+class Followers(models.Model):
+    followed = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
+    follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name="followed")
 
+
+class FollowRequest(models.Model):
+    reciever = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "reciever")
+    requester = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "requester")
+
+
+class Comments(models.Model):
+    PLAINTEXT = 'PT'
+    MARKDOWN = 'CM'
+    choices = [
+        (PLAINTEXT, 'PLAINTEXT'),
+        (MARKDOWN, 'MARKDOWN')
+    ]
+    id = models.CharField(max_length=255)
+    type = models.CharField(max_length=16)
+    author = models.ForeignKey(Authors, on_Delete = models.CASCADE)
+    comment = models.CharField(max_length=255)
+    content_type = models.CharField(
+        max_length = 2,
+        choices = choices,
+        default = PLAINTEXT, 
+        blank = True, 
+        null = True
+    )
+    published = models.DateField()
+
+class Likes(models.Model):
+    id = models.CharField(max_length=255)
+    context = models.CharField(max_length=255)
+    summary = models.CharField(max_length=64)
+    type = models.CharField(max_length=16)
+    author = models.ForeignKey(Authors, on_delete = models.CASCADE)
+
+class Liked(models.Model):
+    id = models.CharField(max_length=255)
+    author = models.ForeignKey(Authors, on_delete = models.CASCADE)
+    like = models.ForeignKey(Likes, on_delete = models.CASCADE)
+
+class Inbox(models.Model):
+    id = models.CharField(max_length=255)
+    author = models.ForeignKey(Authors, on_delete = models.CASCADE)
+    post_id = models.ForeignKey(Posts, on_delete = models.CASCADE)
