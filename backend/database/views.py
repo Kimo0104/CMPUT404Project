@@ -20,9 +20,6 @@ def uuidGenerator():
     result = uuid.uuid4()
     return result.hex
 
-def getCurrentDate():
-    return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
-
 class PostsAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID/posts/{POST_ID}
@@ -92,18 +89,15 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#TODO
+#completed
 class CommentsAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Comments.objects.raw("""
-            YOUR SQL HERE
-        """)
+        queryset = Comments.objects.filter(post_id=postId).order_by('-published')
         
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -114,21 +108,30 @@ class CommentsAPIs(viewsets.ViewSet):
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        body = JSONParser().parse(io.BytesIO(request.body))
-        if 'type' not in body or 'contentType' not in body:
-            return Response()
 
-        queryset = Comments.objects.create(
-            id = postId + '/comments/' + uuidGenerator(),
-            type = None,
+        #check that contentType is a valid choice
+        body = JSONParser().parse(io.BytesIO(request.body))
+        contentType = None
+        if 'contentType' in body:
+            if body['contentBody'] == 'text/markdown':
+                contentType = 'text/markdown'
+            elif body['contentBody'] != 'text/plain':
+                return Response({"Failed comment creation. Invalid input for contentBody."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'comment' in body:
+            comment = str(body['comment'])
+        else:
+            return Response({"Failed comment creation. Missing 'comment' column."}, status=status.HTTP_400_BAD_REQUEST)
+
+        Comments.objects.create(
+            id = uuidGenerator(),
             author = authorId,
             post = postId,
-            contentType = None,
-            published = getCurrentDate(),
+            contentType = contentType,
+            comment = comment
         )
-        
-        serializer = CommentsSerializer(queryset, many=True)
-        return Response(serializer.data)
+
+        return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
 
 #completed
 class LikesAPIs(viewsets.ViewSet):
@@ -139,7 +142,7 @@ class LikesAPIs(viewsets.ViewSet):
     def getPostLikes(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Likes.objects.filter(author_id=authorId, post_id=postId)
+        queryset = Likes.objects.filter(author_id=authorId, post_id=postId).order_by('-published')
         
         serializer = LikesSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -148,10 +151,8 @@ class LikesAPIs(viewsets.ViewSet):
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        postId = kwargs["postId"]
         commentId = kwargs["commentId"]
-        queryset = LikesComments.objects.filter(author_id=authorId, comment_id=commentId)
+        queryset = LikesComments.objects.filter(comment_id=commentId).order_by('-published')
         
         serializer = LikesCommentsSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -164,10 +165,19 @@ class LikedAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Liked.objects.filter(author_id=authorId)
-        serializer = LikedSerializer(queryset, many=True)
+
+        output = '{ "type":"liked", "items":['
+        found = False
+        for like in Liked.objects.filter(author_id=authorId).select_related('likes').order_by('-published'):
+            output += LikesSerializer(like, many=False).data
+            output += ','
+            found = True
         
-        return Response(serializer.data)
+        if found:
+            output = output[:len(output)-1]
+        output +=']}'
+        
+        return Response(output, status=status.HTTP_200_OK)
 
 #TODO getInbox, sendPost
 class InboxAPIs(viewsets.ViewSet):
@@ -215,17 +225,24 @@ class InboxAPIs(viewsets.ViewSet):
         serializer = InboxSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    #POST service/authors/{AUTHOR_ID}/inbox
+    #POST service/authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
     @action(detail=True, methods=['post'],)
     def sendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Inbox.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = InboxSerializer(queryset, many=True)
-        return Response(serializer.data)
+        postId = kwargs["postId"]
+
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=authorId).count ==1 or not Posts.objects.filter(id=postId):
+            return Response({"Tried to send an invalid post or send as an invalid author"}, status=status.HTTP_400_BAD_REQUEST)
+
+        Inbox.objects.create(
+            id = uuidGenerator(),
+            author = authorId,
+            post = postId
+        )
+
+        return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
 
     #DELETE service/authors/{AUTHOR_ID}/inbox
     #clear the inbox
@@ -235,7 +252,7 @@ class InboxAPIs(viewsets.ViewSet):
         authorObj = Authors.objects.get(author_id=authorId)
         Inbox.objects.filter(author=authorObj).clear()
         
-        return Response('{ "message":"Deleted Inbox successfully"}')
+        return Response({"Delete Inbox Successful"}, status=status.HTTP_200_OK)
 
 class FollowRequestsAPIs(viewsets.ViewSet):
 
