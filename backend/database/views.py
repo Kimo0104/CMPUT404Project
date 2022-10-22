@@ -22,7 +22,6 @@ class PostsAPIs(viewsets.ViewSet):
             post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
         except Posts.DoesNotExist:
             post = None
-
         serializer = PostsSerializer(post)
         return Response(serializer.data)
 
