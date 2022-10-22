@@ -52,13 +52,14 @@ urlpatterns = [
     })),
 
     #followRequests
-    path('service/authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get", "getFollowRequests"})),
-    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete", "removeRequest"})),
-    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post", "requestToFollow"})),
+    path('service/authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
+    path('service/authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete": "removeRequest"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
 
     #follows
-    path('service/authors/<str:authorId>/followers', FollowsAPIs.as_view({"get", "getFollowers"})),
-    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({"get", "checkFollower"})),
-    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({"put", "addFollower"})),
-    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({"delete", "removeFollower"}))
+    path('service/authors/<str:authorId>/followers', FollowsAPIs.as_view({"get": "getFollowers"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
+        "get": "checkFollower",
+        "put": "addFollower",
+        "delete": "removeFollower"})),
 ]

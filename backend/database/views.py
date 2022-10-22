@@ -201,7 +201,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowRequestsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    #DELETE service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #DELETE service/authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
