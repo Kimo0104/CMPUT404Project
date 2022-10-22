@@ -61,6 +61,7 @@ class Comments(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     type = models.CharField(max_length=16)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
+    post = models.ForeignKey(Posts, on_delete = models.CASCADE)
     comment = models.CharField(max_length=255)
     contentType = models.CharField(
         max_length = 2,
@@ -77,6 +78,7 @@ class Likes(models.Model):
     summary = models.CharField(max_length=64)
     type = models.CharField(max_length=16)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
+    post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
 class Liked(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
