@@ -4,11 +4,11 @@ class Authors(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
     type = models.CharField(max_length = 255, default = "author")
     host = models.CharField(max_length = 255)
-    name = models.CharField(max_length = 32)
+    dispayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255)
     accepted = models.BooleanField(default = True)
-    profile_image = models.CharField(max_length = 255)
+    profileImage = models.CharField(max_length = 255)
 
 class Posts(models.Model):
     PLAINTEXT = 'text/plain'
@@ -29,7 +29,7 @@ class Posts(models.Model):
     source = models.CharField(max_length = 255)
     origin = models.CharField(max_length = 255)
     description = models.CharField(max_length = 255)
-    content_type = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT, blank = True, null = True)
+    contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT, blank = True, null = True)
     content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
     count = models.IntegerField(default = 0)
@@ -56,11 +56,11 @@ class Comments(models.Model):
         (PLAINTEXT, 'PLAINTEXT'),
         (MARKDOWN, 'MARKDOWN')
     ]
-    id = models.CharField(max_length=255)
+    id = models.CharField(max_length=255, primary_key = True)
     type = models.CharField(max_length=16)
-    author = models.ForeignKey(Authors, on_Delete = models.CASCADE)
+    author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     comment = models.CharField(max_length=255)
-    content_type = models.CharField(
+    contentType = models.CharField(
         max_length = 2,
         choices = choices,
         default = PLAINTEXT, 
@@ -70,18 +70,18 @@ class Comments(models.Model):
     published = models.DateField()
 
 class Likes(models.Model):
-    id = models.CharField(max_length=255)
+    id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
     type = models.CharField(max_length=16)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
 
 class Liked(models.Model):
-    id = models.CharField(max_length=255)
+    id = models.CharField(max_length=255, primary_key = True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     like = models.ForeignKey(Likes, on_delete = models.CASCADE)
 
 class Inbox(models.Model):
-    id = models.CharField(max_length=255)
+    id = models.CharField(max_length=255, primary_key = True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post_id = models.ForeignKey(Posts, on_delete = models.CASCADE)
