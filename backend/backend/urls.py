@@ -38,6 +38,7 @@ urlpatterns = [
         "post": "createComment"
     })),
 
+
     #likes
     path('service/authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"})),
     path('service/authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"})),
