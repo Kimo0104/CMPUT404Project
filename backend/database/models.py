@@ -2,12 +2,12 @@ from django.db import models
 
 class Authors(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
-    type = models.CharField(max_length = 255, default = "author", blank=True, null = True)
+    type = models.CharField(max_length = 255, default = "author", null = True)
     host = models.CharField(max_length = 255)
     displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255)
-    accepted = models.BooleanField(blank = True, default = False, null = True)
+    accepted = models.BooleanField(default = False, null = True)
     profileImage = models.CharField(max_length = 255)
 
 class Posts(models.Model):
@@ -24,18 +24,18 @@ class Posts(models.Model):
         (FRIENDS, 'FRIENDS')
     ]
     id = models.CharField(max_length = 255, primary_key = True)
-    type = models.CharField(max_length = 255, default = "post", blank=True, null = True)
+    type = models.CharField(max_length = 255, default = "post",null = True)
     title = models.CharField(max_length = 255)
     source = models.CharField(max_length = 255)
     origin = models.CharField(max_length = 255)
     description = models.CharField(max_length = 255)
-    contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT, blank = True, null = True)
+    contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT,null = True)
     content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
-    count = models.IntegerField(default = 0, blank = True, null = True)
-    published = models.DateTimeField(auto_now_add=True, blank=True, null = True)
-    visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC, null = True, blank = True)
-    unlisted = models.BooleanField(default = False, blank = True, null = True)
+    count = models.IntegerField(default = 0, null = True)
+    published = models.DateTimeField(auto_now_add=True, null = True)
+    visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC, null = True)
+    unlisted = models.BooleanField(default = False, null = True)
 
 
 class Followers(models.Model):
@@ -58,25 +58,24 @@ class Comments(models.Model):
         (MARKDOWN, 'MARKDOWN')
     ]
     id = models.CharField(max_length=255, primary_key = True)
-    type = models.CharField(max_length=16, default = "comment", blank=True, null = True)
+    type = models.CharField(max_length=16, default = "comment", null = True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
     comment = models.CharField(max_length=255)
     contentType = models.CharField(
         max_length = 15,
         choices = choices,
-        default = PLAINTEXT, 
-        blank = True, 
+        default = PLAINTEXT,
         null = True
     )
-    published = models.DateTimeField(auto_now_add=True, blank=True)
+    published = models.DateTimeField(auto_now_add = True)
 
 class Likes(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
-    type = models.CharField(max_length=16, default = "like", blank = True, null = True)
-    published = models.DateTimeField(auto_now_add=True, blank=True)
+    type = models.CharField(max_length=16, default = "like", null = True)
+    published = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
@@ -84,8 +83,8 @@ class LikesComments(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
-    type = models.CharField(max_length=16, default = "likescomment", blank=True, null = True)
-    published = models.DateTimeField(auto_now_add=True, blank=True)
+    type = models.CharField(max_length=16, default = "likescomment", null = True)
+    published = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     comment = models.ForeignKey(Comments, on_delete = models.CASCADE)
 
