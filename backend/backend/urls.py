@@ -24,11 +24,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     #posts
-    path('service/posts/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"get": "getPost"})),
-    path('service/posts/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"post": "udpatePost"})),
-    path('service/posts/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"delete": "deletePost"})),
-    path('service/posts/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"put": "createPost"})),
-    path('service/posts/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"get": "getPost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"post": "udpatePost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"delete": "deletePost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"put": "createPost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 
     #comments
     path('service/authors/<str:authorId>/posts/<str:postId>/comments', CommentsAPIs.as_view({"get": "getComments"})),
@@ -45,15 +45,4 @@ urlpatterns = [
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"get": "getInbox"})),
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"post": "sendPost"})),
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"post": "deleteInbox"})),
-
 ]
-
-router = routers.SimpleRouter()
-router.register(r'service/posts', PostsAPIs, basename = 'service/posts')
-router.register(r'service/authors', CommentsAPIs, basename = 'service/authors')
-router.register(r'service/authors', LikesAPIs, basename = 'service/authors')
-router.register(r'service/authors', LikedAPIs, basename = 'service/authors')
-router.register(r'service/authors', InboxAPIs, basename = 'service/authors')
-
-
-urlpatterns = router.urls
