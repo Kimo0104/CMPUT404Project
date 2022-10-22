@@ -9,16 +9,12 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 import io
+from collections import defaultdict
 from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
-
-import uuid
-def uuidGenerator():
-    result = uuid.uuid4()
-    return result.hex
+from .models import Authors, Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests
+from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -32,7 +28,6 @@ class PostsAPIs(viewsets.ViewSet):
             post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
         except Posts.DoesNotExist:
             post = None
-
         serializer = PostsSerializer(post)
         return Response(serializer.data)
 
@@ -51,7 +46,6 @@ class PostsAPIs(viewsets.ViewSet):
                 setattr(post, key, value)
                 edited = True
         if edited: post.save()
-        serializer = PostsSerializer(post)
         return Response({"Success"}, status=status.HTTP_200_OK)
 
     #DELETE service/authors/{AUTHOR_ID/posts/{POST_ID}
@@ -69,11 +63,22 @@ class PostsAPIs(viewsets.ViewSet):
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Posts.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = PostsSerializer(queryset, many=True)
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        post = Posts.objects.create(
+            id = postId,
+            type = body['type'],
+            title = body['title'],
+            source = body['source'],
+            origin = body['origin'],
+            description = body['description'],
+            contentType = body['contentType'],
+            content = body['content'],
+            author = Authors.objects.get(id = authorId),
+            published = body['published'],
+            visibility = body['visibility'],
+            unlisted = body['unlisted']
+        )
+        serializer = PostsSerializer(post)
         return Response(serializer.data)
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
