@@ -77,6 +77,7 @@ class Likes(models.Model):
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
     type = models.CharField(max_length=16)
+    published = models.DateField()
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
