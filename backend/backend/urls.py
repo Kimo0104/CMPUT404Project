@@ -13,10 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from email.mime import base
 from django.contrib import admin
 from django.urls import path
-from rest_framework import routers
 from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
 
 urlpatterns = [
@@ -24,15 +22,20 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     #posts
-    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"get": "getPost"})),
-    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"post": "udpatePost"})),
-    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"delete": "deletePost"})),
-    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"put": "createPost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
+        "get": "getPost",
+        "post": "updatePost",
+        "delete": "deletePost",
+        "create": "createPost"
+    })),
     path('service/authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 
     #comments
-    path('service/authors/<str:authorId>/posts/<str:postId>/comments', CommentsAPIs.as_view({"get": "getComments"})),
-    path('service/authors/<str:authorId>/posts/<str:postId>/comments', CommentsAPIs.as_view({"get": "createComment"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>/comments', CommentsAPIs.as_view({
+        "get": "getComments",
+        "post": "createComment"
+    })),
+
 
     #likes
     path('service/authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"})),
@@ -42,9 +45,11 @@ urlpatterns = [
     path('service/authors/<str:authorId>/likes', LikedAPIs.as_view({"get": "getAuthorLiked"})),
 
     #inbox
-    path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"get": "getInbox"})),
-    path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"post": "sendPost"})),
-    path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"post": "deleteInbox"})),
+    path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({
+        "get": "getInbox",
+        "post": "sendPost",
+        "delete": "deleteInbox"
+    })),
 
     #followRequests
     path('service/authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get", "getFollowRequests"})),
