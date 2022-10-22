@@ -51,8 +51,8 @@ class FollowRequests(models.Model):
 
 
 class Comments(models.Model):
-    PLAINTEXT = 'PT'
-    MARKDOWN = 'CM'
+    PLAINTEXT = 'text/plain'
+    MARKDOWN = 'text/markdown'
     choices = [
         (PLAINTEXT, 'PLAINTEXT'),
         (MARKDOWN, 'MARKDOWN')
