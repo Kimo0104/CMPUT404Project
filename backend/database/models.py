@@ -4,7 +4,7 @@ class Authors(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
     type = models.CharField(max_length = 255, default = "author")
     host = models.CharField(max_length = 255)
-    dispayName = models.CharField(max_length = 32)
+    displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255)
     accepted = models.BooleanField(default = True)
