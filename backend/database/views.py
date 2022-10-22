@@ -1,9 +1,6 @@
-from urllib.robotparser import RequestRate
 import io
 from rest_framework.parsers import JSONParser
 from datetime import datetime
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -13,8 +10,16 @@ from collections import defaultdict
 from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Authors, Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests
+from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
 from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+
+import uuid
+def uuidGenerator():
+    result = uuid.uuid4()
+    return result.hex
+
+def getCurrentDate():
+    return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -94,7 +99,7 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#completed
+#TODO
 class CommentsAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
