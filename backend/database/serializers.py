@@ -1,18 +1,17 @@
 from rest_framework import serializers  
-from .models import Authors, Posts, Likes, Comments, Follows
-
+from .models import Authors, Posts, Followers, FollowRequest, Comments, Likes, Liked, Inbox
 class AuthorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Authors
         fields = [
             'id',
+            'type',
             'host',
-            'display_name',
-            'github_url',
-            'profile_image',
-            'username',
-            'password',
-            'accepted'
+            'displayName',
+            'url',
+            'github',
+            'accepted',
+            'profileImage'
         ]
 
 class PostsSerializer(serializers.ModelSerializer):
@@ -20,21 +19,37 @@ class PostsSerializer(serializers.ModelSerializer):
         model = Posts
         fields = [
             'id',
+            'type',
             'title',
-            'description_type',
+            'source',
+            'origin',
             'description',
-            'date',
-            'image_url',
-            'author'
+            'contentType',
+            'content',
+            'author',
+            'count',
+            'comments',
+            'published',
+            'visibility',
+            'unlisted'
         ]
 
-class LikesSerializer(serializers.ModelSerializer):
+class FollowersSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Likes
+        model = Followers
         fields = [
             'id',
-            'liker',
-            'post'
+            'followed',
+            'follower',
+        ]
+
+class FollowRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FollowRequest
+        fields = [
+            'id',
+            'receiver',
+            'requester'
         ]
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -42,17 +57,39 @@ class CommentsSerializer(serializers.ModelSerializer):
         models = Comments
         fields = [
             'id',
+            'type',
+            'author',
             'comment',
-            'commenter',
+            'contentType',
+            'published',
+        ]
+
+class LikesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Likes
+        fields = [
+            'id',
+            'context',
+            'summary',
+            'type',
+            'author',
+        ]
+
+class LikedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Liked
+        fields = [
+            'id',
+            'author',
+            'like'
+        ]
+
+class InboxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inbox
+        fields = [
+            'id',
+            'author',
             'post'
         ]
 
-class FollowsSerializer(serializers.ModelSerializer):
-    class Meta:
-        models = Follows
-        fields = [
-            'id',
-            'relationship_state'
-            'author',
-            'foreign_author'
-        ]
