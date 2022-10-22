@@ -17,7 +17,7 @@ from email.mime import base
 from django.contrib import admin
 from django.urls import path
 from rest_framework import routers
-from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs
+from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
 
 urlpatterns = [
     #admin
@@ -45,4 +45,15 @@ urlpatterns = [
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"get": "getInbox"})),
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"post": "sendPost"})),
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({"post": "deleteInbox"})),
+
+    #followRequests
+    path('service/authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get", "getFollowRequests"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete", "removeRequest"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post", "requestToFollow"})),
+
+    #follows
+    path('service/authors/<str:authorId>/followers', FollowsAPIs.as_view({"get", "getFollowers"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({"get", "checkFollower"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({"put", "addFollower"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({"delete", "removeFollower"}))
 ]
