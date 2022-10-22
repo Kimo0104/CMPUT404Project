@@ -44,7 +44,7 @@ class Followers(models.Model):
     follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name="followed")
 
 
-class FollowRequest(models.Model):
+class FollowRequests(models.Model):
     reciever = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "reciever")
     requester = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "requester")
 
