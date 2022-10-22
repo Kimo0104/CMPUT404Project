@@ -40,11 +40,13 @@ class Posts(models.Model):
 
 
 class Followers(models.Model):
+    id = models.CharField(max_length = 255, primary_key = True)
     followed = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
     follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name="followed")
 
 
 class FollowRequests(models.Model):
+    id = models.CharField(max_length = 255, primary_key = True)
     reciever = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "reciever")
     requester = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "requester")
 
@@ -84,4 +86,4 @@ class Liked(models.Model):
 class Inbox(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
-    post_id = models.ForeignKey(Posts, on_delete = models.CASCADE)
+    post = models.ForeignKey(Posts, on_delete = models.CASCADE)
