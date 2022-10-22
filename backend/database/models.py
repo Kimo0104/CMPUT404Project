@@ -2,7 +2,7 @@ from django.db import models
 
 class Authors(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
-    type = models.CharField(max_length = 255, default = "author")
+    type = models.CharField(max_length = 255, default = "author", blank=True)
     host = models.CharField(max_length = 255)
     displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
@@ -24,7 +24,7 @@ class Posts(models.Model):
         (FRIENDS, 'FRIENDS')
     ]
     id = models.CharField(max_length = 255, primary_key = True)
-    type = models.CharField(max_length = 255, default = "author")
+    type = models.CharField(max_length = 255, default = "post", blank=True)
     title = models.CharField(max_length = 255)
     source = models.CharField(max_length = 255)
     origin = models.CharField(max_length = 255)
@@ -33,7 +33,7 @@ class Posts(models.Model):
     content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
     count = models.IntegerField(default = 0)
-    published = models.DateTimeField()
+    published = models.DateTimeField(auto_now_add=True, blank=True)
     visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
     unlisted = models.BooleanField(default = False)
 
@@ -58,7 +58,7 @@ class Comments(models.Model):
         (MARKDOWN, 'MARKDOWN')
     ]
     id = models.CharField(max_length=255, primary_key = True)
-    type = models.CharField(max_length=16)
+    type = models.CharField(max_length=16, default = "comment", blank=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
     comment = models.CharField(max_length=255)
@@ -69,14 +69,14 @@ class Comments(models.Model):
         blank = True, 
         null = True
     )
-    published = models.DateTimeField()
+    published = models.DateTimeField(auto_now_add=True, blank=True)
 
 class Likes(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
-    type = models.CharField(max_length=16)
-    published = models.DateTimeField()
+    type = models.CharField(max_length=16, default = "like", blank = True)
+    published = models.DateTimeField(auto_now_add=True, blank=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
@@ -84,8 +84,8 @@ class LikesComments(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
-    type = models.CharField(max_length=16)
-    published = models.DateTimeField()
+    type = models.CharField(max_length=16, default = "likescomment", blank=True)
+    published = models.DateTimeField(auto_now_add=True, blank=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     comment = models.ForeignKey(Comments, on_delete = models.CASCADE)
 
