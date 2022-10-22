@@ -26,7 +26,7 @@ urlpatterns = [
         "get": "getPost",
         "post": "updatePost",
         "delete": "deletePost",
-        "create": "createPost"
+        "put": "createPost"
     })),
     path('service/authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 
