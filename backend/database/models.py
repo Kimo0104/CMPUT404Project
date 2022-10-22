@@ -1,54 +1,46 @@
 from django.db import models
 
 class Authors(models.Model):
-    host = models.CharField(max_length=255)
-    display_name = models.CharField(max_length=32)
-    github_url = models.CharField(max_length=255, blank = True, null = True)
-    profile_image = models.CharField(max_length=255, blank = True, null = True)
-    username = models.CharField(max_length=32)
-    password = models.CharField(max_length=32)
-    accepted = models.BooleanField(default=False)
+    id = models.CharField(max_length = 255, primary_key = True)
+    type = models.CharField(max_length = 255, default = "author")
+    host = models.CharField(max_length = 255)
+    name = models.CharField(max_length = 32)
+    url = models.CharField(max_length = 255)
+    github = models.CharField(max_length = 255)
+    accepted = models.BooleanField(default = True)
+    profile_image = models.CharField(max_length = 255)
 
 class Posts(models.Model):
-    PLAINTEXT = 'PT'
-    COMMONMARK = 'CM'
-    choices = [
+    PLAINTEXT = 'text/plain'
+    MARKDOWN = 'text/markdown'
+    PUBLIC = 'PUBLIC'
+    FRIENDS = 'FRIENDS'
+    content_type_choices = [
         (PLAINTEXT, 'PLAINTEXT'),
-        (COMMONMARK, 'COMMONMARK')
+        (MARKDOWN, 'COMMONMARK')
     ]
-    title = models.CharField(max_length = 64)
-    description_type = models.CharField(
-        max_length = 2,
-        choices = choices,
-        default = PLAINTEXT, 
-        blank = True, 
-        null = True  
-    )
-    description = models.TextField(blank = True, null = True)
-    date = models.DateField()
-    image_url = models.CharField(max_length=255, blank = True, null = True)
+    visibility_choices = [
+        (PUBLIC, 'PUBLIC'),
+        (FRIENDS, 'FRIENDS')
+    ]
+    id = models.CharField(max_length = 255, primary_key = True)
+    type = models.CharField(max_length = 255, default = "author")
+    title = models.CharField(max_length = 255)
+    source = models.CharField(max_length = 255)
+    origin = models.CharField(max_length = 255)
+    description = models.CharField(max_length = 255)
+    content_type = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT, blank = True, null = True)
+    content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
+    count = models.IntegerField(default = 0)
+    comments = models.CharField(max_length = 255)
+    published = models.DateTimeField()
+    visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
+    unlisted = models.BooleanField(default = False)
+
 
 class Comments(models.Model):
     comment = models.TextField()
     commenter = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
-
-class Likes(models.Model):
-    liker = models.ForeignKey(Authors, on_delete = models.CASCADE)
-    post = models.ForeignKey(Posts, on_delete = models.CASCADE)
-
-class Follows(models.Model):
-    PENDING = 0
-    FOLLOWING = 1
-    choices = [
-        (PENDING, 'Pending') ,
-        (FOLLOWING, 'Following')   
-    ]
-    relationship_state = models.IntegerField(
-        choices = choices,
-        default = PENDING
-    )
-    author = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
-    foreign_author = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name="followed")
 
