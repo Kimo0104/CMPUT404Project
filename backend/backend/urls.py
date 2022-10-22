@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs
+from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
 
 urlpatterns = [
     #admin
@@ -50,4 +50,16 @@ urlpatterns = [
         "post": "sendPost",
         "delete": "deleteInbox"
     })),
+
+    #followRequests
+    path('service/authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
+    path('service/authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete": "removeRequest"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
+
+    #follows
+    path('service/authors/<str:authorId>/followers', FollowsAPIs.as_view({"get": "getFollowers"})),
+    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
+        "get": "checkFollower",
+        "put": "addFollower",
+        "delete": "removeFollower"})),
 ]

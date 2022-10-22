@@ -7,8 +7,8 @@ from rest_framework.response import Response
 
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Posts, Comments, Likes, Liked, Inbox
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikedSerializer, InboxSerializer
+from .models import Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests
+from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -188,13 +188,93 @@ class InboxAPIs(viewsets.ViewSet):
         serializer = InboxSerializer(queryset, many=True)
         return Response(serializer.data)
 
+class FollowRequestsAPIs(viewsets.ViewSet):
 
+    #GET service/authors/{AUTHOR_ID}/followRequest
+    #get all the people who want to follow AUTHOR_ID
+    @action(detail=True, methods=['get'],)
+    def getFollowRequests(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        queryset = FollowRequests.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowRequestsSerializer(queryset, many=True)
+        return Response(serializer.data)
 
+    #DELETE service/authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
+    #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
+    @action(detail=True, methods=['delete'],)
+    def removeRequest(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        queryset = FollowRequests.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowRequestsSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    @action(detail=True, methods=['post'],)
+    def requestToFollow(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        queryset = FollowRequests.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowRequestsSerializer(queryset, many=True)
+        return Response(serializer.data)
     
+class FollowsAPIs(viewsets.ViewSet):
 
+    #GET service/authors/{AUTHOR_ID}/followers
+    #get all the followers of AUTHOR_ID
+    @action(detail=True, methods=['get'],)
+    def getFollowers(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        queryset = Followers.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowersSerializer(queryset, many=True)
+        return Response(serializer.data)
     
+    #GET /service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
+    @action(detail=True, methods=['get'],)
+    def checkFollower(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        queryset = Followers.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowersSerializer(queryset, many=True)
+        return Response(serializer.data)
 
+    #PUT service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @action(detail=True, methods=['delete'],)
+    def addFollower(self, request, *args, **kwargs):
+        # Call {function} to delete the follower request record
 
+        # Insert into Followers
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        queryset = Followers.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowersSerializer(queryset, many=True)
+        return Response(serializer.data)
 
+    #DELETE service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @action(detail=True, methods=['delete'],)
+    def removeFollower(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        queryset = Followers.objects.raw("""
+            YOUR SQL HERE
+        """)
+        serializer = FollowersSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
