@@ -67,7 +67,6 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
-            count = body['count'],
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility'],
