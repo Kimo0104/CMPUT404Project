@@ -238,7 +238,7 @@ class InboxAPIs(viewsets.ViewSet):
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
-        if not Authors.objects.filter(id=authorId).count ==1 or not Posts.objects.filter(id=postId):
+        if not Authors.objects.filter(id=authorId).count() ==1 or not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to send an invalid post or send as an invalid author"}, status=status.HTTP_400_BAD_REQUEST)
 
         Inbox.objects.create(
@@ -249,13 +249,18 @@ class InboxAPIs(viewsets.ViewSet):
 
         return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
 
+    #TESTED
+    #
     #DELETE service/authors/{AUTHOR_ID}/inbox
     #clear the inbox
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        authorObj = Authors.objects.get(author_id=authorId)
-        Inbox.objects.filter(author=authorObj).clear()
+        authorId = str(kwargs["authorId"])
+        if not Authors.objects.filter(id=authorId).count() == 1:
+            return Response({"This Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        authorObj = Authors.objects.get(id=authorId)
+        Inbox.objects.filter(author=authorObj).delete()
         
         return Response({"Delete Inbox Successful"}, status=status.HTTP_200_OK)
 
