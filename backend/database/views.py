@@ -1,3 +1,9 @@
+from urllib.robotparser import RequestRate
+import io
+from rest_framework.parsers import JSONParser
+from datetime import datetime
+from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -6,8 +12,16 @@ import io
 from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
+from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+
+import uuid
+def uuidGenerator():
+    result = uuid.uuid4()
+    return result.hex
+
+def getCurrentDate():
+    return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -78,6 +92,7 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
+#TODO
 class CommentsAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
@@ -99,13 +114,23 @@ class CommentsAPIs(viewsets.ViewSet):
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Comments.objects.raw("""
-            YOUR SQL HERE
-        """)
+        body = JSONParser().parse(io.BytesIO(request.body))
+        if 'type' not in body or 'contentType' not in body:
+            return Response()
+
+        queryset = Comments.objects.create(
+            id = postId + '/comments/' + uuidGenerator(),
+            type = None,
+            author = authorId,
+            post = postId,
+            contentType = None,
+            published = getCurrentDate(),
+        )
         
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
+#completed
 class LikesAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
@@ -114,9 +139,7 @@ class LikesAPIs(viewsets.ViewSet):
     def getPostLikes(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Likes.objects.raw("""
-            YOUR SQL HERE
-        """)
+        queryset = Likes.objects.filter(author_id=authorId, post_id=postId)
         
         serializer = LikesSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -128,14 +151,12 @@ class LikesAPIs(viewsets.ViewSet):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
         commentId = kwargs["commentId"]
-        print(authorId, postId, commentId)
-        queryset = Likes.objects.raw("""
-            YOUR SQL HERE
-        """)
+        queryset = LikesComments.objects.filter(author_id=authorId, comment_id=commentId)
         
-        serializer = LikesSerializer(queryset, many=True)
+        serializer = LikesCommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
+#completed
 class LikedAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/liked
@@ -143,13 +164,12 @@ class LikedAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Liked.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
+        queryset = Liked.objects.filter(author_id=authorId)
         serializer = LikedSerializer(queryset, many=True)
+        
         return Response(serializer.data)
 
+#TODO getInbox, sendPost
 class InboxAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/inbox
@@ -157,8 +177,39 @@ class InboxAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        page = request.GET.get('page',1)
+        size = request.GET.get('size',10)
+
+
+        #get enough posts, sorted
+        #get enough likes, sorted
+        #get enough comments, sorted
+        #iterate through each list, compiling them into a sorted inbox
+        #paginate
+
         queryset = Inbox.objects.raw("""
-            YOUR SQL HERE
+            SELECT p.id, p.published AS date, "post" AS type
+            FROM Inbox i
+                LEFT OUTER JOIN Posts p
+                    ON i.post_id = p.id
+            WHERE i.author_id = {authorId}
+
+            UNION
+
+            SELECT l.id, l.published AS date, "like" AS type
+            FROM Inbox i
+                LEFT OUTER JOIN Likes l
+                    ON i.post_id = l.post_id
+            WHERE i.author_id = {authorId}
+
+            UNION
+
+            SELECT c.id, c.published AS date, "comment" AS type
+            FROM Inbox i
+                LEFT OUTER JOIN Comments c
+                    ON i.post_id = c.post_id
+            WHERE i.author_id = {authorId}
+            ORDER BY date DESC
         """)
         
         serializer = InboxSerializer(queryset, many=True)
@@ -181,12 +232,10 @@ class InboxAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Inbox.objects.raw("""
-            YOUR SQL HERE
-        """)
+        authorObj = Authors.objects.get(author_id=authorId)
+        Inbox.objects.filter(author=authorObj).clear()
         
-        serializer = InboxSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response('{ "message":"Deleted Inbox successfully"}')
 
 class FollowRequestsAPIs(viewsets.ViewSet):
 
