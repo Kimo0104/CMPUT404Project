@@ -1,3 +1,4 @@
+from urllib.robotparser import RequestRate
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
@@ -6,10 +7,11 @@ from rest_framework.response import Response
 from django.http import HttpResponseBadRequest
 import json
 
-from models import Posts                          #Models defines how their objects are stored in the database
-from serializers import PostsSerializer #serializers defines how to convert a post object to JSON
+from .models import Posts                          #Models defines how their objects are stored in the database
+from .serializers import PostsSerializer #serializers defines how to convert a post object to JSON
 import datetime
-class Posts(viewsets.ViewSet):
+
+class PostsAPIs(viewsets.ViewSet):
     #query
     #serializer_class = PostsSerializer
     
@@ -55,7 +57,7 @@ class Posts(viewsets.ViewSet):
             description = body_dict["description"],
             date = body_dict["date"],
             image_url = body_dict["image_url"],
-            title = body_dict["author"]
+            author = body_dict["author"]
         )  
         serializer = PostsSerializer(queryset, many=False)
         return Response(serializer.data)
