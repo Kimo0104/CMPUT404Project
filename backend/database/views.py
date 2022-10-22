@@ -1,10 +1,9 @@
-from urllib.robotparser import RequestRate
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework.response import Response
-
+from rest_framework import status
+import io
+from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
 from .models import Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests
@@ -18,12 +17,12 @@ class PostsAPIs(viewsets.ViewSet):
     def getPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        print(authorId, postId)
-        queryset = Posts.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = PostsSerializer(queryset, many=True)
+        try:
+            post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
+        except Posts.DoesNotExist:
+            post = None
+
+        serializer = PostsSerializer(post)
         return Response(serializer.data)
 
     #POST service/authors/{AUTHOR_ID/posts/{POST_ID}
@@ -32,12 +31,17 @@ class PostsAPIs(viewsets.ViewSet):
     def updatePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Posts.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = PostsSerializer(queryset, many=True)
-        return Response(serializer.data)
+        body = JSONParser().parse(io.BytesIO(request.body))
+        post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
+        editableColumns = ["title", "description", "content"]
+        edited = False
+        for key, value in body.items():
+            if key in editableColumns:
+                setattr(post, key, value)
+                edited = True
+        if edited: post.save()
+        serializer = PostsSerializer(post)
+        return Response({"Success"}, status=status.HTTP_200_OK)
 
     #DELETE service/authors/{AUTHOR_ID/posts/{POST_ID}
     #remove the post whose id is POST_ID
@@ -45,12 +49,8 @@ class PostsAPIs(viewsets.ViewSet):
     def deletePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Posts.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = PostsSerializer(queryset, many=True)
-        return Response(serializer.data)
+        Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC).delete()
+        return Response({"Success"}, status=status.HTTP_200_OK)
 
     #PUT service/authors/{AUTHOR_ID/posts/{POST_ID}
     #create a post where its id is POST_ID
