@@ -7,7 +7,7 @@ class Authors(models.Model):
     displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255)
-    accepted = models.BooleanField(blank = True, default = True, null = True)
+    accepted = models.BooleanField(blank = True, default = False, null = True)
     profileImage = models.CharField(max_length = 255)
 
 class Posts(models.Model):
