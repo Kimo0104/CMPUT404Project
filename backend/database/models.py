@@ -33,7 +33,6 @@ class Posts(models.Model):
     content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
     count = models.IntegerField(default = 0)
-    comments = models.CharField(max_length = 255)
     published = models.DateTimeField()
     visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
     unlisted = models.BooleanField(default = False)
@@ -70,14 +69,14 @@ class Comments(models.Model):
         blank = True, 
         null = True
     )
-    published = models.DateField()
+    published = models.DateTimeField()
 
 class Likes(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
     type = models.CharField(max_length=16)
-    published = models.DateField()
+    published = models.DateTimeField()
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
