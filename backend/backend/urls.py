@@ -25,7 +25,7 @@ urlpatterns = [
 
     #posts
     path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"get": "getPost"})),
-    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"post": "updatePost"})),
+    path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"post": "udpatePost"})),
     path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"delete": "deletePost"})),
     path('service/authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({"put": "createPost"})),
     path('service/authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
