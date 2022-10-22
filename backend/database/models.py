@@ -7,7 +7,7 @@ class Authors(models.Model):
     displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255)
-    accepted = models.BooleanField(default = True)
+    accepted = models.BooleanField(default = False)
     profileImage = models.CharField(max_length = 255)
 
 class Posts(models.Model):
@@ -24,16 +24,16 @@ class Posts(models.Model):
         (FRIENDS, 'FRIENDS')
     ]
     id = models.CharField(max_length = 255, primary_key = True)
-    type = models.CharField(max_length = 255, default = "author")
+    type = models.CharField(max_length = 255, default = "post")
     title = models.CharField(max_length = 255)
     source = models.CharField(max_length = 255)
     origin = models.CharField(max_length = 255)
     description = models.CharField(max_length = 255)
-    contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT, blank = True, null = True)
+    contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT)
     content = models.TextField()
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
     count = models.IntegerField(default = 0)
-    published = models.DateTimeField()
+    published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
     unlisted = models.BooleanField(default = False)
 
@@ -51,32 +51,30 @@ class FollowRequests(models.Model):
 
 
 class Comments(models.Model):
-    PLAINTEXT = 'PT'
-    MARKDOWN = 'CM'
+    PLAINTEXT = 'text/plain'
+    MARKDOWN = 'text/markdown'
     choices = [
         (PLAINTEXT, 'PLAINTEXT'),
         (MARKDOWN, 'MARKDOWN')
     ]
     id = models.CharField(max_length=255, primary_key = True)
-    type = models.CharField(max_length=16)
+    type = models.CharField(max_length=16, default = "comment")
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
     comment = models.CharField(max_length=255)
     contentType = models.CharField(
-        max_length = 2,
+        max_length = 15,
         choices = choices,
-        default = PLAINTEXT, 
-        blank = True, 
-        null = True
+        default = PLAINTEXT
     )
-    published = models.DateTimeField()
+    published = models.DateTimeField(auto_now_add = True)
 
 class Likes(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
-    type = models.CharField(max_length=16)
-    published = models.DateTimeField()
+    type = models.CharField(max_length=16, default = "like")
+    published = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
@@ -84,8 +82,8 @@ class LikesComments(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
-    type = models.CharField(max_length=16)
-    published = models.DateTimeField()
+    type = models.CharField(max_length=16, default = "likescomment")
+    published = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     comment = models.ForeignKey(Comments, on_delete = models.CASCADE)
 
