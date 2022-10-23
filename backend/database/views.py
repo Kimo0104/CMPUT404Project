@@ -200,41 +200,36 @@ class InboxAPIs(viewsets.ViewSet):
         page = request.GET.get('page',1)
         size = request.GET.get('size',10)
 
-
+        posts = []
+        likes = []
+        comments = []
+        commentLikes = []
         #get enough posts, sorted
-        #get enough likes, sorted
-        #get enough comments, sorted
+        for inbox in Inbox.objects.filter(author_id=authorId):
+            post = Posts.objects.get(id=inbox.post_id)
+            posts.append(PostsSerializer(post, many=False).data)
+            print('\n\n\n',post.id,'\n\n\n')
+
+            #get enough likes, sorted
+            if Likes.objects.filter(post=post).count() >= 1:
+                for like in Likes.objects.filter(post=post):
+                    likes.append(like)
+
+            #get enough comments, sorted
+            #for comment in Comments.objects.filter(post_id=post.id):
+            #    comments.append(comment)
+            #    for commentLike in LikesComments.object.filter(comment_id=comment.id):
+            #        commentLikes.append(commentLike)
         #iterate through each list, compiling them into a sorted inbox
         #paginate
-
-        queryset = Inbox.objects.raw("""
-            SELECT p.id, p.published AS date, "post" AS type
-            FROM Inbox i
-                LEFT OUTER JOIN Posts p
-                    ON i.post_id = p.id
-            WHERE i.author_id = {authorId}
-
-            UNION
-
-            SELECT l.id, l.published AS date, "like" AS type
-            FROM Inbox i
-                LEFT OUTER JOIN Likes l
-                    ON i.post_id = l.post_id
-            WHERE i.author_id = {authorId}
-
-            UNION
-
-            SELECT c.id, c.published AS date, "comment" AS type
-            FROM Inbox i
-                LEFT OUTER JOIN Comments c
-                    ON i.post_id = c.post_id
-            WHERE i.author_id = {authorId}
-            ORDER BY date DESC
-        """)
         
-        serializer = InboxSerializer(queryset, many=True)
-        return Response(serializer.data)
+        if len(posts) == 0:
+            return Response("{Nothing to show}", status=status.HTTP_200_OK )
 
+        return Response(posts, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
     #POST service/authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
     @action(detail=True, methods=['post'],)
@@ -243,13 +238,17 @@ class InboxAPIs(viewsets.ViewSet):
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
-        if not Authors.objects.filter(id=authorId).count() ==1 or not Posts.objects.filter(id=postId).count() == 1:
-            return Response({"Tried to send an invalid post or send as an invalid author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            return Response({"Tried to send post to non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
+        author = Authors.objects.get(id=authorId)
+        post = Posts.objects.get(id=postId)
         Inbox.objects.create(
             id = uuidGenerator(),
-            author = authorId,
-            post = postId
+            author = author,
+            post = post
         )
 
         return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
