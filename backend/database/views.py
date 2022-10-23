@@ -303,7 +303,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
-            return Response({"Failed to sent a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Failed to send a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
         
         FollowRequests.objects.create(
             id = uuidGenerator(),
@@ -345,17 +345,16 @@ class FollowsAPIs(viewsets.ViewSet):
     def addFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
-        try:
-            FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
-            follow = Followers.objects.create(
-                id = uuidGenerator(),
-                followed = Authors.objects.get(id = authorId),
-                follower = Authors.objects.get(id = foreignAuthorId)
-            )
-        except:
-            follow = None
-        serializer = FollowersSerializer(follow)
-        return Response(serializer.data)
+        if not FollowRequests.objects.filter(receiver=authorId, requester=foreignAuthorId).count() == 1:
+            return Response({"Failed to add a follower. The other party hasn't requested to follow you"}, status=status.HTTP_400_BAD_REQUEST)
+        Followers.objects.create(
+            id = uuidGenerator(),
+            followed = Authors.objects.get(id = authorId),
+            follower = Authors.objects.get(id = foreignAuthorId)
+        )
+
+        FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId).delete()
+        return Response({"Add a follower Successful"}, status=status.HTTP_200_OK)
 
     #DELETE service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
