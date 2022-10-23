@@ -61,5 +61,6 @@ urlpatterns = [
     path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
         "get": "checkFollower",
         "put": "addFollower",
-        "delete": "removeFollower"})),
+        "delete": "removeFollower",
+        "post": "requestToFollow"})),
 ]
