@@ -10,6 +10,7 @@ class AuthorsAdmin(admin.ModelAdmin):
     list_filter = ['accepted']
     actions = [make_accepted]
 
+
 admin.site.register(Authors, AuthorsAdmin)
 admin.site.register(Posts)
 admin.site.register(Followers)

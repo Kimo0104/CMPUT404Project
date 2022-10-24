@@ -382,12 +382,15 @@ class AuthorsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'])
     def getAuthor(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Authors.objects.raw("""
-            SELECT *
-            FROM database_authors
-            WHERE id = %s;
-        """, [authorId])
-        serializer = AuthorSerializer(queryset[0], many=False)
+
+        print(args)
+
+        author = Authors.objects.filter(id=authorId)
+        # Since id is the primary key of the Author table, there can only be 0 ot
+        # 1 authors with this id
+        if author.count() == 0:
+            return Response("Author does not exist", status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AuthorSerializer(author[0], many=False)
         return Response(serializer.data)
     
-
