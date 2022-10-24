@@ -11,7 +11,7 @@ from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
 from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
 import uuid
 def uuidGenerator():
@@ -369,9 +369,25 @@ class FollowsAPIs(viewsets.ViewSet):
             follower = None
         serializer = FollowersSerializer(follower)
         return Response(serializer.data)
-
+    
     #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         return FollowRequestsAPIs.requestToFollow(self, request, *args, **kwargs)
+
+class AuthorsAPIs(viewsets.ViewSet):
+    
+    #GET //service/authors/{AUTHOR_ID}
+    @action(detail=True, methods=['get'])
+    def getAuthor(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        queryset = Authors.objects.raw("""
+            SELECT *
+            FROM database_authors
+            WHERE id = %s;
+        """, [authorId])
+        serializer = AuthorSerializer(queryset[0], many=False)
+        return Response(serializer.data)
+    
+
