@@ -14,7 +14,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
+from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
 
 urlpatterns = [
     #admin
