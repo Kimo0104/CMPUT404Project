@@ -1,3 +1,6 @@
+import io
+from rest_framework.parsers import JSONParser
+from datetime import datetime
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -7,8 +10,16 @@ from collections import defaultdict
 from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests, Authors
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
+from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+
+import uuid
+def uuidGenerator():
+    result = uuid.uuid4()
+    return result.hex
+
+def getCurrentDate():
+    return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -88,17 +99,15 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
+#TODO
 class CommentsAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Comments.objects.raw("""
-            YOUR SQL HERE
-        """)
+        queryset = Comments.objects.filter(post_id=postId).order_by('-published')
         
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -109,13 +118,32 @@ class CommentsAPIs(viewsets.ViewSet):
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Comments.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = CommentsSerializer(queryset, many=True)
-        return Response(serializer.data)
 
+        #check that contentType is a valid choice
+        body = JSONParser().parse(io.BytesIO(request.body))
+        contentType = None
+        if 'contentType' in body:
+            if body['contentBody'] == 'text/markdown':
+                contentType = 'text/markdown'
+            elif body['contentBody'] != 'text/plain':
+                return Response({"Failed comment creation. Invalid input for contentBody."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'comment' in body:
+            comment = str(body['comment'])
+        else:
+            return Response({"Failed comment creation. Missing 'comment' column."}, status=status.HTTP_400_BAD_REQUEST)
+
+        Comments.objects.create(
+            id = uuidGenerator(),
+            author = authorId,
+            post = postId,
+            contentType = contentType,
+            comment = comment
+        )
+
+        return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
+
+#completed
 class LikesAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
@@ -124,9 +152,7 @@ class LikesAPIs(viewsets.ViewSet):
     def getPostLikes(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Likes.objects.raw("""
-            YOUR SQL HERE
-        """)
+        queryset = Likes.objects.filter(author_id=authorId, post_id=postId).order_by('-published')
         
         serializer = LikesSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -135,17 +161,13 @@ class LikesAPIs(viewsets.ViewSet):
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        postId = kwargs["postId"]
         commentId = kwargs["commentId"]
-        print(authorId, postId, commentId)
-        queryset = Likes.objects.raw("""
-            YOUR SQL HERE
-        """)
+        queryset = LikesComments.objects.filter(comment_id=commentId).order_by('-published')
         
-        serializer = LikesSerializer(queryset, many=True)
+        serializer = LikesCommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
+#completed
 class LikedAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/liked
@@ -153,13 +175,21 @@ class LikedAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Liked.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = LikedSerializer(queryset, many=True)
-        return Response(serializer.data)
 
+        output = '{ "type":"liked", "items":['
+        found = False
+        for like in Liked.objects.filter(author_id=authorId).select_related('likes').order_by('-published'):
+            output += LikesSerializer(like, many=False).data
+            output += ','
+            found = True
+        
+        if found:
+            output = output[:len(output)-1]
+        output +=']}'
+        
+        return Response(output, status=status.HTTP_200_OK)
+
+#TODO getInbox, sendPost
 class InboxAPIs(viewsets.ViewSet):
 
     #GET service/authors/{AUTHOR_ID}/inbox
@@ -167,36 +197,76 @@ class InboxAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Inbox.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = InboxSerializer(queryset, many=True)
-        return Response(serializer.data)
+        page = request.GET.get('page',1)
+        size = request.GET.get('size',10)
 
-    #POST service/authors/{AUTHOR_ID}/inbox
+        posts = []
+        likes = []
+        comments = []
+        commentLikes = []
+        #get enough posts, sorted
+        for inbox in Inbox.objects.filter(author_id=authorId):
+            post = Posts.objects.get(id=inbox.post_id)
+            posts.append(PostsSerializer(post, many=False).data)
+            print('\n\n\n',post.id,'\n\n\n')
+
+            #get enough likes, sorted
+            if Likes.objects.filter(post=post).count() >= 1:
+                for like in Likes.objects.filter(post=post):
+                    likes.append(like)
+
+            #get enough comments, sorted
+            #for comment in Comments.objects.filter(post_id=post.id):
+            #    comments.append(comment)
+            #    for commentLike in LikesComments.object.filter(comment_id=comment.id):
+            #        commentLikes.append(commentLike)
+        #iterate through each list, compiling them into a sorted inbox
+        #paginate
+        
+        if len(posts) == 0:
+            return Response("{Nothing to show}", status=status.HTTP_200_OK )
+
+        return Response(posts, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
+    #POST service/authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
     @action(detail=True, methods=['post'],)
     def sendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Inbox.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = InboxSerializer(queryset, many=True)
-        return Response(serializer.data)
+        postId = kwargs["postId"]
 
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            return Response({"Tried to send post to non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+
+        author = Authors.objects.get(id=authorId)
+        post = Posts.objects.get(id=postId)
+        Inbox.objects.create(
+            id = uuidGenerator(),
+            author = author,
+            post = post
+        )
+
+        return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
     #DELETE service/authors/{AUTHOR_ID}/inbox
     #clear the inbox
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        queryset = Inbox.objects.raw("""
-            YOUR SQL HERE
-        """)
+        authorId = str(kwargs["authorId"])
+        if not Authors.objects.filter(id=authorId).count() == 1:
+            return Response({"This Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        authorObj = Authors.objects.get(id=authorId)
+        Inbox.objects.filter(author=authorObj).delete()
         
-        serializer = InboxSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({"Delete Inbox Successful"}, status=status.HTTP_200_OK)
 
 class FollowRequestsAPIs(viewsets.ViewSet):
 
