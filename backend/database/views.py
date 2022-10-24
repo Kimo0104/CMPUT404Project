@@ -8,7 +8,7 @@ from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
 from .models import Posts, Comments, Likes, Liked, Inbox, Followers, FollowRequests, Authors
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikedSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -287,4 +287,16 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(queryset, many=True)
         return Response(serializer.data)
 
-
+class AuthorsAPIs(viewsets.ViewSet):
+    
+    #GET //service/authors/{AUTHOR_ID}
+    @action(detail=True, methods=['get'])
+    def getAuthor(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        queryset = Authors.objects.raw("""
+            SELECT *
+            FROM database_authors
+            WHERE id = %s;
+        """, [authorId])
+        serializer = AuthorSerializer(queryset[0], many=False)
+        return Response(serializer.data)
