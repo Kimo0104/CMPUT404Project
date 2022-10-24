@@ -46,9 +46,9 @@ urlpatterns = [
     #inbox
     path('authors/<str:authorId>/inbox', InboxAPIs.as_view({
         "get": "getInbox",
-        "post": "sendPost",
         "delete": "deleteInbox"
     })),
+    path('service/authors/<str:authorId>/inbox/<str:postId>', InboxAPIs.as_view({"post": "sendPost"})),
 
     #followRequests
     path('authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
@@ -60,7 +60,8 @@ urlpatterns = [
     path('authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
         "get": "checkFollower",
         "put": "addFollower",
-        "delete": "removeFollower"})),
+        "delete": "removeFollower",
+        "post": "requestToFollow"})),
 
     #authors
     path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor"}))
