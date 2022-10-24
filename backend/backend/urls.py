@@ -62,8 +62,8 @@ urlpatterns = [
         "put": "addFollower",
         "delete": "removeFollower",
         "post": "requestToFollow"})),
-]
+
 
     #authors
-    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor"}))
+    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor"})),
 ]
