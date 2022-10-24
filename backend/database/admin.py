@@ -1,8 +1,17 @@
 from django.contrib import admin
 from .models import *
 
+@admin.action(description='Mark selected users as accepted')
+def make_accepted(modeladmin, request, queryset):
+    queryset.update(accepted=True)
+
+class AuthorsAdmin(admin.ModelAdmin):
+    list_display = ['displayName']
+    list_filter = ['accepted']
+    actions = [make_accepted]
+
 # Register your models here.
-admin.site.register(Authors)
+admin.site.register(Authors, AuthorsAdmin)
 admin.site.register(Posts)
 admin.site.register(Followers)
 admin.site.register(FollowRequests)
