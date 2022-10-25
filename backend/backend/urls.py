@@ -65,5 +65,9 @@ urlpatterns = [
 
 
     #authors
-    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor"})),
+    path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"})),
+    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"})),
+    path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"})),
+
+
 ]

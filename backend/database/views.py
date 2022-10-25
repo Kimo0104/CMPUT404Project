@@ -8,6 +8,7 @@ from rest_framework import status
 import io
 from collections import defaultdict
 from rest_framework.parsers import JSONParser
+from django.core.paginator import Paginator
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
 from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
@@ -377,20 +378,118 @@ class FollowsAPIs(viewsets.ViewSet):
         return FollowRequestsAPIs.requestToFollow(self, request, *args, **kwargs)
 
 class AuthorsAPIs(viewsets.ViewSet):
+
+    generic_profile_image_path = '../images/generic_profile_image.png'
     
+    #TESTED
     #GET //service/authors/{AUTHOR_ID}
     @action(detail=True, methods=['get'])
     def getAuthor(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-
-        print(args)
 
         author = Authors.objects.filter(id=authorId)
         # Since id is the primary key of the Author table, there can only be 0 ot
         # 1 authors with this id
         if author.count() == 0:
             return Response("Author does not exist", status=status.HTTP_404_NOT_FOUND)
+        
+        author = author.get(id=authorId)
 
-        serializer = AuthorSerializer(author[0], many=False)
+        serializer = AuthorSerializer(author, many=False)
         return Response(serializer.data)
+    
+    #TESTED
+    #GET //service/find?query={SEARCH_QUERY}&page={PAGE_NUM}&size={PAGE_SIZE}
+    @action(detail=True, methods=['get'])
+    def searchForAuthors(self, request, *args, **kwargs):
+        #We search for displayName matching search_query
+        search_query = request.GET.get('query')
+        page_num = request.GET.get('page', 1)
+        page_size = request.GET.get('size', 10)
+
+        authors = Authors.objects.filter(displayName__contains=search_query)
+        paginator = Paginator(authors, page_size)
+        page_obj = paginator.page(page_num)
+        serializer = AuthorSerializer(page_obj, many=True)
+        print(serializer.data)
+        return Response(serializer.data)
+
+    #TESTED
+    #GET //service/authors?page={PAGE_NUM}&size={PAGE_SIZE}
+    @action(detail=True, methods=['get'])
+    def getAuthors(self, request, *args, **kwargs):
+        page_num = request.GET.get('page', 1)
+        page_size = request.GET.get('size', 10)
+
+        authors = Authors.objects.all()
+        paginator = Paginator(authors, page_size)
+        page_obj = paginator.page(page_num)
+        serializer = AuthorSerializer(page_obj, many=True)
+        print(serializer.data)
+        res = Response(serializer.data)
+        return res
+
+   
+    #POST //service/authors/{AUTHOR_ID}
+    @action(detail=True, methods=['post'])
+    def modifyAuthor(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+
+        author = Authors.objects.filter(id=authorId)
+        # Since id is the primary key of the Author table, there can only be 0 ot
+        # 1 authors with this id
+        if author.count() == 0:
+            return Response("Author does not exist!", status=status.HTTP_404_NOT_FOUND)
+        author = author.get(id=authorId)
+
+        request_body = request.POST
+        if len(request_body) == 0:
+            return Response("Empty POST body. Did you mean GET?", status=status.HTTP_400_BAD_REQUEST)
+
+        editable_fields = ["github", "profileImage"]
+        for field in request_body.keys():
+            if field not in editable_fields:
+                return Response("Problem with POST. Aborting!", status=status.HTTP_400_BAD_REQUEST)
+        
+        for field, value in request_body.items():
+            if field == "profileImage":
+                if value.strip() == "":
+                    value = request.build_absolute_uri(self.generic_profile_image_path)
+            if field == "github" and value.strip() == "":
+                value = None
+            setattr(author, field, value)
+
+        author.save()
+
+        return Response("Modified Author successfully")
+    
+    #PUT //service/authors
+    @action(detail=True, methods=['put'])
+    def createAuthor(self, request, *args, **kwargs):
+        
+        request_body = request.POST
+
+        authorId = uuidGenerator()
+        host = request.build_absolute_uri().split('/authors/')[0]
+        if "displayName" in request_body and request_body["displayName"].strip() != "":
+            author = Authors.objects.filter(displayName=request_body["displayName"])
+            if author.count() == 1:
+                return Response("Display name already exists!", status=status.HTTP_409_CONFLICT)
+            displayName = request_body['displayName']
+        else:
+            return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
+        url = host + '/authors/' + authorId
+        profileImage = request.build_absolute_uri(self.generic_profile_image_path) 
+        github = request_body["github"] if "github" in request_body.items() and request_body["github"].strip() != "" else None
+
+        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
+
+        author.save()
+
+        return Response("Created Author successfully", status=status.HTTP_200_OK)
+
+         
+
+
+
     
