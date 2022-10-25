@@ -53,14 +53,15 @@ class FollowRequestsSerializer(serializers.ModelSerializer):
 
 class CommentsSerializer(serializers.ModelSerializer):
     class Meta:
-        models = Comments
+        model = Comments
         fields = [
             'id',
             'type',
             'author',
+            'post',
             'comment',
             'contentType',
-            'published',
+            'published'
         ]
 
 class LikesSerializer(serializers.ModelSerializer):
@@ -71,20 +72,20 @@ class LikesSerializer(serializers.ModelSerializer):
             'context',
             'summary',
             'type',
-            'published'
+            'published',
             'author',
             'post'
         ]
 
 class LikesCommentsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Likes
+        model = LikesComments
         fields = [
             'id',
             'context',
             'summary',
             'type',
-            'published'
+            'published',
             'author',
             'comment'
         ]
