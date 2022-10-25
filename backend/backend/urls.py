@@ -1,5 +1,4 @@
 """backend URL Configuration
-
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
 Examples:
@@ -15,7 +14,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from database.views import PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
+from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
 
 urlpatterns = [
     #admin
@@ -54,12 +53,17 @@ urlpatterns = [
     #followRequests
     path('service/authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
     path('service/authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete": "removeRequest"})),
-    path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
+    # path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
 
     #follows
     path('service/authors/<str:authorId>/followers', FollowsAPIs.as_view({"get": "getFollowers"})),
     path('service/authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
         "get": "checkFollower",
         "put": "addFollower",
-        "delete": "removeFollower"})),
+        "delete": "removeFollower",
+        "post": "requestToFollow"})),
+
+
+    #authors
+    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor"})),
 ]

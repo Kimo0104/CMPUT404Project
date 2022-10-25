@@ -46,7 +46,7 @@ class Followers(models.Model):
 
 class FollowRequests(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
-    reciever = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "reciever")
+    receiver = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "receiver")
     requester = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "requester")
 
 

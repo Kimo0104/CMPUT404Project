@@ -11,7 +11,7 @@ from rest_framework.parsers import JSONParser
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
 from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
-from .serializers import PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, FollowersSerializer, FollowRequestsSerializer
+from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
 import uuid
 def uuidGenerator():
@@ -343,10 +343,11 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = FollowRequests.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowRequestsSerializer(queryset, many=True)
+        try:
+            requestFollowers = FollowRequests.objects.filter(receiver=authorId)
+        except FollowRequests.DoesNotExist:
+            requestFollowers = None
+        serializer = FollowRequestsSerializer(requestFollowers, many=True)
         return Response(serializer.data)
 
     #DELETE service/authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
@@ -355,10 +356,12 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     def removeRequest(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
-        queryset = FollowRequests.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowRequestsSerializer(queryset, many=True)
+        try:
+            requestFollowers = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
+            requestFollowers.delete()
+        except FollowRequests.DoesNotExist:
+            requestFollowers = None
+        serializer = FollowersSerializer(requestFollowers)
         return Response(serializer.data)
 
     #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
@@ -367,11 +370,15 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
-        queryset = FollowRequests.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowRequestsSerializer(queryset, many=True)
-        return Response(serializer.data)
+        if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
+            return Response({"Failed to send a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        FollowRequests.objects.create(
+            id = uuidGenerator(),
+            requester = Authors.objects.get(id = authorId),
+            receiver = Authors.objects.get(id = foreignAuthorId)
+        )
+        return Response({"Request to follow Successful"}, status=status.HTTP_200_OK)
     
 class FollowsAPIs(viewsets.ViewSet):
 
@@ -380,10 +387,11 @@ class FollowsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        queryset = Followers.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowersSerializer(queryset, many=True)
+        try:
+            followers = Followers.objects.filter(followed=authorId)
+        except Followers.DoesNotExist:
+            followers = None
+        serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
     
     #GET /service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
@@ -392,26 +400,29 @@ class FollowsAPIs(viewsets.ViewSet):
     def checkFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
-        queryset = Followers.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowersSerializer(queryset, many=True)
+        try:
+            follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
+        except Followers.DoesNotExist:
+            follower = None
+        serializer = FollowersSerializer(follower)
         return Response(serializer.data)
 
     #PUT service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @action(detail=True, methods=['delete'],)
     def addFollower(self, request, *args, **kwargs):
-        # Call {function} to delete the follower request record
-
-        # Insert into Followers
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
-        queryset = Followers.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowersSerializer(queryset, many=True)
-        return Response(serializer.data)
+        if not FollowRequests.objects.filter(receiver=authorId, requester=foreignAuthorId).count() == 1:
+            return Response({"Failed to add a follower. The other party hasn't requested to follow you"}, status=status.HTTP_400_BAD_REQUEST)
+        Followers.objects.create(
+            id = uuidGenerator(),
+            followed = Authors.objects.get(id = authorId),
+            follower = Authors.objects.get(id = foreignAuthorId)
+        )
+
+        FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId).delete()
+        return Response({"Add a follower Successful"}, status=status.HTTP_200_OK)
 
     #DELETE service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
@@ -419,10 +430,35 @@ class FollowsAPIs(viewsets.ViewSet):
     def removeFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
-        queryset = Followers.objects.raw("""
-            YOUR SQL HERE
-        """)
-        serializer = FollowersSerializer(queryset, many=True)
+        try:
+            follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
+            follower.delete()
+        except Followers.DoesNotExist:
+            follower = None
+        serializer = FollowersSerializer(follower)
         return Response(serializer.data)
+    
+    #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    @action(detail=True, methods=['post'],)
+    def requestToFollow(self, request, *args, **kwargs):
+        return FollowRequestsAPIs.requestToFollow(self, request, *args, **kwargs)
 
+class AuthorsAPIs(viewsets.ViewSet):
+    
+    #GET //service/authors/{AUTHOR_ID}
+    @action(detail=True, methods=['get'])
+    def getAuthor(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
 
+        print(args)
+
+        author = Authors.objects.filter(id=authorId)
+        # Since id is the primary key of the Author table, there can only be 0 ot
+        # 1 authors with this id
+        if author.count() == 0:
+            return Response("Author does not exist", status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AuthorSerializer(author[0], many=False)
+        return Response(serializer.data)
+    

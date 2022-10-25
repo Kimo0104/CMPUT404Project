@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
             name='FollowRequests',
             fields=[
                 ('id', models.CharField(max_length=255, primary_key=True, serialize=False)),
-                ('reciever', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reciever', to='database.authors')),
+                ('receiver', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='receiver', to='database.authors')),
                 ('requester', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='requester', to='database.authors')),
             ],
         ),

@@ -108,3 +108,16 @@ class InboxSerializer(serializers.ModelSerializer):
             'post'
         ]
 
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Authors
+        fields = [
+            'id',
+            'type',
+            'host',
+            'displayName',
+            'url',
+            'github',
+            'accepted',
+            'profileImage'
+        ]
