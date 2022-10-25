@@ -258,7 +258,7 @@ class InboxAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET authors/{AUTHOR_ID}/inbox
+    #GET authors/{AUTHOR_ID}/inbox?page=value&size=value
     #if authenticated get a list of posts sent to AUTHOR_ID (paginated)
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
