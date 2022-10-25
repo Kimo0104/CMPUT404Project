@@ -42,7 +42,7 @@ urlpatterns = [
     path('service/authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"})),
 
     #liked
-    path('service/authors/<str:authorId>/likes', LikedAPIs.as_view({"get": "getAuthorLiked"})),
+    path('service/authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"})),
 
     #inbox
     path('service/authors/<str:authorId>/inbox', InboxAPIs.as_view({
