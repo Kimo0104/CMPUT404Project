@@ -36,7 +36,7 @@ export default function BasicStack(props) {
   }, []);
 
   return (
-    <Box sx={{ width: '60%', marginRight: 3, marginLeft: 3}}>
+    <Box sx={{ width: '100%', marginRight: 3, marginLeft: 3}}>
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
           inbox.map((item) => (
