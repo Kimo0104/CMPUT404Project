@@ -44,7 +44,7 @@ class PostsAPIs(viewsets.ViewSet):
         except Posts.DoesNotExist:
             post = None
         serializer = PostsSerializer(post)
-        return Response(serializer.data)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
     #POST service/authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
