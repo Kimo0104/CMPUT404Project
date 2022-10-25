@@ -10,6 +10,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
+import { createPost } from "../../APIRequests.js";
+
 
 const formats = [
   {
@@ -69,12 +71,23 @@ export default function Home() {
   const handleClickOpen = () => {
     setOpen(true);
   };
-  const handleCancel = (event) => {
+  const handleCancel = () => {
     setOpen(false);
   };
 
-  const handlePublish = (event) => {
+  const handlePublish = () => {
     // Api calls here
+    const authorId = 1;
+    const data = {
+      type: "post",
+      title: title,
+      source: source,
+      origin: origin,
+      description: description,
+      contentType: format,
+      content: content,
+      visibility: visibility,
+    }
     setOpen(false);
   }
 
