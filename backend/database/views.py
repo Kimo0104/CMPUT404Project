@@ -33,7 +33,7 @@ class DjangoObj:
 
 class PostsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #GET authors/{AUTHOR_ID/posts/{POST_ID}
     #get the public post whose id is POST_ID
     @action(detail=True, methods=['get'],)
     def getPost(self, request, *args, **kwargs):
@@ -46,7 +46,7 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(post)
         return Response(serializer.data, status = status.HTTP_200_OK)
 
-    #POST service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
     @action(detail=True, methods=['post'],)
     def updatePost(self, request, *args, **kwargs):
@@ -63,7 +63,7 @@ class PostsAPIs(viewsets.ViewSet):
         if edited: post.save()
         return Response({"Success"}, status=status.HTTP_200_OK)
 
-    #DELETE service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #DELETE authors/{AUTHOR_ID/posts/{POST_ID}
     #remove the post whose id is POST_ID
     @action(detail=True, methods=['delete'],)
     def deletePost(self, request, *args, **kwargs):
@@ -72,7 +72,7 @@ class PostsAPIs(viewsets.ViewSet):
         Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC).delete()
         return Response({"Success"}, status=status.HTTP_200_OK)
 
-    #PUT service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #PUT authors/{AUTHOR_ID/posts/{POST_ID}
     #create a post where its id is POST_ID
     @action(detail=True, methods=['put'],)
     def createPost(self, request, *args, **kwargs):
@@ -96,7 +96,7 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(post)
         return Response(serializer.data)
 
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/image
     #get the public post converted to binary as an image
     @action(detail=True, methods=['get'],)
     def getImagePost(self, request, *args, **kwargs):
@@ -114,7 +114,7 @@ class CommentsAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
@@ -126,7 +126,7 @@ class CommentsAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #POST service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
+    #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #if you post an object of “type”:”comment”, it will add your comment to the post whose id is POST_ID
     @action(detail=True, methods=['post'],)
     def createComment(self, request, *args, **kwargs):
@@ -171,7 +171,7 @@ class LikesAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
     @action(detail=True, methods=['get'],)
     def getPostLikes(self, request, *args, **kwargs):
@@ -197,7 +197,7 @@ class LikesAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
@@ -226,7 +226,7 @@ class LikedAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET service/authors/{AUTHOR_ID}/liked
+    #GET authors/{AUTHOR_ID}/liked
     #list what public things AUTHOR_ID liked
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
@@ -257,7 +257,7 @@ class InboxAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET service/authors/{AUTHOR_ID}/inbox
+    #GET authors/{AUTHOR_ID}/inbox
     #if authenticated get a list of posts sent to AUTHOR_ID (paginated)
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
@@ -298,7 +298,7 @@ class InboxAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #POST service/authors/{AUTHOR_ID}/inbox + /{POST_ID}
+    #POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
     @action(detail=True, methods=['post'],)
     def sendPost(self, request, *args, **kwargs):
@@ -323,7 +323,7 @@ class InboxAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #DELETE service/authors/{AUTHOR_ID}/inbox
+    #DELETE authors/{AUTHOR_ID}/inbox
     #clear the inbox
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
@@ -338,7 +338,7 @@ class InboxAPIs(viewsets.ViewSet):
 
 class FollowRequestsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/followRequest
+    #GET authors/{AUTHOR_ID}/followRequest
     #get all the people who want to follow AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
@@ -350,7 +350,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowRequestsSerializer(requestFollowers, many=True)
         return Response(serializer.data)
 
-    #DELETE service/authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
+    #DELETE authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
@@ -364,7 +364,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(requestFollowers)
         return Response(serializer.data)
 
-    #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
@@ -382,7 +382,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     
 class FollowsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/followers
+    #GET authors/{AUTHOR_ID}/followers
     #get all the followers of AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
@@ -394,7 +394,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
     
-    #GET /service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #GET /authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
@@ -407,7 +407,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(follower)
         return Response(serializer.data)
 
-    #PUT service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #PUT authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @action(detail=True, methods=['delete'],)
     def addFollower(self, request, *args, **kwargs):
@@ -424,7 +424,7 @@ class FollowsAPIs(viewsets.ViewSet):
         FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId).delete()
         return Response({"Add a follower Successful"}, status=status.HTTP_200_OK)
 
-    #DELETE service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #DELETE authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
@@ -438,7 +438,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(follower)
         return Response(serializer.data)
     
-    #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
@@ -446,7 +446,7 @@ class FollowsAPIs(viewsets.ViewSet):
 
 class AuthorsAPIs(viewsets.ViewSet):
     
-    #GET //service/authors/{AUTHOR_ID}
+    #GET //authors/{AUTHOR_ID}
     @action(detail=True, methods=['get'])
     def getAuthor(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
