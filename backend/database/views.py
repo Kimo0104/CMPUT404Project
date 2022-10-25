@@ -22,9 +22,19 @@ def uuidGenerator():
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
+#create a generalized object that allows for sorting based on date published
+class DjangoObj:
+    def __init__(self, obj, data):
+        self.obj = obj
+        self.date = obj.published
+        self.data = data
+
+    def __lt__(self, other):
+        return self.date < other.date
+
 class PostsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #GET authors/{AUTHOR_ID/posts/{POST_ID}
     #get the public post whose id is POST_ID
     @action(detail=True, methods=['get'],)
     def getPost(self, request, *args, **kwargs):
@@ -35,9 +45,9 @@ class PostsAPIs(viewsets.ViewSet):
         except Posts.DoesNotExist:
             post = None
         serializer = PostsSerializer(post)
-        return Response(serializer.data)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
-    #POST service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
     @action(detail=True, methods=['post'],)
     def updatePost(self, request, *args, **kwargs):
@@ -54,7 +64,7 @@ class PostsAPIs(viewsets.ViewSet):
         if edited: post.save()
         return Response({"Success"}, status=status.HTTP_200_OK)
 
-    #DELETE service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #DELETE authors/{AUTHOR_ID/posts/{POST_ID}
     #remove the post whose id is POST_ID
     @action(detail=True, methods=['delete'],)
     def deletePost(self, request, *args, **kwargs):
@@ -63,7 +73,7 @@ class PostsAPIs(viewsets.ViewSet):
         Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC).delete()
         return Response({"Success"}, status=status.HTTP_200_OK)
 
-    #PUT service/authors/{AUTHOR_ID/posts/{POST_ID}
+    #PUT authors/{AUTHOR_ID/posts/{POST_ID}
     #create a post where its id is POST_ID
     @action(detail=True, methods=['put'],)
     def createPost(self, request, *args, **kwargs):
@@ -87,7 +97,7 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(post)
         return Response(serializer.data)
 
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/image
     #get the public post converted to binary as an image
     @action(detail=True, methods=['get'],)
     def getImagePost(self, request, *args, **kwargs):
@@ -100,10 +110,12 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#TODO
+#completed and tested
 class CommentsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
@@ -113,16 +125,27 @@ class CommentsAPIs(viewsets.ViewSet):
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    #POST service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
+    #TESTED
+    #
+    #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #if you post an object of “type”:”comment”, it will add your comment to the post whose id is POST_ID
     @action(detail=True, methods=['post'],)
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
 
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            return Response({"Tried to send post to non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+
+        author = Authors.objects.get(id=authorId)
+        post = Posts.objects.get(id=postId)
+
         #check that contentType is a valid choice
         body = JSONParser().parse(io.BytesIO(request.body))
-        contentType = None
+        contentType = 'text/plain'
         if 'contentType' in body:
             if body['contentBody'] == 'text/markdown':
                 contentType = 'text/markdown'
@@ -136,102 +159,147 @@ class CommentsAPIs(viewsets.ViewSet):
 
         Comments.objects.create(
             id = uuidGenerator(),
-            author = authorId,
-            post = postId,
+            author = author,
+            post = post,
             contentType = contentType,
             comment = comment
         )
 
         return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
 
-#completed
+#completed and tested
 class LikesAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
     @action(detail=True, methods=['get'],)
     def getPostLikes(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        queryset = Likes.objects.filter(author_id=authorId, post_id=postId).order_by('-published')
-        
-        serializer = LikesSerializer(queryset, many=True)
-        return Response(serializer.data)
+        try:
+            page = int(request.GET.get('page',1))
+            size = int(request.GET.get('size',10))
+        except:
+            return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+            
+        likeObjs = []
+        for like in Likes.objects.filter(post_id=postId):
+            likeObjs.append(DjangoObj(like, LikesSerializer(like, many=False).data))
 
-    #GET service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
+        likeObjs.sort()
+        output = []
+        for likeObjIdx in range((page-1)*size, page*size):
+            if likeObjIdx >= len(likeObjs):
+                break
+            output.append(likeObjs[likeObjIdx].data)   
+        
+        return Response(output, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
         commentId = kwargs["commentId"]
-        queryset = LikesComments.objects.filter(comment_id=commentId).order_by('-published')
-        
-        serializer = LikesCommentsSerializer(queryset, many=True)
-        return Response(serializer.data)
+        try:
+            page = int(request.GET.get('page',1))
+            size = int(request.GET.get('size',10))
+        except:
+            return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
 
-#completed
+        commentLikeObjs = []
+        for like in LikesComments.objects.filter(comment_id=commentId):
+            commentLikeObjs.append(DjangoObj(like, LikesCommentsSerializer(like, many=False).data))
+
+        commentLikeObjs.sort()
+        output = []
+        for commentLikeObjIdx in range((page-1)*size, page*size):
+            if commentLikeObjIdx >= len(commentLikeObjs):
+                break
+            output.append(commentLikeObjs[commentLikeObjIdx].data)   
+        
+        return Response(output, status=status.HTTP_200_OK)
+
+#completed and tested
 class LikedAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/liked
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/liked
     #list what public things AUTHOR_ID liked
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        try:
+            page = int(request.GET.get('page',1))
+            size = int(request.GET.get('size',10))
+        except:
+            return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
 
-        output = '{ "type":"liked", "items":['
-        found = False
-        for like in Liked.objects.filter(author_id=authorId).select_related('likes').order_by('-published'):
-            output += LikesSerializer(like, many=False).data
-            output += ','
-            found = True
-        
-        if found:
-            output = output[:len(output)-1]
-        output +=']}'
+        likeObjs = []
+        for like in Likes.objects.filter(author_id=authorId):
+            likeObjs.append(DjangoObj(like, LikesSerializer(like, many=False).data))
+        for commentLike in LikesComments.objects.filter(author_id=authorId):
+            likeObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
+
+        likeObjs.sort()
+        output = []
+        for likeObjIdx in range((page-1)*size, page*size):
+            if likeObjIdx >= len(likeObjs):
+                break
+            output.append(likeObjs[likeObjIdx].data)   
         
         return Response(output, status=status.HTTP_200_OK)
 
-#TODO getInbox, sendPost
+#completed and tested
 class InboxAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/inbox
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/inbox
     #if authenticated get a list of posts sent to AUTHOR_ID (paginated)
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        page = request.GET.get('page',1)
-        size = request.GET.get('size',10)
+        try:
+            page = int(request.GET.get('page',1))
+            size = int(request.GET.get('size',10))
+        except:
+            return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
 
-        posts = []
-        likes = []
-        comments = []
-        commentLikes = []
+        inboxObjs = []
         #get enough posts, sorted
         for inbox in Inbox.objects.filter(author_id=authorId):
             post = Posts.objects.get(id=inbox.post_id)
-            posts.append(PostsSerializer(post, many=False).data)
-            print('\n\n\n',post.id,'\n\n\n')
+            inboxObjs.append(DjangoObj(post, PostsSerializer(post, many=False).data))
 
             #get enough likes, sorted
-            if Likes.objects.filter(post=post).count() >= 1:
-                for like in Likes.objects.filter(post=post):
-                    likes.append(like)
+            for like in Likes.objects.filter(post_id=post.id):
+                inboxObjs.append(DjangoObj(like, LikesSerializer(like, many=False).data))
 
             #get enough comments, sorted
-            #for comment in Comments.objects.filter(post_id=post.id):
-            #    comments.append(comment)
-            #    for commentLike in LikesComments.object.filter(comment_id=comment.id):
-            #        commentLikes.append(commentLike)
-        #iterate through each list, compiling them into a sorted inbox
+            for comment in Comments.objects.filter(post_id=post.id):
+                inboxObjs.append(DjangoObj(comment, CommentsSerializer(comment, many=False).data))
+                for commentLike in LikesComments.objects.filter(comment_id=comment.id):
+                    inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
         #paginate
-        
-        if len(posts) == 0:
+        inboxObjs.sort()
+        output = []
+        for inboxObjIdx in range((page-1)*size, page*size):
+            if inboxObjIdx >= len(inboxObjs):
+                break
+            output.append(inboxObjs[inboxObjIdx].data)       
+
+        if len(inboxObjs) == 0:
             return Response("{Nothing to show}", status=status.HTTP_200_OK )
 
-        return Response(posts, status=status.HTTP_200_OK)
+        return Response(output, status=status.HTTP_200_OK)
 
     #TESTED
     #
-    #POST service/authors/{AUTHOR_ID}/inbox + /{POST_ID}
+    #POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
     @action(detail=True, methods=['post'],)
     def sendPost(self, request, *args, **kwargs):
@@ -256,7 +324,7 @@ class InboxAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #DELETE service/authors/{AUTHOR_ID}/inbox
+    #DELETE authors/{AUTHOR_ID}/inbox
     #clear the inbox
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
@@ -271,7 +339,7 @@ class InboxAPIs(viewsets.ViewSet):
 
 class FollowRequestsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/followRequest
+    #GET authors/{AUTHOR_ID}/followRequest
     #get all the people who want to follow AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
@@ -283,7 +351,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowRequestsSerializer(requestFollowers, many=True)
         return Response(serializer.data)
 
-    #DELETE service/authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
+    #DELETE authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
@@ -297,7 +365,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(requestFollowers)
         return Response(serializer.data)
 
-    #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
@@ -315,7 +383,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     
 class FollowsAPIs(viewsets.ViewSet):
 
-    #GET service/authors/{AUTHOR_ID}/followers
+    #GET authors/{AUTHOR_ID}/followers
     #get all the followers of AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
@@ -327,7 +395,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
     
-    #GET /service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #GET /authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
@@ -340,7 +408,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(follower)
         return Response(serializer.data)
 
-    #PUT service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #PUT authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @action(detail=True, methods=['delete'],)
     def addFollower(self, request, *args, **kwargs):
@@ -357,7 +425,7 @@ class FollowsAPIs(viewsets.ViewSet):
         FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId).delete()
         return Response({"Add a follower Successful"}, status=status.HTTP_200_OK)
 
-    #DELETE service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #DELETE authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
@@ -371,7 +439,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(follower)
         return Response(serializer.data)
     
-    #POST service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
