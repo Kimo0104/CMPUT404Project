@@ -365,6 +365,19 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(requestFollowers)
         return Response(serializer.data)
 
+    #GET authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
+    #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
+    @action(detail=True, methods=['get'],)
+    def checkRequestedToFollow(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        try:
+            followRequested = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
+        except FollowRequests.DoesNotExist:
+            followRequested = None
+        serializer = FollowRequestsSerializer(followRequested)
+        return Response(serializer.data)
+
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @action(detail=True, methods=['post'],)
@@ -395,7 +408,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
     
-    #GET /authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):

@@ -11,7 +11,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Login/>}/>
               <Route path="home" element={<Home/>}/>
-              <Route path="follow" element={<Follow/>}/>
+              <Route path="follow" element={<Follow authorId="1" foreignAuthorId="2" />}/>
             </Routes>
         </div>
       </div>
