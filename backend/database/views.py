@@ -439,8 +439,21 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(requestFollowers)
         return Response(serializer.data)
 
+    #GET authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
+    #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
+    @action(detail=True, methods=['get'],)
+    def checkRequestedToFollow(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        try:
+            followRequested = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
+        except FollowRequests.DoesNotExist:
+            followRequested = None
+        serializer = FollowRequestsSerializer(followRequested)
+        return Response(serializer.data)
+
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
-    #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -469,7 +482,7 @@ class FollowsAPIs(viewsets.ViewSet):
         serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
     
-    #GET /authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
+    #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
@@ -509,9 +522,8 @@ class FollowsAPIs(viewsets.ViewSet):
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
             follower.delete()
         except Followers.DoesNotExist:
-            follower = None
-        serializer = FollowersSerializer(follower)
-        return Response(serializer.data)
+            return Response({"Failed to remove follower. You need to follow them first before you can unfollow them"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"Remove follower Successful"}, status=status.HTTP_200_OK)
     
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
