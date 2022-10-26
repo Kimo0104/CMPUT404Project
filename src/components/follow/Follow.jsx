@@ -12,7 +12,7 @@ export default function Follow(props) {
 
     React.useEffect(() => {
         async function loadAuthor() {
-            const following = await checkFollowStatus("2", "1");
+            const following = await checkFollowStatus(props.authorId, props.foreignAuthorId);
             console.log(following)
             setFollowing(following)
         }
