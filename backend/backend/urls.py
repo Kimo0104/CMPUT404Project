@@ -38,10 +38,12 @@ urlpatterns = [
 
     #likes
     path('authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"})),
+    path('authors/<str:authorId>/posts/<str:postId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createPostLike", "delete": "deletePostLike"})),
     path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"})),
 
     #liked
     path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"})),
+    path('authors/<str:authorId>/posts/<str:postId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorPostLiked"})),
 
     #inbox
     path('authors/<str:authorId>/inbox', InboxAPIs.as_view({

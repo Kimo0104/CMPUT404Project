@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Grid from '@mui/material/Grid';
-import Container from '@mui/material/Container';
 import TopBar from '../topbar/TopBar.jsx'
 import PublishIcon from '@mui/icons-material/Publish';
 import Button from '@mui/material/Button';
@@ -10,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
+import Inbox from '../inbox/Inbox'
 import { createPost } from "../../APIRequests.js";
 
 
@@ -99,9 +99,7 @@ export default function Home() {
             <Grid item xs={2}>
             </Grid>
             <Grid item xs={8}>
-                <Container style={{border: "solid", minWidth: "100%", height: "100vh"}}> 
-                    Stream
-                </Container>
+                <Inbox authorId={2}/>
             </Grid>
             <Grid item xs={2}>
             <Grid container spacing={2}>
