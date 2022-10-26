@@ -26,7 +26,7 @@ class PostsSerializer(serializers.ModelSerializer):
             'description',
             'contentType',
             'content',
-            'originalAuthor'
+            'originalAuthor',
             'author',
             'count',
             'published',
