@@ -11,7 +11,8 @@ class AuthorsSerializer(serializers.ModelSerializer):
             'url',
             'github',
             'accepted',
-            'profileImage'
+            'profileImage',
+            'password'
         ]
 
 class PostsSerializer(serializers.ModelSerializer):
