@@ -36,11 +36,11 @@ export default function BasicStack(props) {
   }, []);
 
   return (
-    <Box sx={{ width: '100%', marginRight: 3, marginLeft: 3}}>
+    <Box sx={{ width: '100%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
           inbox.map((item) => (
-            <TextPost title={item.title} content={item.content} authorId={item.author} key={key++}/>
+            <TextPost authorId = {props.authorId} title={item.title} content={item.content} postAuthorId={item.author} postId={item.id} key={key++}/>
           ))
         }
       </Stack>

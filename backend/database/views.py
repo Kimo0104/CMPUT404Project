@@ -11,8 +11,10 @@ from rest_framework.parsers import JSONParser
 from django.core.paginator import Paginator
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
+from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests
 from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+
+context = 'localhost:8000/'
 
 import uuid
 def uuidGenerator():
@@ -89,6 +91,7 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
+            originalAuthor = Authors.objects.get(id = body['originalAuthor']),
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility'],
@@ -172,7 +175,57 @@ class LikesAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes
+    #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
+    @action(detail=True, methods=['post'])
+    def createPostLike(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        postId = kwargs["postId"]
+        
+        #check that authorId and postId exist
+        if Authors.objects.filter(id=likerId).count() < 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if Posts.objects.filter(id=postId).count() < 1:
+            return Response({"Tried to check likes on a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+
+        liker = Authors.objects.get(id=likerId)
+        post = Posts.objects.get(id=postId)
+        if Likes.objects.filter(post=post, author=liker).count() >= 1:
+            return Response({"Tried to like a post you've already liked"}, status=status.HTTP_400_BAD_REQUEST)
+
+        Likes.objects.create(
+            id = uuidGenerator(),
+            context = context,
+            summary = "{liker.displayName} Likes your post",
+            author = liker,
+            post = post
+        )
+
+        return Response("{Like created successfully}", status=status.HTTP_200_OK )
+
+    #TESTED
+    #
+    #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
+    @action(detail=True, methods=['delete'])
+    def deletePostLike(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        postId = kwargs["postId"]
+        
+        #check that authorId and postId exist
+        if Authors.objects.filter(id=likerId).count() < 1:
+            return Response({"Tried to delete a like of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if Posts.objects.filter(id=postId).count() < 1:
+            return Response({"Tried to delete a like on a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+        liker = Authors.objects.get(id=likerId)
+        post = Posts.objects.get(id=postId)
+        
+        Likes.objects.filter(post=post, author=liker).delete()
+        
+        return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
+
+
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes/inbox?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
     @action(detail=True, methods=['get'],)
     def getPostLikes(self, request, *args, **kwargs):
@@ -198,7 +251,7 @@ class LikesAPIs(viewsets.ViewSet):
 
     #TESTED
     #
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/inbox?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
@@ -224,10 +277,31 @@ class LikesAPIs(viewsets.ViewSet):
 
 #completed and tested
 class LikedAPIs(viewsets.ViewSet):
+    #TESTED
+    #
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/like/{LIKER_ID}
+    #returns true if authorId has made a like on postId, otherwise false
+    @action(detail=True, methods=['get'])
+    def getAuthorPostLiked(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        postId = kwargs["postId"]
+        
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=likerId).count() == 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to check likes on a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+
+        liker = Authors.objects.get(id=likerId)
+        post = Posts.objects.get(id=postId)
+
+        if Likes.objects.filter(post=post, author=liker).count() >= 1:
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(False, status=status.HTTP_200_OK)
 
     #TESTED
     #
-    #GET authors/{AUTHOR_ID}/liked
+    #GET authors/{AUTHOR_ID}/liked/inbox?page=value&size=value
     #list what public things AUTHOR_ID liked
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
