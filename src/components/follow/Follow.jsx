@@ -3,8 +3,6 @@ import Button from '@mui/material/Button';
 
 import { checkFollowStatus, requestToFollow, removeFollower } from '../../APIRequests'
 
-
-
 export default function Follow(props) {
     const [following, setFollowing] = React.useState(-1);
     
@@ -39,12 +37,6 @@ export default function Follow(props) {
       
     return (
         <div>
-            {/* {
-                following !== 2 && (
-                (following === 0) ? <Button size="large" onClick={handleClick}>Request to follow</Button> :
-                <Button size="large" onClick={handleClick}>Follow Request has been sent</Button>)
-            } */}
-
 
             {
                 following === 0 && requestToFollowButton

@@ -27,27 +27,26 @@ export const createPost = async (authorId, postId, data) => {
 }
 
 export const checkFollowStatus = async (authorId, foreignAuthorId) => {
-    // alert(foreignAuthorId)
-    const path = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
-    const response = await axios.get(`${path}`);
-
     // 0 -> Not following
     // 1 -> Requested to followed
     // 2 -> Following
+    const followPath = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
+    const followResponse = await axios.get(`${followPath}`);
+
+    const followRequestPath = SERVER_URL + `/authors/${foreignAuthorId}/followRequest/${authorId}`
+    const followRequestResponse = await axios.get(`${followRequestPath}`);
+
     let followStatus = -1
-    if (response.data.id !== "") {
+    if (followResponse.data.id !== "") {
         followStatus = 2
     }
     else {
-        const path = SERVER_URL + `/authors/${foreignAuthorId}/followRequest/${authorId}`
-        const response = await axios.get(`${path}`);
-        if (response.data.id !== "") {
+        if (followRequestResponse.data.id !== "") {
             followStatus = 1
         }
         else {
             followStatus = 0
         }
-    
     }
     return followStatus
 }
