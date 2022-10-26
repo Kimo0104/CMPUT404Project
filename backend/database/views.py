@@ -379,7 +379,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         return Response(serializer.data)
 
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
-    #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -448,9 +448,8 @@ class FollowsAPIs(viewsets.ViewSet):
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
             follower.delete()
         except Followers.DoesNotExist:
-            follower = None
-        serializer = FollowersSerializer(follower)
-        return Response(serializer.data)
+            return Response({"Failed to remove follower. You need to follow them first before you can unfollow them"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"Remove follower Successful"}, status=status.HTTP_200_OK)
     
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
