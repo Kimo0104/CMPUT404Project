@@ -1,32 +1,32 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import FavoriteBorderTwoToneIcon from '@mui/icons-material/FavoriteBorderTwoTone';
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import IconButton from '@mui/material/IconButton';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
+import Share from '../share/Share'
+import Like from '../like/Like'
 import { getAuthor } from '../../APIRequests'
 
 export default function BasicCard(props) {
-  //props contains title, content, authorId
+  //props contains authorId, title, content, postAuthorId, postId
   //textPosts have a title, a description, a share button, a comments button, and a like button
-  const [author, setAuthor] = React.useState({});
+  const [postAuthor, setPostAuthor] = React.useState({});
 
   React.useEffect(() => {
-    async function loadAuthor() {
-      const author = await getAuthor(props.authorId);
-      setAuthor(author);
+    async function loadInfo() {
+      const postAuthor = await getAuthor(props.postAuthorId);
+      setPostAuthor(postAuthor);
     }
-    loadAuthor();
+    loadInfo();
   }, [props]);
 
   return (
     <Card sx={{ minWidth: 275 }}>
-      <Typography sx={{ fontSize: 16, marginRight: 1}} color="text.secondary" align='right'>
-        {author.displayName}
+      <Typography sx={{ fontSize: 16, marginLeft: 1}} color="text.secondary" align='left'>
+        From: {postAuthor.displayName}
       </Typography>
       <CardContent>
         <Typography sx={{ fontSize: 32 }} color="text.primary" gutterBottom>
@@ -38,17 +38,13 @@ export default function BasicCard(props) {
       </CardContent>
       <Grid>
         <Grid container spacing={2}>
-          <Grid item xs>
-            <IconButton aria-label="like">
-              <FavoriteBorderTwoToneIcon />
-            </IconButton>
+          <Grid item xs align="center">
+            <Like authorId={props.authorId} postId={props.postId}/>
           </Grid>
-          <Grid item xs>
-            <IconButton aria-label="share">
-              <ShareOutlinedIcon />
-            </IconButton>
+          <Grid item xs align="center">
+            <Share />
           </Grid>
-          <Grid item xs>
+          <Grid item xs align="center">
             <IconButton aria-label="comments">
               <ChatBubbleOutlineIcon />
             </IconButton>
