@@ -54,15 +54,11 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 export const requestToFollow = async (authorId, foreignAuthorId) => {
     const path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     const response = await axios.post(`${path}`);
-
-    console.log(response)
     return response.status
 }
 
 export const removeFollower = async (authorId, foreignAuthorId) => {
     const path = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
     const response = await axios.delete(`${path}`);
-
-    console.log(response)
     return response.status
 }
