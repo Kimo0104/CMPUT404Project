@@ -31,6 +31,7 @@ class Posts(models.Model):
     description = models.CharField(max_length = 255)
     contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT)
     content = models.TextField()
+    originalAuthor = models.ForeignKey(Authors)
     author = models.ForeignKey(Authors, on_delete= models.CASCADE)
     count = models.IntegerField(default = 0)
     published = models.DateTimeField(auto_now_add=True)
