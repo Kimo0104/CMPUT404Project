@@ -11,7 +11,7 @@ from rest_framework.parsers import JSONParser
 from django.core.paginator import Paginator
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
+from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests
 from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
 context = 'localhost:8000/'
@@ -91,6 +91,7 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
+            originalAuthor = Authors.objects.get(id = body['originalAuthor']),
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility'],
