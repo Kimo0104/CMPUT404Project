@@ -14,7 +14,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
-from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests, Images
+from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
 from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 import uuid
 import json
@@ -705,15 +705,20 @@ class AuthorsAPIs(viewsets.ViewSet):
         
         request_body = json.loads(request.body.decode('utf-8'))
 
-        authorId = uuidGenerator()
+        
         host = request.build_absolute_uri().split('/authors/')[0]
-        if "displayName" in request_body and request_body["displayName"].strip() != "":
-            author = Authors.objects.filter(displayName=request_body["displayName"])
-            if author.count() == 1:
-                return Response("Display name already exists!", status=status.HTTP_409_CONFLICT)
+        if "displayName" in request_body and request_body["displayName"].strip() != "" \
+          and "authorId" in request_body and request_body["authorId"].strip() != "":
+            authorId = request_body['authorId']
             displayName = request_body['displayName']
+            authorByDisplayName = Authors.objects.filter(displayName=displayName)
+            if authorByDisplayName.count() == 1:
+                return Response("Display name already exists!", status=status.HTTP_409_CONFLICT)
+            authorById = Authors.objects.filter(displayName=authorId)
+            if authorById.count() == 1:
+                return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
-            return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
+            return Response("Can't create a profile with no display name/ or no ID!", status=status.HTTP_400_BAD_REQUEST)
         url = host + '/authors/' + authorId
         if "profileImage" in request_body and request_body["profileImage"].strip() != "":
             profileImage = request_body["profileImage"]
@@ -737,7 +742,6 @@ class ImagesAPIs(viewsets.ViewSet):
     #PUT //service/images/{AUTHOR_ID}
     @action(detail=True, methods=['put'])
     def putImage(self, request, *args, **kwargs):
-
         authorId = kwargs["authorId"]
         try:
             image_record = Images.objects.get(authorId=authorId)
