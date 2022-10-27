@@ -1,10 +1,11 @@
 from django.db import models
+import os
 
 class Authors(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
     type = models.CharField(max_length = 255, default = "author")
     host = models.CharField(max_length = 255)
-    displayName = models.CharField(max_length = 32)
+    displayName = models.CharField(max_length = 32, unique=True)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255, null=True)
     accepted = models.BooleanField(default = False)
@@ -93,3 +94,21 @@ class Inbox(models.Model):
     id = models.CharField(max_length=255, primary_key = True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
+
+class Images(models.Model):
+
+    # Copied from https://stackoverflow.com/questions/15140942/django-imagefield-change-file-name-on-upload
+    def change_name(instance, filename):
+        upload_to = 'images'
+        ext = filename.split('.')[-1]
+        # get filename
+        if instance.pk:
+            filename = '{}.{}'.format(instance.pk, ext)
+        else:
+            # set filename as random string
+            filename = '{}.{}'.format(uuid4().hex, ext)
+        # return the whole path to the file
+        return os.path.join(upload_to, filename)
+
+    authorId = models.CharField(max_length=255, primary_key=True)
+    image = models.ImageField(upload_to=change_name, default='images/generic_profile_image.png')
