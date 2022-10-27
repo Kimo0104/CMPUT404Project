@@ -742,7 +742,6 @@ class ImagesAPIs(viewsets.ViewSet):
     #PUT //service/images/{AUTHOR_ID}
     @action(detail=True, methods=['put'])
     def putImage(self, request, *args, **kwargs):
-
         authorId = kwargs["authorId"]
         try:
             image_record = Images.objects.get(authorId=authorId)
