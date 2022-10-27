@@ -14,18 +14,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
+from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, ImagesAPIs
 
 urlpatterns = [
     #admin
     path('admin/', admin.site.urls),
 
     #posts
+    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost"})),
     path('authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
         "get": "getPost",
         "post": "updatePost",
-        "delete": "deletePost",
-        "put": "createPost"
+        "delete": "deletePost"
     })),
     path('authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 
@@ -74,6 +74,9 @@ urlpatterns = [
     path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"})),
     path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"})),
     path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"})),
+
+    #images
+    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}))
 
 
 ]
