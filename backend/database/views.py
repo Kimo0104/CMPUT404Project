@@ -79,7 +79,6 @@ class PostsAPIs(viewsets.ViewSet):
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
-        print(body['visibility'])
         post = Posts.objects.create(
             id = uuidGenerator(),
             type = body['type'],
