@@ -14,6 +14,24 @@ from django.core.paginator import Paginator
 from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
 from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from database.serializers import UserSerializer
+from django.contrib.auth.models import User
+
+class UserCreate(APIView):
+    """ 
+    Creates the user. 
+    """
+
+    def post(self, request, format='json'):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 import uuid
 def uuidGenerator():
     result = uuid.uuid4()
@@ -535,22 +553,24 @@ class AuthorsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['put'])
     def createAuthor(self, request, *args, **kwargs):
         
-        request_body = request.POST
+        import json
 
-        authorId = uuidGenerator()
+        request_body = json.loads(request.body.decode("utf-8"))
+        print(request_body)
         host = request.build_absolute_uri().split('/authors/')[0]
         if "displayName" in request_body and request_body["displayName"].strip() != "":
             author = Authors.objects.filter(displayName=request_body["displayName"])
             if author.count() == 1:
                 return Response("Display name already exists!", status=status.HTTP_409_CONFLICT)
             displayName = request_body['displayName']
+            authorId = displayName
         else:
             return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
         url = host + '/authors/' + authorId
         profileImage = request.build_absolute_uri(self.generic_profile_image_path) 
         github = request_body["github"] if "github" in request_body.items() and request_body["github"].strip() != "" else None
 
-        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
+        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage, password="test")
 
         author.save()
 

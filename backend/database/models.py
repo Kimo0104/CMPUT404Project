@@ -9,7 +9,7 @@ class Authors(models.Model):
     github = models.CharField(max_length = 255, null=True)
     accepted = models.BooleanField(default = False)
     profileImage = models.CharField(max_length = 255)
-    password = models.CharField(max_length = 255)
+    password = models.CharField(max_length = 255, null=True)
 
 class Posts(models.Model):
     PLAINTEXT = 'text/plain'
