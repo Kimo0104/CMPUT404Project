@@ -79,7 +79,9 @@ class PostsAPIs(viewsets.ViewSet):
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        print(body['visibility'])
         post = Posts.objects.create(
+            id = uuidGenerator(),
             type = body['type'],
             title = body['title'],
             source = body['source'],
@@ -89,8 +91,7 @@ class PostsAPIs(viewsets.ViewSet):
             content = body['content'],
             author = Authors.objects.get(id = authorId),
             published = body['published'],
-            visibility = body['visibility'],
-            unlisted = body['unlisted']
+            visibility = body['visibility']
         )
         serializer = PostsSerializer(post)
         return Response(serializer.data)
