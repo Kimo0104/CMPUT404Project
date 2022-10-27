@@ -4,13 +4,25 @@ export const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000"
 
 export const getPost  = async (authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
-    const response = await axios.get(`${path}`,{params: {authorId: authorId, postId: postId} });
-    return response.data.result;
+    const response = await axios.get(`${path}`);
+    return response.data;
 };
 
 export const getInbox = async(authorId, page, size) => {
-    const path = SERVER_URL + `/authors/${authorId}/inbox?page=${page}&size=${size}`;
-    const response = await axios.get(path);
+    const path = SERVER_URL + `/authors/${authorId}/inbox`;
+    const response = await axios.get(path, {params: {page: page, size: size}});
+    return response.data;
+};
+
+export const sendPublicInbox = async(authorId, postId) => {
+    const path = SERVER_URL + `/inbox/public/${authorId}/${postId}`;
+    const response = await axios.post(path);
+    return response.data;
+};
+
+export const sendFriendInbox = async(authorId, postId) => {
+    const path = SERVER_URL + `/inbox/friend/${authorId}/${postId}`;
+    const response = await axios.post(path);
     return response.data;
 };
 

@@ -9,6 +9,8 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 
+import { sendPublicInbox } from '../../APIRequests'
+
 export default function FormDialog(props) {
   const [open, setOpen] = React.useState(false);
 

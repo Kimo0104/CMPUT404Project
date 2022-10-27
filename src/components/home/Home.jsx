@@ -99,7 +99,7 @@ export default function Home() {
             <Grid item xs={2}>
             </Grid>
             <Grid item xs={8}>
-                <Inbox authorId={2}/>
+                <Inbox authorId={1}/>
             </Grid>
             <Grid item xs={2}>
             <Grid container spacing={2}>
