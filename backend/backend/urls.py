@@ -50,8 +50,8 @@ urlpatterns = [
         "get": "getInbox",
         "delete": "deleteInbox"
     })),
-    path('inbox/public/<str:authorId>/<str:postId>/', InboxAPIs.as_view({"post": "sendPublicPost"})),
-    path('inbox/friend/<str:authorId>/<str:postId>/', InboxAPIs.as_view({"post": "sendFriendPost"})),
+    path('inbox/public/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendPublicPost"})),
+    path('inbox/friend/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendFriendPost"})),
     path('authors/<str:authorId>/inbox/<str:postId>', InboxAPIs.as_view({"post": "sendPost"})),
 
     #followRequests

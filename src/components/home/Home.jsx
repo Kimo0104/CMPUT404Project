@@ -10,7 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Inbox from '../inbox/Inbox'
-import { createPost } from "../../APIRequests.js";
+import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
 
 
 const formats = [
@@ -91,7 +91,13 @@ export default function Home() {
       visibility: visibility,
       originalAuthor: authorId
     }
-    createPost(authorId, data)
+    async function sendPostToInbox(){
+      const response = await createPost(authorId, data);
+      const postId = response.id
+      if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
+      if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
+    }
+    sendPostToInbox();
   }
 
   return (
