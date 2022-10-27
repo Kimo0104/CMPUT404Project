@@ -1,5 +1,5 @@
 from rest_framework import serializers  
-from .models import Authors, Images, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Liked, Inbox
+from .models import Authors, Images, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox
 from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox
 class AuthorsSerializer(serializers.ModelSerializer):
     class Meta:
