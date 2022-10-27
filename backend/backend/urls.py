@@ -21,11 +21,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     #posts
+    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost"})),
     path('authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
         "get": "getPost",
         "post": "updatePost",
-        "delete": "deletePost",
-        "put": "createPost"
+        "delete": "deletePost"
     })),
     path('authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 
@@ -38,21 +38,27 @@ urlpatterns = [
 
     #likes
     path('authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"})),
+    path('authors/<str:authorId>/posts/<str:postId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createPostLike", "delete": "deletePostLike"})),
     path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"})),
 
     #liked
     path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"})),
+    path('authors/<str:authorId>/posts/<str:postId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorPostLiked"})),
 
     #inbox
     path('authors/<str:authorId>/inbox', InboxAPIs.as_view({
         "get": "getInbox",
         "delete": "deleteInbox"
     })),
+    path('inbox/public/<str:authorId>/<str:postId>/', InboxAPIs.as_view({"post": "sendPublicPost"})),
+    path('inbox/friend/<str:authorId>/<str:postId>/', InboxAPIs.as_view({"post": "sendFriendPost"})),
     path('authors/<str:authorId>/inbox/<str:postId>', InboxAPIs.as_view({"post": "sendPost"})),
 
     #followRequests
     path('authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
-    path('authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete": "removeRequest"})),
+    path('authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({
+        "delete": "removeRequest",
+        "get": "checkRequestedToFollow"})),
     # path('authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
 
     #follows
