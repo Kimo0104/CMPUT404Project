@@ -1,5 +1,6 @@
 import io
 from rest_framework.parsers import JSONParser
+import json
 from datetime import datetime
 from rest_framework.decorators import action
 from rest_framework import viewsets
@@ -13,8 +14,6 @@ from django.core.paginator import Paginator
 #serializers defines how to convert a post object to JSON
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests
 from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
-
-context = 'localhost:8000/'
 
 import uuid
 def uuidGenerator():
@@ -43,7 +42,7 @@ class PostsAPIs(viewsets.ViewSet):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
         try:
-            post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
+            post = Posts.objects.get(id = postId)
         except Posts.DoesNotExist:
             post = None
         serializer = PostsSerializer(post)
@@ -194,8 +193,8 @@ class LikesAPIs(viewsets.ViewSet):
 
         Likes.objects.create(
             id = uuidGenerator(),
-            context = context,
-            summary = "{liker.displayName} Likes your post",
+            context = post.title,
+            summary = f'{liker.displayName} likes your post',
             author = liker,
             post = post
         )
@@ -349,6 +348,7 @@ class InboxAPIs(viewsets.ViewSet):
             post = Posts.objects.get(id=inbox.post_id)
             inboxObjs.append(DjangoObj(post, PostsSerializer(post, many=False).data))
 
+        for post in Posts.objects.filter(author_id=authorId):
             #get enough likes, sorted
             for like in Likes.objects.filter(post_id=post.id):
                 inboxObjs.append(DjangoObj(like, LikesSerializer(like, many=False).data))
@@ -360,22 +360,24 @@ class InboxAPIs(viewsets.ViewSet):
                     inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
         #paginate
         inboxObjs.sort()
-        output = []
+        outputDic = {}
+        outputDic["inbox"] = []
+        outputDic["count"] = len(inboxObjs)
         for inboxObjIdx in range((page-1)*size, page*size):
-            if inboxObjIdx >= len(inboxObjs):
+            if inboxObjIdx >= outputDic["count"]:
                 break
-            output.append(inboxObjs[inboxObjIdx].data)       
+            outputDic["inbox"].append(inboxObjs[inboxObjIdx].data)       
 
-        if len(inboxObjs) == 0:
+        if outputDic["count"] == 0:
             return Response("{Nothing to show}", status=status.HTTP_200_OK )
 
-        return Response(output, status=status.HTTP_200_OK)
+        return Response(outputDic, status=status.HTTP_200_OK)
 
     #TESTED
     #
     #POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
-    @action(detail=True, methods=['post'],)
+    @action(detail=True, methods=['post'])
     def sendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
@@ -395,6 +397,72 @@ class InboxAPIs(viewsets.ViewSet):
         )
 
         return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
+    #POST inbox/public/{AUTHOR_ID}/{POST_ID}
+    #send a post to the people following this author
+    @action(detail=True, methods=['post'])
+    def sendPublicPost(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        postId = kwargs["postId"]
+
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            return Response({"Tried to send post as a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+        author = Authors.objects.get(id=authorId)
+        post = Posts.objects.get(id=postId)
+
+        #find all followers and add post to inbox
+        toCreate = []
+        numFollowers = 0
+        for follower in Followers.objects.filter(followed=author):
+            numFollowers += 1
+            followerAuthor = Authors.objects.get(id=follower.follower.id)
+            toCreate.append(Inbox(
+                id=uuidGenerator(),
+                author = followerAuthor,
+                post = post
+            ))
+        Inbox.objects.bulk_create(toCreate)
+        string = f'Successfully sent post to your {numFollowers} followers'
+        return Response({string}, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
+    #POST inbox/friend/{AUTHOR_ID}/{POST_ID}
+    #send a post to this author's friends
+    @action(detail=True, methods=['post'])
+    def sendFriendPost(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        postId = kwargs["postId"]
+
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            return Response({"Tried to send post as a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+        author = Authors.objects.get(id=authorId)
+        post = Posts.objects.get(id=postId)
+
+        #find all followers, check if author follows them too, then add post to inbox
+        toCreate = []
+        numFriends = 0
+        for follower in Followers.objects.filter(followed=author):
+            followerAuthor = Authors.objects.get(id=follower.follower.id)
+            if Followers.objects.filter(followed=followerAuthor, follower=author).count() >= 1:
+                numFriends += 1
+                toCreate.append(Inbox(
+                    id=uuidGenerator(),
+                    author = followerAuthor,
+                    post = post
+                ))
+
+        Inbox.objects.bulk_create(toCreate)
+        string = f'Successfully sent post to your {numFriends} friends'
+        return Response({string}, status=status.HTTP_200_OK)
 
     #TESTED
     #
