@@ -10,7 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Inbox from '../inbox/Inbox'
-import { createPost } from "../../APIRequests.js";
+import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
 
 
 const formats = [
@@ -25,22 +25,22 @@ const formats = [
 ];
 const visibilities = [
   {
-    value: 'Public',
+    value: 'PUBLIC',
     label: 'Public',
   },
   {
-    value: 'Friends',
+    value: 'FRIENDS',
     label: 'Friends Only',
   },
   {
-    value: 'Unlisted',
+    value: 'UNLISTED',
     label: 'Unlisted',
   }
 ];
 export default function Home() {
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState("text");
-  const [visibility, setVisibility] = useState("Public");
+  const [visibility, setVisibility] = useState("PUBLIC");
   const [title, setTitle] = useState("");
   const [source, setSource] = useState("");
   const [origin, setOrigin] = useState("");
@@ -76,8 +76,10 @@ export default function Home() {
   };
 
   const handlePublish = () => {
+    setOpen(false);
     // Api calls here
     const authorId = 1;
+    console.log(visibility)
     const data = {
       type: "post",
       title: title,
@@ -87,8 +89,15 @@ export default function Home() {
       contentType: format,
       content: content,
       visibility: visibility,
+      originalAuthor: authorId
     }
-    setOpen(false);
+    async function sendPostToInbox(){
+      const response = await createPost(authorId, data);
+      const postId = response.id
+      if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
+      if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
+    }
+    sendPostToInbox();
   }
 
   return (
@@ -153,16 +162,6 @@ export default function Home() {
                               label="Title"
                               fullWidth
                               onChange={handleTitleChange}
-                              variant="standard"
-                              />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="Source"
-                              fullWidth
                               variant="standard"
                               />
                           </Grid>

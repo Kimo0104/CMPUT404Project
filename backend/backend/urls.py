@@ -14,18 +14,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
+from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, ImagesAPIs
 
 urlpatterns = [
     #admin
     path('admin/', admin.site.urls),
 
     #posts
+    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost"})),
     path('authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
         "get": "getPost",
         "post": "updatePost",
-        "delete": "deletePost",
-        "put": "createPost"
+        "delete": "deletePost"
     })),
     path('authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 
@@ -50,13 +50,20 @@ urlpatterns = [
         "get": "getInbox",
         "delete": "deleteInbox"
     })),
+<<<<<<< HEAD
     path('inbox/public/<str:authorId>/<str:postId>/', InboxAPIs.as_view({"post": "sendPublicPost"})),
     path('inbox/friend/<str:authorId>/<str:postId>/', InboxAPIs.as_view({"post": "sendFriendPost"})),
+=======
+    path('inbox/public/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendPublicPost"})),
+    path('inbox/friend/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendFriendPost"})),
+>>>>>>> main
     path('authors/<str:authorId>/inbox/<str:postId>', InboxAPIs.as_view({"post": "sendPost"})),
 
     #followRequests
     path('authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
-    path('authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"delete": "removeRequest"})),
+    path('authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({
+        "delete": "removeRequest",
+        "get": "checkRequestedToFollow"})),
     # path('authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
 
     #follows
@@ -72,6 +79,9 @@ urlpatterns = [
     path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"})),
     path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"})),
     path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"})),
+
+    #images
+    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}))
 
 
 ]

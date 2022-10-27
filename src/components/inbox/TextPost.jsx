@@ -42,7 +42,7 @@ export default function BasicCard(props) {
             <Like authorId={props.authorId} postId={props.postId}/>
           </Grid>
           <Grid item xs align="center">
-            <Share />
+            <Share postId={props.postId}/>
           </Grid>
           <Grid item xs align="center">
             <IconButton aria-label="comments">
