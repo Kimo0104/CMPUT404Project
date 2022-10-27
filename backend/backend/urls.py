@@ -21,11 +21,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     #posts
+    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost"})),
     path('authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
         "get": "getPost",
         "post": "updatePost",
-        "delete": "deletePost",
-        "put": "createPost"
+        "delete": "deletePost"
     })),
     path('authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
 

@@ -73,15 +73,13 @@ class PostsAPIs(viewsets.ViewSet):
         Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC).delete()
         return Response({"Success"}, status=status.HTTP_200_OK)
 
-    #PUT authors/{AUTHOR_ID/posts/{POST_ID}
+    #PUT authors/{AUTHOR_ID/posts
     #create a post where its id is POST_ID
     @action(detail=True, methods=['put'],)
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        postId = kwargs["postId"]
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
         post = Posts.objects.create(
-            id = postId,
             type = body['type'],
             title = body['title'],
             source = body['source'],

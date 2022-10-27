@@ -76,6 +76,7 @@ export default function Home() {
   };
 
   const handlePublish = () => {
+    setOpen(false);
     // Api calls here
     const authorId = 1;
     const data = {
@@ -88,7 +89,7 @@ export default function Home() {
       content: content,
       visibility: visibility,
     }
-    setOpen(false);
+    createPost(authorId, data)
   }
 
   return (
