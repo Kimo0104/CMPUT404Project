@@ -30,8 +30,7 @@ class PostsSerializer(serializers.ModelSerializer):
             'author',
             'count',
             'published',
-            'visibility',
-            'unlisted'
+            'visibility'
         ]
 
 class FollowersSerializer(serializers.ModelSerializer):

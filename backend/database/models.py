@@ -15,13 +15,15 @@ class Posts(models.Model):
     MARKDOWN = 'text/markdown'
     PUBLIC = 'PUBLIC'
     FRIENDS = 'FRIENDS'
+    UNLISTED = 'UNLISTED'
     content_type_choices = [
         (PLAINTEXT, 'PLAINTEXT'),
         (MARKDOWN, 'COMMONMARK')
     ]
     visibility_choices = [
         (PUBLIC, 'PUBLIC'),
-        (FRIENDS, 'FRIENDS')
+        (FRIENDS, 'FRIENDS'),
+        (UNLISTED, 'UNLISTED')
     ]
     id = models.CharField(max_length = 255, primary_key = True)
     type = models.CharField(max_length = 255, default = "post")
@@ -36,13 +38,12 @@ class Posts(models.Model):
     count = models.IntegerField(default = 0)
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
-    unlisted = models.BooleanField(default = False)
 
 
 class Followers(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
     followed = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
-    follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name="followed")
+    follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "followed")
 
 
 class FollowRequests(models.Model):
