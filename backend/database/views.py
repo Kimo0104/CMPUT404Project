@@ -1,4 +1,5 @@
 import io
+from xmlrpc.client import Boolean
 from rest_framework.parsers import JSONParser
 from datetime import datetime
 from rest_framework.decorators import action
@@ -14,23 +15,16 @@ from django.core.paginator import Paginator
 from .models import Authors, Posts, Comments, Likes, LikesComments, Liked, Inbox, Followers, FollowRequests
 from .serializers import AuthorSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from database.serializers import UserSerializer
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import login, authenticate
 
-class UserCreate(APIView):
-    """ 
-    Creates the user. 
-    """
 
-    def post(self, request, format='json'):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            if user:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 import uuid
 def uuidGenerator():
@@ -49,6 +43,54 @@ class DjangoObj:
 
     def __lt__(self, other):
         return self.date < other.date
+
+    
+
+class UserAPIs(viewsets.ViewSet):
+    """ 
+    Creates the user. 
+    """
+    #POST users/
+    #adds a user to the default Django user table
+    @action(detail=True, methods=['POST'])
+    def createUser(self, request, format='json'):
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+
+        # serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     user = serializer.save()
+        #     serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     user = serializer.save()
+        #     if user:
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        User.objects.create_user(
+            username=body['username'], 
+            email=body['email'],
+            password=body['password']
+        )
+
+        return Response({"User created successfully!"}, status=status.HTTP_200_OK)
+
+    """ 
+    Login the user. 
+    """
+    @action(detail=True, methods=['PUT'])
+    def loginUser(self, request, format='json'):
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        username = body['username'] 
+        password = body['password']
+        # username = form.cleaned_data.get('username')
+        # password = form.cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            # login(request, user)
+            # return redirect("main:homepage")
+            return Response(True, status=status.HTTP_200_OK)
+        else:
+            return Response(False, status=status.HTTP_200_OK)
+        
 
 class PostsAPIs(viewsets.ViewSet):
 

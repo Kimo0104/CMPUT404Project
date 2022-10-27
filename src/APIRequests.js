@@ -25,3 +25,17 @@ export const createPost = async (authorId, postId, data) => {
     const response = await axios.put(`${path}`, null,  {params: data});
     return response.data.result;
 }
+
+export const createUser = async (data) => {
+    const path = SERVER_URL + `/users`
+    const response = await axios.post(`${path}`, data);
+    return response.data.result;
+}
+
+export const loginUser = async (data) => {
+    const path = SERVER_URL + `/users`
+    const response = await axios.put(`${path}`, data);
+    return response.data;
+}
+
+

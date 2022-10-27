@@ -15,11 +15,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
+from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, UserAPIs
 
 urlpatterns = [
-    path(r'^users/', include('database.urls')),
-    #admin
+    # authentication
+    path('users', UserAPIs.as_view({
+        "post": "createUser",
+        "put": "loginUser",
+    })),
+
     path('admin/', admin.site.urls),
 
     #posts

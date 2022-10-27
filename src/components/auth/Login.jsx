@@ -1,27 +1,39 @@
+import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import axios from 'axios';
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from '../../APIRequests';
 
 export default function Login() {
+    const navigate = useNavigate();
     const [name, setName] = useState(''); 
     const [pass, setPass] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(name);
-        axios({
-            method: 'post',
-            url: '/http://localhost:8000',
-            data: {
-              name: '',
-              pass: ''
+        console.log(name); 
+        console.log(pass);
+
+        let data = {
+            "username": name,
+            "password": pass
+        };
+
+        async function login() {
+            const isValid = await loginUser(data);
+            console.log(isValid);
+            if (isValid){
+                navigate('/home')
             }
-          });
+               
+        }
+        login()
+        
+        
     }
 
     return (
-        <div class="centered-form">
-            <div class="login-form-container" >
+        <div className="centered-form">
+            <div className="login-form-container" >
                 <h2>Login</h2>
                 <form className="login-form" onSubmit={handleSubmit}>
                     <label htmlFor="name">username</label>
