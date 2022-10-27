@@ -33,7 +33,8 @@ class Posts(models.Model):
     description = models.CharField(max_length = 255)
     contentType = models.CharField(max_length = 15, choices = content_type_choices, default = PLAINTEXT)
     content = models.TextField()
-    author = models.ForeignKey(Authors, on_delete= models.CASCADE)
+    originalAuthor = models.ForeignKey(Authors, on_delete = models.DO_NOTHING, related_name = "originalPoster")
+    author = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "poster")
     count = models.IntegerField(default = 0)
     published = models.DateTimeField(auto_now_add=True)
     visibility = models.CharField(max_length = 8, choices = visibility_choices, default = PUBLIC)
@@ -87,11 +88,6 @@ class LikesComments(models.Model):
     published = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     comment = models.ForeignKey(Comments, on_delete = models.CASCADE)
-
-class Liked(models.Model):
-    id = models.CharField(max_length=255, primary_key = True)
-    author = models.ForeignKey(Authors, on_delete = models.CASCADE)
-    like = models.ForeignKey(Likes, on_delete = models.CASCADE)
 
 class Inbox(models.Model):
     id = models.CharField(max_length=255, primary_key = True)

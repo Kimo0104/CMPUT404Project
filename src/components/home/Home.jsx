@@ -101,12 +101,16 @@ export default function Home() {
             <Grid item xs={2}>
             </Grid>
             <Grid item xs={8}>
-                <Inbox authorId={2}/>
+                <Inbox authorId={1}/>
             </Grid>
             <Grid item xs={2}>
-              <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
-                Publish Post
-              </Button>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+              </Grid>
+              <Grid item xs={12}>
+                <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
+                  Publish Post
+                </Button>
                 <Dialog open={open}>
                   <DialogTitle>Publish Post</DialogTitle>
                   <DialogContent>

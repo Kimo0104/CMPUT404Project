@@ -2,7 +2,9 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
+import Pagination from '@mui/material/Pagination';
 
+import InboxItem from './InboxItem'
 import TextPost from './TextPost'
 import { getInbox } from '../../APIRequests'
 
@@ -10,6 +12,16 @@ export default function BasicStack(props) {
   //props contains authorId
 
   var key = 1;
+
+  const size = 5;
+  const [numPages, setNumPages] = React.useState(0);
+  const [page, setPage] = React.useState(1);
+
+  const handleChange = (event, value) => {
+    setPage(value);
+    updateInbox(value, size);
+  };
+
   const [inbox, setInbox] = React.useState([]);
 
   const updateInbox = (page, size) => {
@@ -17,31 +29,29 @@ export default function BasicStack(props) {
     async function fetchInbox() {
       const output = await getInbox(props.authorId, page, size);
       console.log(output);
-      var inboxItems = [];
-      for (let i = 0; i < output.length; ++i) {
-        let inboxItem = output[i];
-        if (inboxItem.type === "post") {
-          inboxItems.push(inboxItem);
-        }
-      }
-      setInbox(inboxItems);
+      if (output == "{Nothing to show}") { return; }
+      setInbox(output.inbox);
+      setNumPages(Math.ceil(output.count/size));
     }
     fetchInbox();
   }
   
   React.useEffect(() => {
-    updateInbox(1, 10);
+    updateInbox(page, size);
     // disable this warning because updateInbox has to be used outside of the useEffect as well
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <Box sx={{ width: '100%', marginRight: 3, marginLeft: 3}}>
+    <Box sx={{ width: '100%', marginRight: 3, marginLeft: 3, marginTop: 3}} align="center">
+      <Stack alignItems="center">
+        <Pagination sx={{marginBottom:1, marginLeft: 'auto', marginRight: 'auto'}} count={numPages} onChange={handleChange}/>
+      </Stack>
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
           inbox.map((item) => (
-            <TextPost title={item.title} content={item.content} authorId={item.author} key={key++}/>
-          ))
+            <InboxItem authorId={props.authorId} item={item} key={key++}/>
+            ))
         }
       </Stack>
     </Box>
