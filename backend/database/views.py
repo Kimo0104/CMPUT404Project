@@ -504,7 +504,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
             requestFollowers.delete()
         except FollowRequests.DoesNotExist:
             requestFollowers = None
-        serializer = FollowersSerializer(requestFollowers)
+        serializer = FollowRequestsSerializer(requestFollowers)
         return Response(serializer.data)
 
     #GET authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}

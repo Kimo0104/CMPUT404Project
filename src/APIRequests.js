@@ -104,3 +104,9 @@ export const addFollower = async (authorId, foreignAuthorId) => {
     const response = await axios.put(`${path}`);
     return response.status
 }
+
+export const removeFollowRequest = async (authorId, foreignAuthorId) => {
+    const path = SERVER_URL + `/authors/${authorId}/followRequest/${foreignAuthorId}`
+    const response = await axios.delete(`${path}`);
+    return response.status
+}

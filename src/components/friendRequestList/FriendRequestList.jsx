@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { ListItem, ListItemText, List, Button } from '@mui/material';
-import { getFollowRequests, addFollower } from '../../APIRequests'
+import { ListItem, ListItemText, List, Button} from '@mui/material';
+import { getFollowRequests, addFollower, removeFollowRequest } from '../../APIRequests'
 
 
 export default function FriendRequestList(props) {
@@ -9,12 +9,15 @@ export default function FriendRequestList(props) {
   const handleAccept = async (foreignAuthorId) => {
     const addFollowerResponse = await addFollower(props.authorId, foreignAuthorId);
     if (addFollowerResponse === 200) {
-        console.log("Success!")
+        console.log("Follow request has been approved")
     }
   };
 
   const handleDeny = async (foreignAuthorId) => {
-    // TODO
+    const removeFollowRequestResponse = await removeFollowRequest(props.authorId, foreignAuthorId);
+    if (removeFollowRequestResponse === 200) {
+      console.log("Follow request has been denied")
+    }
   };
 
   React.useEffect(() => {
@@ -30,8 +33,8 @@ export default function FriendRequestList(props) {
           {friendRequests.map((listitem, index) => (
             <ListItem key={index}>
               <ListItemText>{listitem.requester}</ListItemText>
-              <Button color="success" variant="contained" onClick={() => handleAccept(listitem.requester)}>Accept</Button>
-              <Button color="error" variant="contained" onClick={() => handleDeny(listitem.requester)}>Deny</Button>
+                <Button sx={{ m: 1 }} color="success" variant="contained" onClick={() => handleAccept(listitem.requester)}>Accept</Button>
+                <Button sx={{ m: 1 }} color="error" variant="contained" onClick={() => handleDeny(listitem.requester)}>Deny</Button>
             </ListItem>
           ))}
         </List>
