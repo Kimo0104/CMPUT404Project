@@ -53,7 +53,7 @@ export const getAuthor = async(authorId) => {
 export const createPost = async (authorId, data) => {
     const path = SERVER_URL + `/authors/${authorId}/posts`
     const response = await axios.put(`${path}`,data);
-    return response.data.result;
+    return response.data;
 }
 
 export const searchForAuthors = async (query, page, size) => {
