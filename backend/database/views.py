@@ -714,7 +714,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             authorByDisplayName = Authors.objects.filter(displayName=displayName)
             if authorByDisplayName.count() == 1:
                 return Response("Display name already exists!", status=status.HTTP_409_CONFLICT)
-            authorById = Authors.objects.filter(displayName=authorId)
+            authorById = Authors.objects.filter(authorId=authorId)
             if authorById.count() == 1:
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
