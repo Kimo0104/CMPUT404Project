@@ -15,7 +15,6 @@ export default function FormDialog(props) {
   React.useEffect(() => {
     async function loadInfo() {
       const liked = await getAuthorPostLike(props.authorId, props.postId);
-      console.log(liked);
       setLiked(liked);
     }
     loadInfo();

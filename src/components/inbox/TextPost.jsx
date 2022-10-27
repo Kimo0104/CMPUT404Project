@@ -24,7 +24,7 @@ export default function BasicCard(props) {
   }, [props]);
 
   return (
-    <Card sx={{ minWidth: 275 }}>
+    <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#F9F0C1"}}>
       <Typography sx={{ fontSize: 16, marginLeft: 1}} color="text.secondary" align='left'>
         From: {postAuthor.displayName}
       </Typography>
