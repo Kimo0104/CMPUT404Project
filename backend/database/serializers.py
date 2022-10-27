@@ -1,5 +1,5 @@
 from rest_framework import serializers  
-from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Liked, Inbox
+from .models import Authors, Images, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Liked, Inbox
 class AuthorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Authors
@@ -120,4 +120,12 @@ class AuthorSerializer(serializers.ModelSerializer):
             'github',
             'accepted',
             'profileImage'
+        ]
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = [
+            'authorId',
+            'image'
         ]

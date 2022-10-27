@@ -14,7 +14,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs
+from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, ImagesAPIs
 
 urlpatterns = [
     #admin
@@ -68,6 +68,9 @@ urlpatterns = [
     path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"})),
     path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"})),
     path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"})),
+
+    #images
+    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}))
 
 
 ]

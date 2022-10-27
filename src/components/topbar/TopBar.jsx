@@ -8,9 +8,42 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
-const Search = styled('div')(({ theme }) => ({
+const SearchInput = () => {
+
+  const [searchValue, setSearchValue] = React.useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setSearchValue(e.target.value);
+  }
+
+  const handleSubmit = (e) => {
+    // Enter is pressed
+    e.preventDefault();
+    console.log(searchValue);
+
+    navigate(`/search?query=${searchValue}`);
+    navigate(0);
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <StyledInputBase 
+        onChange={handleChange}
+        placeholder="Search Users"
+        inputProps={{ 'aria-label': 'search' }}
+      />
+    </form>
+  );
+
+}
+
+const Search = styled("div")(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
   backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -50,6 +83,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
       },
     },
   },
+  
 }));
 
 export default function SearchAppBar() {
@@ -79,10 +113,7 @@ export default function SearchAppBar() {
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search Users"
-              inputProps={{ 'aria-label': 'search' }}
-            />
+            <SearchInput/>
           </Search>
         </Toolbar>
       </AppBar>
