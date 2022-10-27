@@ -43,7 +43,7 @@ class Posts(models.Model):
 class Followers(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
     followed = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
-    follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name="followed")
+    follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "followed")
 
 
 class FollowRequests(models.Model):

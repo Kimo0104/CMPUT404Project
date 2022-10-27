@@ -89,6 +89,7 @@ export default function Home() {
       contentType: format,
       content: content,
       visibility: visibility,
+      originalAuthor: authorId
     }
     createPost(authorId, data)
   }
@@ -112,105 +113,107 @@ export default function Home() {
                   Publish Post
                 </Button>
                 <Dialog open={open}>
-                  <DialogTitle>Publish Post</DialogTitle>
-                  <DialogContent>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                          id="outlined-select-format"
-                          select
-                          label="Select"
-                          value={format}
-                          onChange={handleFormatChange}
-                          helperText="Please select your text format">
-                          {formats.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                          id="outlined-select-visibility"
-                          select
-                          label="Select"
-                          value={visibility}
-                          onChange={handleVisibilityChange}
-                          helperText="Please select your post visibility">
-                          {visibilities.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          autoFocus
-                          margin="dense"
-                          id="name"
-                          label="Title"
-                          fullWidth
-                          onChange={handleTitleChange}
-                          variant="standard"
-                          />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          autoFocus
-                          margin="dense"
-                          id="name"
-                          label="Source"
-                          onChange={handleSourceChange}
-                          fullWidth
-                          variant="standard"
-                          />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          autoFocus
-                          margin="dense"
-                          id="name"
-                          label="Origin"
-                          onChange={handleOriginChange}
-                          fullWidth
-                          variant="standard"
-                          />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          autoFocus
-                          margin="dense"
-                          id="name"
-                          label="Description"
-                          onChange={handleDescriptionChange}
-                          fullWidth
-                          variant="standard"
-                          />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          autoFocus
-                          margin="dense"
-                          id="name"
-                          label="Content"
-                          fullWidth
-                          onChange={handleContentChange}
-                          variant="standard"
-                          multiline
-                          rows={5}
-                          />
-                      </Grid>
-                    </Grid>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleCancel}>Cancel</Button>
-                    <Button onClick={handlePublish}>Publish</Button>
-                  </DialogActions>
-                </Dialog>
+                      <DialogTitle>Publish Post</DialogTitle>
+                      <DialogContent>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField
+                              id="outlined-select-format"
+                              select
+                              label="Select"
+                              value={format}
+                              onChange={handleFormatChange}
+                              helperText="Please select your text format">
+                              {formats.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField
+                              id="outlined-select-visibility"
+                              select
+                              label="Select"
+                              value={visibility}
+                              onChange={handleVisibilityChange}
+                              helperText="Please select your post visibility">
+                              {visibilities.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="Title"
+                              fullWidth
+                              onChange={handleTitleChange}
+                              variant="standard"
+                              />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="Source"
+                              onChange={handleSourceChange}
+                              fullWidth
+                              variant="standard"
+                              />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="Origin"
+                              onChange={handleOriginChange}
+                              fullWidth
+                              variant="standard"
+                              />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="Description"
+                              onChange={handleDescriptionChange}
+                              fullWidth
+                              variant="standard"
+                              />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              id="name"
+                              label="Content"
+                              fullWidth
+                              onChange={handleContentChange}
+                              variant="standard"
+                              multiline
+                              rows={5}
+                              />
+                          </Grid>
+                        </Grid>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleCancel}>Cancel</Button>
+                        <Button onClick={handlePublish}>Publish</Button>
+                      </DialogActions>
+                    </Dialog>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </div>
