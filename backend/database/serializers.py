@@ -1,8 +1,9 @@
 from rest_framework import serializers  
-from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Liked, Inbox
 
-from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
+from .models import Authors, Images, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox
+from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox
+
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -37,11 +38,11 @@ class PostsSerializer(serializers.ModelSerializer):
             'description',
             'contentType',
             'content',
+            'originalAuthor',
             'author',
             'count',
             'published',
-            'visibility',
-            'unlisted'
+            'visibility'
         ]
 
 class FollowersSerializer(serializers.ModelSerializer):
@@ -101,15 +102,6 @@ class LikesCommentsSerializer(serializers.ModelSerializer):
             'comment'
         ]
 
-class LikedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Liked
-        fields = [
-            'id',
-            'author',
-            'like'
-        ]
-
 class InboxSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inbox
@@ -131,4 +123,12 @@ class AuthorSerializer(serializers.ModelSerializer):
             'github',
             'accepted',
             'profileImage'
+        ]
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = [
+            'authorId',
+            'image'
         ]
