@@ -4,7 +4,7 @@ import { getAuthor } from '../../APIRequests'
 import { borderLeft } from '@mui/system';
 import { Button, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-
+import FriendRequestList from "../friendRequestList/FriendRequestList"
 
 export default function Profile(props)  {
 
@@ -25,8 +25,10 @@ export default function Profile(props)  {
     }, {});
 
     let button = "";
+    let requestList = "";
     if (userId === authorId) {
         button = <Button variant="contained" href={`/profile/${userId}/manage`} userId={userId}>Manage Profile</Button>;
+        requestList = <FriendRequestList authorId={userId} />
     }
    
     return (
@@ -36,6 +38,7 @@ export default function Profile(props)  {
             <img alt="Profile" src={author.profileImage} style={{width:"40%"}}/>
             <Typography>Github URL: {author.github}</Typography>
             {button}
+            {requestList}
         </div>
     );
 }
