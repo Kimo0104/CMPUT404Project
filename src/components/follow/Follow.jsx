@@ -30,9 +30,9 @@ export default function Follow(props) {
         loadAuthor();
       });
 
-      const requestToFollowButton = <Button size="large" onClick={handleRequestToFollow}>Request to follow</Button> 
-      const followRequestHasBeenSentButton = <Button size="large">Follow Request has been sent</Button> 
-      const unfollowButton = <Button size="large" onClick={unfollow}>Unfollow</Button> 
+      const requestToFollowButton = <Button sx={{ mt: 3 }} variant="contained" size="large" onClick={handleRequestToFollow}>Request to follow</Button> 
+      const followRequestHasBeenSentButton = <Button sx={{ mt: 3 }} variant="contained" size="large">Follow Request has been sent</Button> 
+      const unfollowButton = <Button sx={{ mt: 3 }} variant="contained" size="large" onClick={unfollow}>Unfollow</Button> 
       
     return (
         <div>

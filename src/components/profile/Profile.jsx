@@ -5,6 +5,7 @@ import { borderLeft } from '@mui/system';
 import { Button, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import FriendRequestList from "../friendRequestList/FriendRequestList"
+import Follow from "../follow/Follow"
 
 export default function Profile(props)  {
 
@@ -26,9 +27,12 @@ export default function Profile(props)  {
 
     let button = "";
     let requestList = "";
+    let followButton = "";
     if (userId === authorId) {
         button = <Button variant="contained" href={`/profile/${userId}/manage`} userId={userId}>Manage Profile</Button>;
         requestList = <FriendRequestList authorId={userId} />
+    } else {
+        followButton = <Follow authorId={userId} foreignAuthorId={authorId} />
     }
    
     return (
@@ -39,6 +43,7 @@ export default function Profile(props)  {
             <Typography>Github URL: {author.github}</Typography>
             {button}
             {requestList}
+            {followButton}
         </div>
     );
 }
