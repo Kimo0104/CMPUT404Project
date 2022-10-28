@@ -1,6 +1,16 @@
 from rest_framework import serializers  
+
+from django.contrib.auth.models import User
 from .models import Authors, Images, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox
 from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password')
+
 class AuthorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Authors
@@ -12,7 +22,8 @@ class AuthorsSerializer(serializers.ModelSerializer):
             'url',
             'github',
             'accepted',
-            'profileImage'
+            'profileImage',
+            'password'
         ]
 
 class PostsSerializer(serializers.ModelSerializer):

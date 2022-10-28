@@ -135,3 +135,17 @@ export const removeFollowRequest = async (authorId, foreignAuthorId) => {
     const response = await axios.delete(`${path}`);
     return response.status
 }
+
+export const createUser = async (data) => {
+    const path = SERVER_URL + `/users`
+    const response = await axios.post(`${path}`, data);
+    return response.data.result;
+}
+
+export const loginUser = async (data) => {
+    const path = SERVER_URL + `/users`
+    const response = await axios.put(`${path}`, data);
+    return response.data;
+}
+
+
