@@ -8,9 +8,12 @@ export default function InboxItem(props) {
             <TextPost 
                 authorId={props.authorId} 
                 title={props.item.title} 
+                source={props.item.source}
+                origin={props.item.origin}
+                description={props.item.description}
+                format={props.item.format}
                 content={props.item.content} 
-                postAuthorId={props.item.author} 
-                postId={props.item.id}
+                originalAuthorId={props.item.author}
             />
         );
     } else if (props.item.type === "comment") {

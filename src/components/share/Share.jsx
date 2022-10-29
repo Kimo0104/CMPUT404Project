@@ -9,9 +9,10 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 
-import { sendPublicInbox } from '../../APIRequests'
+import { createPost, sendFriendInbox, sendPublicInbox } from '../../APIRequests'
 
 export default function FormDialog(props) {
+  // props contains authorId, title, source, origin, description, format, content, originalAuthorId
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -23,8 +24,28 @@ export default function FormDialog(props) {
   };
 
   const sharePost = () => {
+    if (!open) { return; }
+
     //creates post
-    //places post in necessary inbox
+    const data = {
+      type: "post",
+      title: props.title,
+      source: props.source,
+      origin: props.origin,
+      description: props.description,
+      contentType: props.format,
+      content: props.content,
+      visibility: "PUBLIC",
+      originalAuthor: props.originalAuthorId
+    }
+    async function sendPostToInbox(){
+      const response = await createPost(props.authorId, data);
+      const postId = response.id
+      //places post in necessary inbox
+      if (data.visibility === "PUBLIC") { sendPublicInbox(props.authorId, postId) }
+      if (data.visibility === "FRIENDS") { sendFriendInbox(props.authorId, postId) }
+    }
+    sendPostToInbox();
 
     setOpen(false);
   };
