@@ -1,5 +1,6 @@
 from email.mime import image
 import io
+from xmlrpc.client import Boolean
 from rest_framework.parsers import JSONParser
 import json
 from datetime import datetime
@@ -14,8 +15,14 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
+
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import User
+from django.contrib.auth import login, authenticate
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
 from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+
 import uuid
 import json
 import database
@@ -36,6 +43,54 @@ class DjangoObj:
 
     def __lt__(self, other):
         return self.date < other.date
+
+    
+
+class UserAPIs(viewsets.ViewSet):
+    """ 
+    Creates the user. 
+    """
+    #POST users/
+    #adds a user to the default Django user table
+    @action(detail=True, methods=['POST'])
+    def createUser(self, request, format='json'):
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+
+        # serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     user = serializer.save()
+        #     serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     user = serializer.save()
+        #     if user:
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        User.objects.create_user(
+            username=body['username'], 
+            email=body['email'],
+            password=body['password']
+        )
+
+        return Response({"User created successfully!"}, status=status.HTTP_200_OK)
+
+    """ 
+    Login the user. 
+    """
+    @action(detail=True, methods=['PUT'])
+    def loginUser(self, request, format='json'):
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        username = body['username'] 
+        password = body['password']
+        # username = form.cleaned_data.get('username')
+        # password = form.cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            # login(request, user)
+            # return redirect("main:homepage")
+            return Response(True, status=status.HTTP_200_OK)
+        else:
+            return Response(False, status=status.HTTP_200_OK)
+        
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -705,7 +760,6 @@ class AuthorsAPIs(viewsets.ViewSet):
         
         request_body = json.loads(request.body.decode('utf-8'))
 
-        
         host = request.build_absolute_uri().split('/authors/')[0]
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
           and "authorId" in request_body and request_body["authorId"].strip() != "":
@@ -714,7 +768,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             authorByDisplayName = Authors.objects.filter(displayName=displayName)
             if authorByDisplayName.count() == 1:
                 return Response("Display name already exists!", status=status.HTTP_409_CONFLICT)
-            authorById = Authors.objects.filter(displayName=authorId)
+            authorById = Authors.objects.filter(id=authorId)
             if authorById.count() == 1:
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
@@ -726,7 +780,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             profileImage = request.build_absolute_uri(self.generic_profile_image_path) 
         github = request_body["github"] if "github" in request_body and request_body["github"].strip() != "" else None
 
-        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
+        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage, password="test")
 
         author.save()
 
