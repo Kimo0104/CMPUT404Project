@@ -11,13 +11,13 @@ import Like from '../like/Like'
 import { getAuthor } from '../../APIRequests'
 
 export default function BasicCard(props) {
-  //props contains authorId, title, content, postAuthorId, postId
+  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
   //textPosts have a title, a description, a share button, a comments button, and a like button
   const [postAuthor, setPostAuthor] = React.useState({});
 
   React.useEffect(() => {
     async function loadInfo() {
-      const postAuthor = await getAuthor(props.postAuthorId);
+      const postAuthor = await getAuthor(props.originalAuthor);
       setPostAuthor(postAuthor);
     }
     loadInfo();
@@ -42,7 +42,17 @@ export default function BasicCard(props) {
             <Like authorId={props.authorId} postId={props.postId}/>
           </Grid>
           <Grid item xs align="center">
-            <Share postId={props.postId}/>
+            <Share 
+              authorId={props.authorId}
+              postId={props.postId}
+              title={props.title}
+              source={props.source}
+              origin={props.origin}
+              description={props.description}
+              contentType={props.contentType}
+              content={props.content}
+              originalAuthor={props.originalAuthor}
+            />
           </Grid>
           <Grid item xs align="center">
             <IconButton aria-label="comments">

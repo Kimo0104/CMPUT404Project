@@ -12,7 +12,7 @@ import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import { createPost, sendFriendInbox, sendPublicInbox } from '../../APIRequests'
 
 export default function FormDialog(props) {
-  // props contains authorId, title, source, origin, description, format, content, originalAuthorId
+  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -33,10 +33,10 @@ export default function FormDialog(props) {
       source: props.source,
       origin: props.origin,
       description: props.description,
-      contentType: props.format,
+      contentType: props.contentType,
       content: props.content,
       visibility: "PUBLIC",
-      originalAuthor: props.originalAuthorId
+      originalAuthor: props.originalAuthor
     }
     async function sendPostToInbox(){
       const response = await createPost(props.authorId, data);
