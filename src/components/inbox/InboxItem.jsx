@@ -8,8 +8,12 @@ export default function InboxItem(props) {
             <TextPost 
                 authorId={props.authorId} 
                 title={props.item.title} 
+                source={props.item.source}
+                origin={props.item.origin}
+                description={props.item.description}
+                contentType={props.item.contentType}
                 content={props.item.content} 
-                postAuthorId={props.item.author} 
+                originalAuthor={props.item.originalAuthor}
                 postId={props.item.id}
             />
         );

@@ -4,8 +4,8 @@ import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
 import Pagination from '@mui/material/Pagination';
 
-import InboxItem from './InboxItem'
-import { getInbox } from '../../APIRequests'
+import MyPost from './MyPost'
+import { getPublicPosts } from '../../APIRequests'
 
 export default function BasicStack(props) {
   //props contains authorId
@@ -18,25 +18,26 @@ export default function BasicStack(props) {
 
   const handleChange = (event, value) => {
     setPage(value);
-    updateInbox(value, size);
+    updateMyPosts(value, size);
   };
 
   const [inbox, setInbox] = React.useState([]);
 
-  const updateInbox = (page, size) => {
+  const updateMyPosts = (page, size) => {
     // State change will cause component re-render
-    async function fetchInbox() {
-      const output = await getInbox(props.authorId, page, size);
-      if (output == "{Nothing to show}") { return; }
-      setInbox(output.inbox);
+    async function fetchPublicPosts() {
+      const output = await getPublicPosts(props.authorId, page, size);
+      console.log(output);
+      if (output.posts.length == 0) { return; }
+      setInbox(output.posts);
       setNumPages(Math.ceil(output.count/size));
     }
-    fetchInbox();
+    fetchPublicPosts();
   }
   
   React.useEffect(() => {
-    updateInbox(page, size);
-    // disable this warning because updateInbox has to be used outside of the useEffect as well
+    updateMyPosts(page, size);
+    // disable this warning because updateMyPosts has to be used outside of the useEffect as well
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -48,7 +49,7 @@ export default function BasicStack(props) {
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
           inbox.map((item) => (
-            <InboxItem authorId={props.authorId} item={item} key={key++}/>
+            <MyPost title={item.title} content={item.content} key={key++}/>
             ))
         }
       </Stack>
