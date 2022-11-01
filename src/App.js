@@ -10,7 +10,7 @@ import SearchPage from './components/search/SearchPage';
 import Follow from './components/follow/Follow.jsx'
 import FriendRequestList from './components/friendRequestList/FriendRequestList.jsx'
 
-export const userIdContext = React.createContext();
+export const userIdContext = React.createContext("1");
 
 function App() {
 
