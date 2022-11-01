@@ -2,15 +2,18 @@ import * as React from 'react';
 import { ListItem, ListItemText, List, Button, Typography} from '@mui/material';
 import { getFollowRequests, addFollower, removeFollowRequest, getAuthor } from '../../APIRequests'
 import { useNavigate } from 'react-router-dom';
+import { userIdContext } from '../../App';
 
 
 export default function FriendRequestList(props) {
+  const userId = React.useContext(userIdContext);
+
   const [friendRequests, setFriendRequests] = React.useState([]);
 
   const navigate = useNavigate();
 
   const handleAccept = async (foreignAuthorId) => {
-    const addFollowerResponse = await addFollower(props.authorId, foreignAuthorId);
+    const addFollowerResponse = await addFollower(userId, foreignAuthorId);
     if (addFollowerResponse === 200) {
         console.log("Follow request has been approved")
     }
@@ -18,7 +21,7 @@ export default function FriendRequestList(props) {
   };
 
   const handleDeny = async (foreignAuthorId) => {
-    const removeFollowRequestResponse = await removeFollowRequest(props.authorId, foreignAuthorId);
+    const removeFollowRequestResponse = await removeFollowRequest(userId, foreignAuthorId);
     if (removeFollowRequestResponse === 200) {
       console.log("Follow request has been denied")
     }
@@ -26,7 +29,7 @@ export default function FriendRequestList(props) {
   };
 
   const loadFriendRequests = async () => {
-    const friendRequests = await getFollowRequests(props.authorId);
+    const friendRequests = await getFollowRequests(userId);
     
     for (let listitem of friendRequests) {
       const author = await getAuthor(listitem.requester)

@@ -2,13 +2,16 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 
 import { checkFollowStatus, requestToFollow, removeFollower } from '../../APIRequests'
+import { userIdContext } from '../../App';
 
 export default function Follow(props) {
+    const userId = React.useContext(userIdContext);
+
     const [following, setFollowing] = React.useState(-1);
     
     const handleRequestToFollow = async () => {
         // Request to follow another user
-        const reqToFollow = await requestToFollow(props.authorId, props.foreignAuthorId);
+        const reqToFollow = await requestToFollow(userId, props.foreignAuthorId);
         if (reqToFollow === 200) {
             setFollowing(1)
         }
@@ -16,7 +19,7 @@ export default function Follow(props) {
     
     const unfollow = async () => {
         // Unfollow another user
-        const reqToUnfollow = await removeFollower(props.authorId, props.foreignAuthorId);
+        const reqToUnfollow = await removeFollower(userId, props.foreignAuthorId);
         if (reqToUnfollow === 200) {
             setFollowing(0)
         }
@@ -24,7 +27,7 @@ export default function Follow(props) {
     
     React.useEffect(() => {
         async function loadAuthor() {
-            const following = await checkFollowStatus(props.authorId, props.foreignAuthorId);
+            const following = await checkFollowStatus(userId, props.foreignAuthorId);
             setFollowing(following)
         }
         loadAuthor();

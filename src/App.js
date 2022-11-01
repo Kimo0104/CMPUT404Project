@@ -32,8 +32,8 @@ function App() {
                 <Route path={"profile/:exact"} element={<Profile userId={userId}/>}/>
                 <Route path="search" element={<SearchPage userId={userId}/>}/>
                 <Route path={`profile/${userId}/manage`} element={<ManageProfile userId={userId}/>}/>
-                <Route path="follow" element={<Follow authorId="1" foreignAuthorId="test_author" />}/>
-                <Route path="friendRequestList" element={<FriendRequestList authorId="2" />}/>
+                <Route path="follow" element={<Follow authorId={userId} foreignAuthorId="2" />}/>
+                <Route path="friendRequestList" element={<FriendRequestList authorId={userId} />}/>
               </Routes>
           </div>
         </div>
