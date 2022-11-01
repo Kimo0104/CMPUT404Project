@@ -1,19 +1,20 @@
 import * as React from 'react';
-import TopBar from '../topbar/TopBar.jsx'
-import { getAuthor } from '../../APIRequests'
+import TopBar from '../topbar/TopBar.jsx';
+import { getAuthor } from '../../APIRequests';
 import { borderLeft } from '@mui/system';
 import { Button, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-import FriendRequestList from "../friendRequestList/FriendRequestList"
-import Follow from "../follow/Follow"
+import FriendRequestList from "../friendRequestList/FriendRequestList";
+import Follow from "../follow/Follow";
+import { userIdContext } from '../../App';
 
 export default function Profile(props)  {
 
     const location = useLocation();
-
-    let userId = props.userId !== null ? props.userId : location.userId ;
     
-    let authorId = window.location.pathname.split("/").at(-1)
+    const userId = React.useContext(userIdContext);
+
+    let authorId = location.pathname.split("/").at(-1);
     const [author, setAuthor] = React.useState({});
 
     const fetchAuthor = async () => {

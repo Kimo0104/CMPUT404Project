@@ -58,7 +58,7 @@ export default function SearchPage() {
     }, []);
 
     let pagination = "";
-    if (numPages != 0) {
+    if (numPages != 0 && authors.length > 0) {
         pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} page={page} 
                                  style={{justifyContent: "center", display: "flex"}}/>;
     }

@@ -10,31 +10,35 @@ import SearchPage from './components/search/SearchPage';
 import Follow from './components/follow/Follow.jsx'
 import FriendRequestList from './components/friendRequestList/FriendRequestList.jsx'
 
+export const userIdContext = React.createContext();
+
 function App() {
 
-  const userId = "test_author";
+  const userId = React.useContext(userIdContext);
   
   return (
-    <BrowserRouter>
-      <div className="App">
-        <div className = "content">
-            {/* {
-              currentForm === "login" ? <Login onFormSwitch={toggleForm} /> : <Register onFormSwitch={toggleForm} />
-            } */}
-            <Routes>
-              <Route path="/" element={<Login/>} exact/>
-              <Route path="/register" element={<Register/>}/>
-              <Route path="home" element={<Home/>}/>
-              <Route path="profile" element={<Navigate to={`/profile/${userId}`}/>}/>
-              <Route path={"profile/:exact"} element={<Profile userId={userId}/>}/>
-              <Route path="search" element={<SearchPage userId={userId}/>}/>
-              <Route path={`profile/${userId}/manage`} element={<ManageProfile userId={userId}/>}/>
-              <Route path="follow" element={<Follow authorId="1" foreignAuthorId="test_author" />}/>
-              <Route path="friendRequestList" element={<FriendRequestList authorId="2" />}/>
-            </Routes>
+    <userIdContext.Provider value="1">
+      <BrowserRouter>
+        <div className="App">
+          <div className = "content">
+              {/* {
+                currentForm === "login" ? <Login onFormSwitch={toggleForm} /> : <Register onFormSwitch={toggleForm} />
+              } */}
+              <Routes>
+                <Route path="/" element={<Login/>} exact/>
+                <Route path="/register" element={<Register/>}/>
+                <Route path="home" element={<Home/>}/>
+                <Route path="profile" element={<Navigate to={`/profile/${userId}`}/>}/>
+                <Route path={"profile/:exact"} element={<Profile userId={userId}/>}/>
+                <Route path="search" element={<SearchPage userId={userId}/>}/>
+                <Route path={`profile/${userId}/manage`} element={<ManageProfile userId={userId}/>}/>
+                <Route path="follow" element={<Follow authorId="1" foreignAuthorId="test_author" />}/>
+                <Route path="friendRequestList" element={<FriendRequestList authorId="2" />}/>
+              </Routes>
+          </div>
         </div>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </userIdContext.Provider>
   );
 }
 
