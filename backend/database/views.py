@@ -711,7 +711,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         page_num = request.GET.get('page', 1)
         page_size = request.GET.get('size', 10)
 
-        authors = Authors.objects.filter(displayName__contains=search_query)
+        authors = Authors.objects.filter(displayName__icontains=search_query)
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
         serializer = AuthorSerializer(page_obj, many=True)
@@ -809,7 +809,6 @@ class AuthorsAPIs(viewsets.ViewSet):
         author.save()
 
         return Response("Created Author successfully", status=status.HTTP_201_CREATED)
-
 
 
 # Made by following this tutorial: https://medium.com/@cole_ruche/uploading-images-to-rest-api-backend-in-react-js-b931376b5833
