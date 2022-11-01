@@ -33,7 +33,7 @@ function App() {
                 <Route path="search" element={<SearchPage userId={userId}/>}/>
                 <Route path={`profile/${userId}/manage`} element={<ManageProfile userId={userId}/>}/>
                 <Route path="follow" element={<Follow authorId={userId} foreignAuthorId="2" />}/>
-                <Route path="friendRequestList" element={<FriendRequestList authorId="20" />}/>
+                <Route path="friendRequestList" element={<FriendRequestList authorId={userId} />}/>
               </Routes>
           </div>
         </div>
