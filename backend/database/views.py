@@ -56,14 +56,6 @@ class UserAPIs(viewsets.ViewSet):
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
-        # serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     if user:
-        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         User.objects.create_user(
             username=body['username'], 
