@@ -154,4 +154,13 @@ export const loginUser = async (data) => {
     return response.data;
 }
 
+export const deletePost = async(authorId, postId) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
+    const response = await axios.delete(path);
+    return response.data;
+};
 
+export const modifyPost = async (authorId, postId, data) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
+    axios.post(path, data);
+}
