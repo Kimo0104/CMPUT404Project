@@ -27,7 +27,6 @@ export default function BasicStack(props) {
     // State change will cause component re-render
     async function fetchPublicPosts() {
       const output = await getPublicPosts(props.authorId, page, size);
-      console.log(output);
       if (output.posts.length == 0) { return; }
       setInbox(output.posts);
       setNumPages(Math.ceil(output.count/size));
@@ -49,7 +48,7 @@ export default function BasicStack(props) {
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
           inbox.map((item) => (
-            <MyPost title={item.title} content={item.content} key={key++}/>
+            <MyPost item={item} key={key++}/>
             ))
         }
       </Stack>
