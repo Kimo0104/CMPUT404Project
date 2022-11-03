@@ -9,20 +9,23 @@ class AccountsTest(TestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
         self.test_user = User.objects.create_user(
-            username='testuser', 
-            email='testuser@gmail.com',
-            password='12345'
+            username="testuser", 
+            email="testuser@gmail.com",
+            password="12345"
         )
 
+    def test_user_exists(self):
+        self.assertEqual(self.test_user.username,"testuser")
+        self.assertEqual(self.test_user.email,"testuser@gmail.com")
+    
     def test_create_user_with_preexisting_email(self):
         data = {
-            'username': 'testuser2',
-            'email': 'test@example.com',
-            'password': 'testuser'
+            "username": "testuser2",
+            "email": "testuser2@example.com",
+            "password": "testuser2"
         }
-
-        response = self.client.post("http://localhost:8000", data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        response = self.client.post("http://localhost:8000/users", data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(User.objects.count(), 1)
 
     def test_create_user_with_invalid_email(self):
@@ -31,8 +34,8 @@ class AccountsTest(TestCase):
             'email':  'testing',
             'passsword': 'foobarbaz'
         }
-        response = self.client.post("http://localhost:8000", data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        response = self.client.post("http://localhost:8000/users", data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
 
 
