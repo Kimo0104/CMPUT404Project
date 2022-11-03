@@ -140,28 +140,3 @@ class PostsTests(TestCase):
                 originalAuthor = self.test_author,
                 author = self.test_author
             )
-    '''
-    Ensures that deleting the original author does not remove a post.
-    '''
-    def testDeletingOriginalAuthor(self):
-        second_author = Authors.objects.create(
-            id = 2,
-            host = "test-host",
-            displayName = "testAuthor2", 
-            url = "test-url",
-            github = "github.com",
-            profileImage = "image"
-        )
-        Posts.objects.create(
-                id = 4,
-                title = "This is a test",
-                source = "test source",
-                origin = "test origin",
-                description = "test description",
-                content = "test content",
-                originalAuthor = self.test_author,
-                author = second_author
-        )
-        assert(len(Posts.objects.filter(id=4)) > 0)
-        second_author.delete()
-        assert(len(Posts.objects.filter(id=4)) == 0)
