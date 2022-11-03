@@ -246,28 +246,28 @@ class FollowsTests(TestCase):
     Ensures that the default values are populated as expected
     '''
     def testDefaultRelationship(self):
-        author = Followers.objects.filter(follower = 1)
-        assert(len(author) == 1)
-        foreignAuthor = Followers.objects.filter(followed = 2)
-        assert(len(foreignAuthor) == 1)
+        authorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(authorRelationship) == 1)
+        foreignAuthorRelationship = Followers.objects.filter(followed = 2)
+        assert(len(foreignAuthorRelationship) == 1)
     '''
     Ensures that when an author is deleted, their follow relationship would no longer exist
     '''
     def testAuthorRemoval(self):
-        author = Followers.objects.filter(follower = 1)
-        assert(len(author) == 1)
+        authorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(authorRelationship) == 1)
         self.test_author.delete()
-        author = Followers.objects.filter(follower = 1)
-        assert(len(author) == 0)
+        authorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(authorRelationship) == 0)
     '''
     Ensures that when a foreign author is deleted, their follow relationship would no longer exist
     '''
     def testAuthorRemoval(self):
-        foreignAuthor = Followers.objects.filter(follower = 1)
-        assert(len(foreignAuthor) == 1)
+        foreignAuthorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(foreignAuthorRelationship) == 1)
         self.test_foreign_author.delete()
-        foreignAuthor = Followers.objects.filter(follower = 1)
-        assert(len(foreignAuthor) == 0)
+        foreignAuthorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(foreignAuthorRelationship) == 0)
     '''
     Ensures that when a follow relationship is created with an author/foreign author that doesnt exist,
     an exception is raised.
