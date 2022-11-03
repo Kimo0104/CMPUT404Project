@@ -10,6 +10,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Inbox from '../inbox/Inbox'
+import MyPosts from '../myPosts/MyPosts'
+import HomeTab from '../homeTab/HomeTab'
 import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
 
 
@@ -108,7 +110,7 @@ export default function Home() {
             <Grid item xs={2}>
             </Grid>
             <Grid item xs={8}>
-                <Inbox authorId={1}/>
+                <HomeTab authorId={1}/>
             </Grid>
             <Grid item xs={2}>
             <Grid container spacing={2}>

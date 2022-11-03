@@ -56,6 +56,14 @@ class UserAPIs(viewsets.ViewSet):
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
+        # serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     user = serializer.save()
+        #     serializer = UserSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     user = serializer.save()
+        #     if user:
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         User.objects.create_user(
             username=body['username'], 
@@ -98,6 +106,30 @@ class PostsAPIs(viewsets.ViewSet):
             post = None
         serializer = PostsSerializer(post)
         return Response(serializer.data, status = status.HTTP_200_OK)
+
+    #GET authors/{AUTHOR_ID}/posts
+    #get the public posts of this author
+    @action(detail=True, methods=['get'])
+    def getPublicPosts(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        try:
+            page = int(request.GET.get('page',1))
+            size = int(request.GET.get('size',10))
+        except:
+            return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if Authors.objects.filter(id=authorId).count() == 0:
+            return Response({"Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        author = Authors.objects.get(id=authorId)
+        publicPosts = Posts.objects.filter(author=author, visibility="PUBLIC").order_by('-published')
+
+        outputDic = {}
+        outputDic["count"] = publicPosts.count()
+        serializer = PostsSerializer(publicPosts[(page-1)*size:page*size], many=True)
+        outputDic["posts"] = serializer.data
+        return Response(outputDic)
+
 
     #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
@@ -679,7 +711,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         page_num = request.GET.get('page', 1)
         page_size = request.GET.get('size', 10)
 
-        authors = Authors.objects.filter(displayName__contains=search_query)
+        authors = Authors.objects.filter(displayName__icontains=search_query)
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
         serializer = AuthorSerializer(page_obj, many=True)
@@ -777,7 +809,6 @@ class AuthorsAPIs(viewsets.ViewSet):
         author.save()
 
         return Response("Created Author successfully", status=status.HTTP_201_CREATED)
-
 
 
 # Made by following this tutorial: https://medium.com/@cole_ruche/uploading-images-to-rest-api-backend-in-react-js-b931376b5833

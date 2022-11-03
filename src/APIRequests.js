@@ -8,6 +8,12 @@ export const getPost  = async (authorId, postId) => {
     return response.data;
 };
 
+export const getPublicPosts = async (authorId, page, size) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts`;
+    const response = await axios.get(path, {params: {page: page, size: size}});
+    return response.data;
+}
+
 export const getInbox = async(authorId, page, size) => {
     const path = SERVER_URL + `/authors/${authorId}/inbox`;
     const response = await axios.get(path, {params: {page: page, size: size}});
@@ -148,4 +154,13 @@ export const loginUser = async (data) => {
     return response.data;
 }
 
+export const deletePost = async(authorId, postId) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
+    const response = await axios.delete(path);
+    return response.data;
+};
 
+export const modifyPost = async (authorId, postId, data) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
+    axios.post(path, data);
+}

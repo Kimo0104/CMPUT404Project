@@ -4,11 +4,12 @@ import { getAuthor, modifyAuthor } from '../../APIRequests'
 import { borderLeft } from '@mui/system';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { userIdContext } from '../../App.js';
 
 
 export default function Profile(props)  {
 
-    let userId = props.userId;
+    const userId = React.useContext(userIdContext);
     
     const [author, setAuthor] = React.useState({});
     const [githubValue, setGithubValue] = React.useState("");
