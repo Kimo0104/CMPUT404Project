@@ -181,5 +181,42 @@ class FollowRequestsTests(TestCase):
         self.test_author.delete()
         authorRequests = FollowRequests.objects.filter(requester = 1)
         assert(len(authorRequests) == 0)
+    '''
+    Ensures that when a foreign author is deleted, their follow requests would no longer exist
+    '''
+    def testAuthorRemoval(self):
+        authorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(authorRequests) == 1)
+        self.test_author.delete()
+        authorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(authorRequests) == 0)
+    '''
+    Ensures that when a follow request is created with an author/foreign author that doesnt exist,
+    an exception is raised.
+    '''
+    def testNonAuthoredFollowRequests(self):
+        with self.assertRaisesRegexp(ValueError, '"FollowRequests.requester" must be a "Authors" instance.'):
+            FollowRequests.objects.create(
+                id = 2,
+                requester = 999,
+                receiver = self.test_foreign_author
+            )
+        with self.assertRaisesRegexp(ValueError, '"FollowRequests.receiver" must be a "Authors" instance.'):
+            FollowRequests.objects.create(
+                id = 2,
+                requester = self.test_author,
+                receiver = 999
+            )
+    '''
+    Ensures that when a follow request is made with an ID that already exists,
+    an exception is raised.
+    '''
+    def testSamePostId(self):
+        with self.assertRaisesRegexp(IntegrityError, "duplicate key value violates unique constraint"):
+            FollowRequests.objects.create(
+                id = 1,
+                requester = self.test_author,
+                receiver = self.test_foreign_author
+            )
     
 
