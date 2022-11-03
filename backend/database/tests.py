@@ -184,12 +184,12 @@ class FollowRequestsTests(TestCase):
     '''
     Ensures that when a foreign author is deleted, their follow requests would no longer exist
     '''
-    def testAuthorRemoval(self):
-        authorRequests = FollowRequests.objects.filter(receiver = 2)
-        assert(len(authorRequests) == 1)
-        self.test_author.delete()
-        authorRequests = FollowRequests.objects.filter(receiver = 2)
-        assert(len(authorRequests) == 0)
+    def testForeignAuthorRemoval(self):
+        foreignAuthorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(foreignAuthorRequests) == 1)
+        self.test_foreign_author.delete()
+        foreignAuthorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(foreignAuthorRequests) == 0)
     '''
     Ensures that when a follow request is created with an author/foreign author that doesnt exist,
     an exception is raised.
@@ -217,6 +217,84 @@ class FollowRequestsTests(TestCase):
                 id = 1,
                 requester = self.test_author,
                 receiver = self.test_foreign_author
+            )
+
+class FollowsTests(TestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow = Followers.objects.create(
+            id = 1,
+            follower = self.test_author,
+            followed = self.test_foreign_author
+        )
+    '''
+    Ensures that the default values are populated as expected
+    '''
+    def testDefaultRelationship(self):
+        author = Followers.objects.filter(follower = 1)
+        assert(len(author) == 1)
+        foreignAuthor = Followers.objects.filter(followed = 2)
+        assert(len(foreignAuthor) == 1)
+    '''
+    Ensures that when an author is deleted, their follow relationship would no longer exist
+    '''
+    def testAuthorRemoval(self):
+        author = Followers.objects.filter(follower = 1)
+        assert(len(author) == 1)
+        self.test_author.delete()
+        author = Followers.objects.filter(follower = 1)
+        assert(len(author) == 0)
+    '''
+    Ensures that when a foreign author is deleted, their follow relationship would no longer exist
+    '''
+    def testAuthorRemoval(self):
+        foreignAuthor = Followers.objects.filter(follower = 1)
+        assert(len(foreignAuthor) == 1)
+        self.test_foreign_author.delete()
+        foreignAuthor = Followers.objects.filter(follower = 1)
+        assert(len(foreignAuthor) == 0)
+    '''
+    Ensures that when a follow relationship is created with an author/foreign author that doesnt exist,
+    an exception is raised.
+    '''
+    def testNonAuthoredFollowRequests(self):
+        with self.assertRaisesRegexp(ValueError, 'Followers.follower" must be a "Authors" instance.'):
+            Followers.objects.create(
+                id = 2,
+                follower = 999,
+                followed = self.test_foreign_author
+            )
+        with self.assertRaisesRegexp(ValueError, 'Followers.followed" must be a "Authors" instance.'):
+            Followers.objects.create(
+                id = 2,
+                follower = self.test_author,
+                followed = 999
+            )
+    '''
+    Ensures that when a follow relationship is made with an ID that already exists,
+    an exception is raised.
+    '''
+    def testSamePostId(self):
+        with self.assertRaisesRegexp(IntegrityError, "duplicate key value violates unique constraint"):
+            Followers.objects.create(
+                id = 1,
+                follower = self.test_author,
+                followed = self.test_foreign_author
             )
     
 
