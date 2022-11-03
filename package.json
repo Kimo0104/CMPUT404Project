@@ -28,7 +28,8 @@
     "reset-db": "psql -d postgres -U socialdistribution -c \"DROP DATABASE socialdistribution WITH (FORCE);\"",
     "run-server": "python backend/manage.py runserver",
     "make-migrations": "python backend/manage.py makemigrations",
-    "migrate": "python backend/manage.py migrate"
+    "migrate": "python backend/manage.py migrate",
+    "run-tests": "python backend/manage.py test backend"
   },
   "eslintConfig": {
     "extends": [
