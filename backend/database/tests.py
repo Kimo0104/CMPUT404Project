@@ -8,14 +8,12 @@ from rest_framework import status
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
-'''
+
 class AccountsTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
         self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
 
-        # URL for creating an account.
-        self.create_url = reverse('account-create')
 
     def test_create_user_with_preexisting_email(self):
         data = {
@@ -24,10 +22,9 @@ class AccountsTest(APITestCase):
             'password': 'testuser'
         }
 
-        response = self.client.post(self.create_url, data, format='json')
+        response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
 
     def test_create_user_with_invalid_email(self):
         data = {
@@ -36,11 +33,9 @@ class AccountsTest(APITestCase):
             'passsword': 'foobarbaz'
         }
 
-
-        response = self.client.post(self.create_url, data, format='json')
+        response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
 
     def test_create_user_with_no_email(self):
         data = {
@@ -49,12 +44,11 @@ class AccountsTest(APITestCase):
                 'password': 'foobarbaz'
         }
 
-        response = self.client.post(self.create_url, data, format='json')
+        response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
 
-'''
+
 class PostsTests(TestCase):
     def setUp(self):
         self.test_author = Authors.objects.create(
