@@ -52,7 +52,7 @@ class UserAPIs(viewsets.ViewSet):
     """
     #POST users/
     #adds a user to the default Django user table
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 

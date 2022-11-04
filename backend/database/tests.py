@@ -8,7 +8,7 @@ from rest_framework import status
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
-
+'''
 class AccountsTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
@@ -54,7 +54,7 @@ class AccountsTest(APITestCase):
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(len(response.data['email']), 1)
 
-
+'''
 class PostsTests(TestCase):
     def setUp(self):
         self.test_author = Authors.objects.create(
@@ -242,6 +242,54 @@ class CommentsTest(TestCase):
         self.test_post.save()
 
         assert(Comments.objects.all().count() == 0)
+
+class CommentsAPITest(APITestCase):
+    def setUp(self):
+        self.test_author1 = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor1",
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        ) 
+        self.test_author2 = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testAuthor2", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_post = Posts.objects.create(
+            id = 1,
+            title = "This is a test",
+            source = "test source",
+            origin = "test origin",
+            description = "test description",
+            content = "test content",
+            originalAuthor = self.test_author1,
+            author = self.test_author1
+        )
+        self.test_comment1 = Comments.objects.create(
+            id = 1,
+            author = self.test_author2,
+            post = self.test_post,
+            comment = "test comment"
+        )
+        self.test_comment2 = Comments.objects.create(
+            id = 2,
+            author = self.test_author2,
+            post = self.test_post,
+            comment = "test comment 2"
+        )
+
+    def testGetComment(self):
+        response = self.client.get(reverse('comments', args=[1,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        #self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        #self.assertEqual(User.objects.count(), 1)
+        #self.assertEqual(len(response.data['email']), 1)
 
 class LikesTest(TestCase):
     # mark initial counts of postLikes and commentLikes
