@@ -1,11 +1,13 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APITestCase
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
 
-class AccountsTest(TestCase):
+class AccountsTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
         self.test_user = User.objects.create_user(
@@ -24,7 +26,9 @@ class AccountsTest(TestCase):
             "email": "testuser2@gmail.com",
             "password": "testuser2"
         }
-        response = self.client.post('http://localhost:8000/users', data)
+
+        response = self.client.put(reverse('authors'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
 
     def test_create_user_with_invalid_email(self):
@@ -33,7 +37,19 @@ class AccountsTest(TestCase):
             'email':  'testing',
             'passsword': 'foobarbaz'
         }
-        response = self.client.post("http://localhost:8000/users", data)
+
+        response = self.client.put(reverse('authors'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_create_user_with_no_email(self):
+        data = {
+                'username' : 'foobar',
+                'email': '',
+                'password': 'foobarbaz'
+        }
+
+        response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
 
@@ -225,6 +241,54 @@ class CommentsTest(TestCase):
         self.test_post.save()
 
         assert(Comments.objects.all().count() == 0)
+
+class CommentsAPITest(APITestCase):
+    def setUp(self):
+        self.test_author1 = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor1",
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        ) 
+        self.test_author2 = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testAuthor2", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_post = Posts.objects.create(
+            id = 1,
+            title = "This is a test",
+            source = "test source",
+            origin = "test origin",
+            description = "test description",
+            content = "test content",
+            originalAuthor = self.test_author1,
+            author = self.test_author1
+        )
+        self.test_comment1 = Comments.objects.create(
+            id = 1,
+            author = self.test_author2,
+            post = self.test_post,
+            comment = "test comment"
+        )
+        self.test_comment2 = Comments.objects.create(
+            id = 2,
+            author = self.test_author2,
+            post = self.test_post,
+            comment = "test comment 2"
+        )
+
+    def testGetComment(self):
+        response = self.client.get(reverse('comments', args=[1,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        #self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        #self.assertEqual(User.objects.count(), 1)
+        #self.assertEqual(len(response.data['email']), 1)
 
 class LikesTest(TestCase):
     # mark initial counts of postLikes and commentLikes
