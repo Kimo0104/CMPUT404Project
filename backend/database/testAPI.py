@@ -214,3 +214,53 @@ class PostTest(APITestCase):
             originalAuthor = data["originalAuthor"],
             author = data["author"]
         )
+
+class FollowRequestsAPITest(APITestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow_request = FollowRequests.objects.create(
+            id = 1,
+            receiver = self.test_foreign_author,
+            requester = self.test_author
+        )
+    '''
+    Ensures that getFollowRequests successfully returns the right follow request
+    '''
+    def testGetFollowRequests(self):
+        response = self.client.get(reverse('get-follow-requests', args=[2]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(len(response.data) == 1)
+        assert(response.data[0]['id'] == "1")
+        assert(response.data[0]['requester'] == "1")
+        assert(response.data[0]['receiver'] == "2")
+    '''
+        Ensures that removeRequest successfully removes the follow request
+    '''
+    def testRemoveRequest(self):
+        response = self.client.delete(reverse('manage-follow-requests', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(response.data['requester'] == "1")
+        assert(response.data['receiver'] == "2")
+    '''
+        Ensures that checkRequestedToFollow successfully returns the object containing the follow request
+    '''
+    def testCheckRequestedToFollow(self):
+        response = self.client.get(reverse('manage-follow-requests', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(response.data['requester'] == "1")
+        assert(response.data['receiver'] == "2")
