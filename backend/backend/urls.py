@@ -16,8 +16,31 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, UserAPIs, ImagesAPIs
+from rest_framework import permissions
+
+# https://www.jasonmars.org/2020/04/22/add-swagger-to-django-rest-api-quickly-4-mins-without-hiccups/
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Jaseci API",
+        default_version='v1',
+        description="Welcome to the world of Jaseci",
+        terms_of_service="https://www.jaseci.org",
+        contact=openapi.Contact(email="jason@jaseci.org"),
+        license=openapi.License(name="Awesome IP"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
+    #swagger docs. Go to /doc for swagger and /redoc for redoc view
+    path('doc/', schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0),
+         name='schema-redoc'),
+
     # authentication
     path('users', UserAPIs.as_view({
         "post": "createUser",
