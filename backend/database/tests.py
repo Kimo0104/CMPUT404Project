@@ -25,7 +25,6 @@ class AccountsTest(TestCase):
             "password": "testuser2"
         }
         response = self.client.post('http://localhost:8000/users', data)
-        # self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(User.objects.count(), 1)
 
     def test_create_user_with_invalid_email(self):
