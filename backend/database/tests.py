@@ -1,10 +1,6 @@
-from django.test import TestCase
-
-
-from django.urls import reverse
-from rest_framework.test import APITestCase
+from django.test import TestCase, APITestCase
 from django.contrib.auth.models import User
-from rest_framework import status
+from rest_framework import status, reverse
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
@@ -12,14 +8,21 @@ from django.db.utils import IntegrityError
 class AccountsTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
-        self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
+        self.test_user = User.objects.create_user(
+            username="testuser", 
+            email="testuser@gmail.com",
+            password="12345"
+        )
 
-
+    def test_user_exists(self):
+        self.assertEqual(self.test_user.username,"testuser")
+        self.assertEqual(self.test_user.email,"testuser@gmail.com")
+    
     def test_create_user_with_preexisting_email(self):
         data = {
-            'username': 'testuser2',
-            'email': 'test@example.com',
-            'password': 'testuser'
+            "username": "testuser2",
+            "email": "testuser2@gmail.com",
+            "password": "testuser2"
         }
 
         response = self.client.put(reverse('authors'), data, format='json')
