@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from rest_framework import status
-from .models import Posts, Authors, Comments, Likes, LikesComments, FollowRequests, Followers
+from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
 
@@ -415,6 +415,104 @@ class LikesTest(TestCase):
     def testDeleteParentComment(self):
         self.test_comment.delete()
         assert(LikesComments.objects.all().count() == 0)
+
+
+class InboxTests(TestCase):
+    def setUp(self):
+        # make two authors
+        # author 1 makes a post
+        # add post to inbox of author 2
+        self.test_author1 = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor1", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_author2 = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testAuthor2",  
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )        
+        self.test_post = Posts.objects.create(
+            id = 1,
+            title = "This is a test",
+            source = "test source",
+            origin = "test origin",
+            description = "test description",
+            content = "test content",
+            originalAuthor = self.test_author1,
+            author = self.test_author1
+        )
+        self.test_inbox = Inbox.objects.create(
+            id = 1,
+            author = self.test_author2,
+            post = self.test_post
+        )
+
+    # test that one inbox entry was made for that post and for that author
+    # test that only one inbox entry was made
+    def testInboxCreation(self):
+        assert(Inbox.objects.filter(post=self.test_post).count() == 1)
+        assert(Inbox.objects.filter(author=self.test_author2).count() == 1)
+        assert(Inbox.objects.all().count() == 1)
+
+
+    # test that another inbox entry cannot be made with the same id
+    def testInboxUniqueness(self):
+        with self.assertRaisesRegexp(IntegrityError, "duplicate key value violates unique constraint"):
+            Inbox.objects.create(
+                id = 1,
+                author = self.test_author2,
+                post = self.test_post
+            )
+
+
+    # test that an inbox entry cannot be created with an invalid authorId
+    def testInboxFromInvalidAuthor(self):
+        with self.assertRaisesRegexp(ValueError, '"Inbox.author" must be a "Authors" instance.'):
+            Inbox.objects.create(
+                id = 2,
+                author = 10,
+                post = self.test_post
+            )
+
+    # test that an inbox entry cannot be created with an invalid postId
+    def testInboxWithInvalidPost(self):
+        with self.assertRaisesRegexp(ValueError, '"Inbox.post" must be a "Posts" instance.'):
+            Inbox.objects.create(
+                id = 2,
+                author = self.test_author2,
+                post = 10
+            )
+
+    # test that an inbox entry can be removed
+    # test that only one inbox entry is removed
+    def testInboxDelete(self):
+        self.sample_test_inbox = Inbox.objects.create(
+            id = 2,
+            author = self.test_author2,
+            post = self.test_post
+        )
+        self.sample_test_inbox.save()
+        self.test_inbox.delete()
+
+        assert(Inbox.objects.filter(id=1).count() == 0)
+        assert(Inbox.objects.all().count() == 1)
+
+    # test that deleting the author deletes the inbox
+    def testDeleteParentAuthor(self):
+        self.test_post.delete()
+        assert(Inbox.objects.all().count() == 0)
+
+    # test that deleting the post deletes the inbox
+    def testDeleteParentPost(self):
+        self.test_post.delete()
+        assert(Inbox.objects.all().count() == 0)
             
 class FollowRequestsTests(TestCase):
     def setUp(self):
