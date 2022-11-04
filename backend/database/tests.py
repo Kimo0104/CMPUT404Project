@@ -260,8 +260,18 @@ class CommentsAPITest(APITestCase):
             github = "github.com",
             profileImage = "image"
         )
-        self.test_post = Posts.objects.create(
+        self.test_post1 = Posts.objects.create(
             id = 1,
+            title = "This is a test",
+            source = "test source",
+            origin = "test origin",
+            description = "test description",
+            content = "test content",
+            originalAuthor = self.test_author1,
+            author = self.test_author1
+        )
+        self.test_post2 = Posts.objects.create(
+            id = 2,
             title = "This is a test",
             source = "test source",
             origin = "test origin",
@@ -273,22 +283,31 @@ class CommentsAPITest(APITestCase):
         self.test_comment1 = Comments.objects.create(
             id = 1,
             author = self.test_author2,
-            post = self.test_post,
+            post = self.test_post1,
             comment = "test comment"
         )
         self.test_comment2 = Comments.objects.create(
             id = 2,
             author = self.test_author2,
-            post = self.test_post,
-            comment = "test comment 2"
+            post = self.test_post2,
+            comment = "test comment"
         )
 
-    def testGetComment(self):
+    # test getComment for post 1 returns only the comment for post 1
+    def testGetCorrectComment(self):
         response = self.client.get(reverse('comments', args=[1,1]), format='json')
-        assert(response.status_code==status.HTTP_200_OK)
-        #self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        #self.assertEqual(User.objects.count(), 1)
-        #self.assertEqual(len(response.data['email']), 1)
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(len(response.data) == 1)
+        assert(response.data[0]['id'] == "1")
+        assert(response.data[0]['author'] == "2")
+        assert(response.data[0]['post'] == "1")
+        assert(response.data[0]['comment'] == "test comment")
+
+    # test getComment for invalid post
+    def testGetCommentWithInvalidPost(self):
+        response = self.client.get(reverse('comments', args=[1,10]), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
 
 class LikesTest(TestCase):
     # mark initial counts of postLikes and commentLikes
