@@ -108,5 +108,4 @@ urlpatterns = [
     #images
     path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
 
-
 ]

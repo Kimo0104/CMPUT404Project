@@ -1,6 +1,8 @@
-from django.test import TestCase, APITestCase
+from django.test import TestCase
 from django.contrib.auth.models import User
-from rest_framework import status, reverse
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
