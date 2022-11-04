@@ -13,6 +13,7 @@ import io
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 #Models defines how their objects are stored in the database
 #serializers defines how to convert a post object to JSON
 
@@ -52,7 +53,7 @@ class UserAPIs(viewsets.ViewSet):
     """
     #POST users/
     #adds a user to the default Django user table
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
@@ -71,7 +72,7 @@ class UserAPIs(viewsets.ViewSet):
             password=body['password']
         )
 
-        return Response({"User created successfully!"}, status=status.HTTP_200_OK)
+        return HttpResponse(status=200)
 
     """ 
     Login the user. 

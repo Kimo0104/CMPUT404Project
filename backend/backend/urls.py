@@ -45,68 +45,67 @@ urlpatterns = [
     path('users', UserAPIs.as_view({
         "post": "createUser",
         "put": "loginUser",
-    })),
+    }), name = 'users'),
 
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name = 'admin'),
 
     #posts
-    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost", "get": "getPublicPosts"})),
+    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost", "get": "getPublicPosts"}), name = 'post'),
     path('authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
         "get": "getPost",
         "post": "updatePost",
         "delete": "deletePost"
-    })),
-    path('authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"})),
+    }), name = 'existing-post'),
+    path('authors/<str:authorId>/posts/<str:postId>/image', PostsAPIs.as_view({"get": "getImagePost"}), name = 'image-post'),
 
     #comments
     path('authors/<str:authorId>/posts/<str:postId>/comments', CommentsAPIs.as_view({
         "get": "getComments",
         "post": "createComment"
-    })),
+    }), name = 'comments'),
 
 
     #likes
-    path('authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"})),
-    path('authors/<str:authorId>/posts/<str:postId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createPostLike", "delete": "deletePostLike"})),
-    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"})),
-    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createCommentLike", "delete": "deleteCommentLike"})),
+    path('authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"}), name = 'get-post-like'),
+    path('authors/<str:authorId>/posts/<str:postId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createPostLike", "delete": "deletePostLike"}), name = 'post-like'),
+    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"}), name = 'get-comment-like'),
+    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createCommentLike", "delete": "deleteCommentLike"}), name = 'comment-like'),
 
     #liked
-    path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"})),
-    path('authors/<str:authorId>/posts/<str:postId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorPostLiked"})),
+    path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"}), name = 'liked'),
+    path('authors/<str:authorId>/posts/<str:postId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorPostLiked"}), name = 'has-liked'),
 
     #inbox
     path('authors/<str:authorId>/inbox', InboxAPIs.as_view({
         "get": "getInbox",
         "delete": "deleteInbox"
-    })),
-    path('inbox/public/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendPublicPost"})),
-    path('inbox/friend/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendFriendPost"})),
-    path('authors/<str:authorId>/inbox/<str:postId>', InboxAPIs.as_view({"post": "sendPost"})),
+    }), name = 'inbox'),
+    path('inbox/public/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendPublicPost"}), name = 'send-public-inbox'),
+    path('inbox/friend/<str:authorId>/<str:postId>', InboxAPIs.as_view({"post": "sendFriendPost"}), name = 'send-friend-inbox'),
+    path('authors/<str:authorId>/inbox/<str:postId>', InboxAPIs.as_view({"post": "sendPost"}), name = 'send-direct-inbox'),
 
     #followRequests
-    path('authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"})),
+    path('authors/<str:authorId>/followRequest', FollowRequestsAPIs.as_view({"get": "getFollowRequests"}), name = 'get-follow-requests'),
     path('authors/<str:authorId>/followRequest/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({
         "delete": "removeRequest",
-        "get": "checkRequestedToFollow"})),
+        "get": "checkRequestedToFollow"}), name = 'manage-follow-requests'),
     # path('authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowRequestsAPIs.as_view({"post": "requestToFollow"})),
 
     #follows
-    path('authors/<str:authorId>/followers', FollowsAPIs.as_view({"get": "getFollowers"})),
+    path('authors/<str:authorId>/followers', FollowsAPIs.as_view({"get": "getFollowers"}), name = 'get-followers'),
     path('authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
         "get": "checkFollower",
         "put": "addFollower",
         "delete": "removeFollower",
-        "post": "requestToFollow"})),
+        "post": "requestToFollow"}), name = 'manage-followers'),
 
 
     #authors
-    path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"})),
-    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"})),
-    path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"})),
+    path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"}), name = 'authors'),
+    path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"}), name = 'manage-authors'),
+    path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"}), name = 'find-authors'),
 
     #images
-    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}))
-
+    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
 
 ]
