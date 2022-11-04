@@ -46,6 +46,7 @@ urlpatterns = [
     path('authors/<str:authorId>/posts/<str:postId>/likes', LikesAPIs.as_view({"get": "getPostLikes"})),
     path('authors/<str:authorId>/posts/<str:postId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createPostLike", "delete": "deletePostLike"})),
     path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes', LikesAPIs.as_view({"get": "getCommentLikes"})),
+    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/likes/<str:likerId>', LikesAPIs.as_view({"post": "createCommentLike", "delete": "deleteCommentLike"})),
 
     #liked
     path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"})),
