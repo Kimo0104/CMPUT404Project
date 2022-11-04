@@ -29,7 +29,8 @@
     "run-server": "python backend/manage.py runserver",
     "make-migrations": "python backend/manage.py makemigrations",
     "migrate": "python backend/manage.py migrate",
-    "run-tests": "python backend/manage.py test backend"
+    "run-model-tests": "python backend/manage.py test database.testModels",
+    "run-api-tests": "python backend/manage.py test database.testAPI"
   },
   "eslintConfig": {
     "extends": [
