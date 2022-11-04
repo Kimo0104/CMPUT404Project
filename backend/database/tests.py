@@ -1,33 +1,31 @@
 from django.test import TestCase
-
-
-from django.urls import reverse
-from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from rest_framework import status
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
 
-class AccountsTest(APITestCase):
+class AccountsTest(TestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
-        self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
+        self.test_user = User.objects.create_user(
+            username="testuser", 
+            email="testuser@gmail.com",
+            password="12345"
+        )
 
-        # URL for creating an account.
-        self.create_url = reverse('account-create')
-
+    def test_user_exists(self):
+        self.assertEqual(self.test_user.username,"testuser")
+        self.assertEqual(self.test_user.email,"testuser@gmail.com")
+    
     def test_create_user_with_preexisting_email(self):
         data = {
-            'username': 'testuser2',
-            'email': 'test@example.com',
-            'password': 'testuser'
+            "username": "testuser2",
+            "email": "testuser2@gmail.com",
+            "password": "testuser2"
         }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post('http://localhost:8000/users', data)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
 
     def test_create_user_with_invalid_email(self):
         data = {
@@ -35,24 +33,9 @@ class AccountsTest(APITestCase):
             'email':  'testing',
             'passsword': 'foobarbaz'
         }
-
-
-        response = self.client.post(self.create_url, data, format='json')
+        response = self.client.post("http://localhost:8000/users", data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
-
-    def test_create_user_with_no_email(self):
-        data = {
-                'username' : 'foobar',
-                'email': '',
-                'password': 'foobarbaz'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
 
 
 class PostsTests(TestCase):
