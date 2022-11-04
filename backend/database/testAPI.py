@@ -264,3 +264,77 @@ class FollowRequestsAPITest(APITestCase):
         assert(response.status_code==status.HTTP_200_OK)
         assert(response.data['requester'] == "1")
         assert(response.data['receiver'] == "2")
+
+class FollowsAPITest(APITestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author1 = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor1", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author2= Authors.objects.create(
+            id = 3,
+            host = "test-host",
+            displayName = "testForeignAuthor2", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow = Followers.objects.create(
+            id = 1,
+            follower = self.test_author,
+            followed = self.test_foreign_author1
+        )
+        self.test_followRequest = FollowRequests.objects.create(
+            id = 1,
+            requester = self.test_foreign_author2,
+            receiver = self.test_foreign_author1
+        )
+    '''
+        Ensures that getFollowers successfully returns a list of the followers
+    '''
+    def testGetFollowers(self):
+        response = self.client.get(reverse('get-followers', args=[2]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(len(response.data) == 1)
+        assert(response.data[0]['id'] == "1")
+        assert(response.data[0]['follower'] == "1")
+        assert(response.data[0]['followed'] == "2")
+    '''
+        Ensures that checkFollower successfully returns the object containing the follow relationship
+    '''
+    def testCheckFollower(self):
+        response = self.client.get(reverse('manage-followers', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(response.data['id'] == "1")
+        assert(response.data['follower'] == "1")
+        assert(response.data['followed'] == "2")
+    '''
+        Ensures that addFollower successfully adds a follower
+    '''
+    def testAddFollower(self):
+        response = self.client.put(reverse('manage-followers', args=[2,3]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+    '''
+        Ensures that removeFollower successfully adds a follower
+    '''
+    def testRemoveFollower(self):
+        response = self.client.delete(reverse('manage-followers', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+    '''
+        Ensures that requestToFollow successfully adds a follow request 
+    '''
+    def testRequestToFollow(self):
+        response = self.client.post(reverse('manage-followers', args=[3,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
