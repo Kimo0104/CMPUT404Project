@@ -1,13 +1,9 @@
-from django.test import TestCase
-
-
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from rest_framework import status
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
 from django.db.utils import IntegrityError
-import json
 import ast
 
 class AccountsTest(APITestCase):
@@ -132,7 +128,7 @@ class PostTest(APITestCase):
             github = "github.com",
             profileImage = "image"
         )
-    def testGetPost(self):
+    def testGetPublicPost(self):
         id = 1
         title = "This is a test"
         source = "test source"
@@ -141,7 +137,7 @@ class PostTest(APITestCase):
         post_content = "test content"
         originalAuthor = self.test_author
         author = self.test_author
-        self.test_post = Posts.objects.create(
+        Posts.objects.create(
             id = id,
             title = title,
             source = source,
@@ -204,7 +200,7 @@ class PostTest(APITestCase):
             "originalAuthor" : self.test_author,
             "author" : self.test_author
         }
-        self.test_post = Posts.objects.create(
+        Posts.objects.create(
             id = data["id"],
             title = data["title"],
             source = data["source"],
@@ -214,3 +210,37 @@ class PostTest(APITestCase):
             originalAuthor = data["originalAuthor"],
             author = data["author"]
         )
+        modification = {
+            "title" : "title after modification!"
+        }
+        self.client.post(reverse('existing-post',args=[self.test_author.id, data["id"]]), modification, format='json')
+        post = Posts.objects.get()
+        assert(post.title == modification["title"])
+
+    def testDeletePost(self):
+        data = {
+            "id": 1,
+            "type": "post",
+            "title" : "This is a test",
+            "source" : "test source",
+            "origin" : "test origin",
+            "description" : "test description",
+            "contentType": "text/plain",
+            "visibility": "PUBLIC",
+            "post_content" : "test content",
+            "originalAuthor" : self.test_author,
+            "author" : self.test_author
+        }
+        Posts.objects.create(
+            id = data["id"],
+            title = data["title"],
+            source = data["source"],
+            origin = data["origin"],
+            description = data["description"],
+            content = data["post_content"],
+            originalAuthor = data["originalAuthor"],
+            author = data["author"]
+        )
+        assert(len(Posts.objects.filter(id = data["id"])) == 1)
+        self.client.delete(reverse('existing-post',args=[self.test_author.id, data["id"]]), format='json')
+        assert(len(Posts.objects.filter(id = data["id"])) == 0)
