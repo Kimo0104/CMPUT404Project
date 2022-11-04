@@ -151,8 +151,7 @@ class PostTest(APITestCase):
             originalAuthor = originalAuthor,
             author = author
         )
-        route = 'http://127.0.0.1:8000/authors/{}/posts'.format(self.test_author.id)
-        response = self.client.get(route, format='json')
+        response = self.client.get(reverse('post', args=[self.test_author.id]), format='json')
         content = ast.literal_eval(response.content.decode('utf-8'))
         assert(response.status_code == status.HTTP_200_OK)
         assert(content["count"] == 1)
@@ -177,8 +176,7 @@ class PostTest(APITestCase):
             "originalAuthor" : 1,
             "author" : 1
         }
-        route = 'http://127.0.0.1:8000/authors/{}/posts'.format(self.test_author.id)
-        response = self.client.put(route, data, format='json')
+        response = self.client.put(reverse('post',args=[self.test_author.id]), data, format='json')
         post = Posts.objects.get()
         assert(response.status_code == status.HTTP_200_OK)
         assert(post.type == data["type"])
