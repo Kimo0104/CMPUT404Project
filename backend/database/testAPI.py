@@ -8,49 +8,38 @@ import ast
 
 class AccountsTest(APITestCase):
     def setUp(self):
-        # We want to go ahead and originally create a user. 
         self.test_user = User.objects.create_user(
             username="testuser", 
             email="testuser@gmail.com",
             password="12345"
         )
-
+    
+    # Test whether user exists 
     def test_user_exists(self):
         self.assertEqual(self.test_user.username,"testuser")
         self.assertEqual(self.test_user.email,"testuser@gmail.com")
-    
+
+    # Test whether user gets created
     def test_create_user_with_preexisting_email(self):
         data = {
             "username": "testuser2",
             "email": "testuser2@gmail.com",
             "password": "testuser2"
         }
+        response = self.client.post(reverse('users'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = self.client.put(reverse('authors'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-
-    def test_create_user_with_invalid_email(self):
+    # Test user with empty credentials
+    def test_create_user_with_no_info(self):
         data = {
-            'username': 'foobarbaz',
-            'email':  'testing',
-            'passsword': 'foobarbaz'
-        }
-
-        response = self.client.put(reverse('authors'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-
-    def test_create_user_with_no_email(self):
-        data = {
-                'username' : 'foobar',
+                'username' : '',
                 'email': '',
-                'password': 'foobarbaz'
+                'password': ''
         }
 
         response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
+        
 
 class CommentsAPITest(APITestCase):
     def setUp(self):
@@ -281,3 +270,127 @@ class PostTest(APITestCase):
         assert(content["content"] == data["post_content"])
         assert(content["author"] == str(data["author"].id))
         assert(content["originalAuthor"] == str(data["originalAuthor"].id))
+
+class FollowRequestsAPITest(APITestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow_request = FollowRequests.objects.create(
+            id = 1,
+            receiver = self.test_foreign_author,
+            requester = self.test_author
+        )
+    '''
+    Ensures that getFollowRequests successfully returns the right follow request
+    '''
+    def testGetFollowRequests(self):
+        response = self.client.get(reverse('get-follow-requests', args=[2]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(len(response.data) == 1)
+        assert(response.data[0]['id'] == "1")
+        assert(response.data[0]['requester'] == "1")
+        assert(response.data[0]['receiver'] == "2")
+    '''
+        Ensures that removeRequest successfully removes the follow request
+    '''
+    def testRemoveRequest(self):
+        response = self.client.delete(reverse('manage-follow-requests', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(response.data['requester'] == "1")
+        assert(response.data['receiver'] == "2")
+    '''
+        Ensures that checkRequestedToFollow successfully returns the object containing the follow request
+    '''
+    def testCheckRequestedToFollow(self):
+        response = self.client.get(reverse('manage-follow-requests', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(response.data['requester'] == "1")
+        assert(response.data['receiver'] == "2")
+
+class FollowsAPITest(APITestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author1 = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor1", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author2= Authors.objects.create(
+            id = 3,
+            host = "test-host",
+            displayName = "testForeignAuthor2", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow = Followers.objects.create(
+            id = 1,
+            follower = self.test_author,
+            followed = self.test_foreign_author1
+        )
+        self.test_followRequest = FollowRequests.objects.create(
+            id = 1,
+            requester = self.test_foreign_author2,
+            receiver = self.test_foreign_author1
+        )
+    '''
+        Ensures that getFollowers successfully returns a list of the followers
+    '''
+    def testGetFollowers(self):
+        response = self.client.get(reverse('get-followers', args=[2]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(len(response.data) == 1)
+        assert(response.data[0]['id'] == "1")
+        assert(response.data[0]['follower'] == "1")
+        assert(response.data[0]['followed'] == "2")
+    '''
+        Ensures that checkFollower successfully returns the object containing the follow relationship
+    '''
+    def testCheckFollower(self):
+        response = self.client.get(reverse('manage-followers', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+        assert(response.data['id'] == "1")
+        assert(response.data['follower'] == "1")
+        assert(response.data['followed'] == "2")
+    '''
+        Ensures that addFollower successfully adds a follower
+    '''
+    def testAddFollower(self):
+        response = self.client.put(reverse('manage-followers', args=[2,3]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+    '''
+        Ensures that removeFollower successfully adds a follower
+    '''
+    def testRemoveFollower(self):
+        response = self.client.delete(reverse('manage-followers', args=[2,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
+    '''
+        Ensures that requestToFollow successfully adds a follow request 
+    '''
+    def testRequestToFollow(self):
+        response = self.client.post(reverse('manage-followers', args=[3,1]), format='json')
+        assert(response.status_code==status.HTTP_200_OK)
