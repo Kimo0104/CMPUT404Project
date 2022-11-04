@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from rest_framework import status
-from .models import Posts, Authors
+from .models import Posts, Authors, FollowRequests, Followers
 from django.db.utils import IntegrityError
 
 
@@ -140,3 +140,161 @@ class PostsTests(TestCase):
                 originalAuthor = self.test_author,
                 author = self.test_author
             )
+
+class FollowRequestsTests(TestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow_request = FollowRequests.objects.create(
+            id = 1,
+            receiver = self.test_foreign_author,
+            requester = self.test_author
+        )
+    '''
+    Ensures that the default values are populated as expected
+    '''
+    def testDefaultRelationship(self):
+        authorRequests = FollowRequests.objects.filter(requester = 1)
+        assert(len(authorRequests) == 1)
+        foreignAuthorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(foreignAuthorRequests) == 1)
+    '''
+    Ensures that when an author is deleted, their follow requests would no longer exist
+    '''
+    def testAuthorRemoval(self):
+        authorRequests = FollowRequests.objects.filter(requester = 1)
+        assert(len(authorRequests) == 1)
+        self.test_author.delete()
+        authorRequests = FollowRequests.objects.filter(requester = 1)
+        assert(len(authorRequests) == 0)
+    '''
+    Ensures that when a foreign author is deleted, their follow requests would no longer exist
+    '''
+    def testForeignAuthorRemoval(self):
+        foreignAuthorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(foreignAuthorRequests) == 1)
+        self.test_foreign_author.delete()
+        foreignAuthorRequests = FollowRequests.objects.filter(receiver = 2)
+        assert(len(foreignAuthorRequests) == 0)
+    '''
+    Ensures that when a follow request is created with an author/foreign author that doesnt exist,
+    an exception is raised.
+    '''
+    def testNonAuthoredFollowRequests(self):
+        with self.assertRaisesRegexp(ValueError, '"FollowRequests.requester" must be a "Authors" instance.'):
+            FollowRequests.objects.create(
+                id = 2,
+                requester = 999,
+                receiver = self.test_foreign_author
+            )
+        with self.assertRaisesRegexp(ValueError, '"FollowRequests.receiver" must be a "Authors" instance.'):
+            FollowRequests.objects.create(
+                id = 2,
+                requester = self.test_author,
+                receiver = 999
+            )
+    '''
+    Ensures that when a follow request is made with an ID that already exists,
+    an exception is raised.
+    '''
+    def testSamePostId(self):
+        with self.assertRaisesRegexp(IntegrityError, "duplicate key value violates unique constraint"):
+            FollowRequests.objects.create(
+                id = 1,
+                requester = self.test_author,
+                receiver = self.test_foreign_author
+            )
+
+class FollowsTests(TestCase):
+    def setUp(self):
+        self.test_author = Authors.objects.create(
+            id = 1,
+            host = "test-host",
+            displayName = "testAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_foreign_author = Authors.objects.create(
+            id = 2,
+            host = "test-host",
+            displayName = "testForeignAuthor", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_follow = Followers.objects.create(
+            id = 1,
+            follower = self.test_author,
+            followed = self.test_foreign_author
+        )
+    '''
+    Ensures that the default values are populated as expected
+    '''
+    def testDefaultRelationship(self):
+        authorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(authorRelationship) == 1)
+        foreignAuthorRelationship = Followers.objects.filter(followed = 2)
+        assert(len(foreignAuthorRelationship) == 1)
+    '''
+    Ensures that when an author is deleted, their follow relationship would no longer exist
+    '''
+    def testAuthorRemoval(self):
+        authorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(authorRelationship) == 1)
+        self.test_author.delete()
+        authorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(authorRelationship) == 0)
+    '''
+    Ensures that when a foreign author is deleted, their follow relationship would no longer exist
+    '''
+    def testAuthorRemoval(self):
+        foreignAuthorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(foreignAuthorRelationship) == 1)
+        self.test_foreign_author.delete()
+        foreignAuthorRelationship = Followers.objects.filter(follower = 1)
+        assert(len(foreignAuthorRelationship) == 0)
+    '''
+    Ensures that when a follow relationship is created with an author/foreign author that doesnt exist,
+    an exception is raised.
+    '''
+    def testNonAuthoredFollowRequests(self):
+        with self.assertRaisesRegexp(ValueError, 'Followers.follower" must be a "Authors" instance.'):
+            Followers.objects.create(
+                id = 2,
+                follower = 999,
+                followed = self.test_foreign_author
+            )
+        with self.assertRaisesRegexp(ValueError, 'Followers.followed" must be a "Authors" instance.'):
+            Followers.objects.create(
+                id = 2,
+                follower = self.test_author,
+                followed = 999
+            )
+    '''
+    Ensures that when a follow relationship is made with an ID that already exists,
+    an exception is raised.
+    '''
+    def testSamePostId(self):
+        with self.assertRaisesRegexp(IntegrityError, "duplicate key value violates unique constraint"):
+            Followers.objects.create(
+                id = 1,
+                follower = self.test_author,
+                followed = self.test_foreign_author
+            )
+    
+
