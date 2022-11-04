@@ -284,6 +284,35 @@ class LikesAPIs(viewsets.ViewSet):
 
     #TESTED
     #
+    #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
+    @action(detail=True, methods=['post'])
+    def createCommentLike(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        commentId = kwargs["commentId"]
+        
+        #check that authorId and commentId exist
+        if Authors.objects.filter(id=likerId).count() < 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if Comments.objects.filter(id=commentId).count() < 1:
+            return Response({"Tried to check likes on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
+
+        liker = Authors.objects.get(id=likerId)
+        comment = Comments.objects.get(id=commentId)
+        if LikesComments.objects.filter(comment=comment, author=liker).count() >= 1:
+            return Response({"Tried to like a comment you've already liked"}, status=status.HTTP_400_BAD_REQUEST)
+
+        LikesComments.objects.create(
+            id = uuidGenerator(),
+            context = comment.comment,
+            summary = f'{liker.displayName} likes your comment',
+            author = liker,
+            comment = comment
+        )
+
+        return Response("{Like created successfully}", status=status.HTTP_200_OK )
+
+    #TESTED
+    #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
     @action(detail=True, methods=['delete'])
     def deletePostLike(self, request, *args, **kwargs):
@@ -299,6 +328,26 @@ class LikesAPIs(viewsets.ViewSet):
         post = Posts.objects.get(id=postId)
         
         Likes.objects.filter(post=post, author=liker).delete()
+        
+        return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
+
+    #TESTED
+    #
+    #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
+    @action(detail=True, methods=['delete'])
+    def deleteCommentLike(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        commentId = kwargs["commentId"]
+        
+        #check that authorId and postId exist
+        if Authors.objects.filter(id=likerId).count() < 1:
+            return Response({"Tried to delete a like of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if Comments.objects.filter(id=commentId).count() < 1:
+            return Response({"Tried to delete a like on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
+        liker = Authors.objects.get(id=likerId)
+        comment = Comments.objects.get(id=commentId)
+        
+        Likes.objects.filter(comment=comment, author=liker).delete()
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
