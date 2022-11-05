@@ -23,12 +23,9 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 schema_view = get_schema_view(
     openapi.Info(
-        title="Jaseci API",
+        title="Social Distribution API",
         default_version='v1',
-        description="Welcome to the world of Jaseci",
-        terms_of_service="https://www.jaseci.org",
-        contact=openapi.Contact(email="jason@jaseci.org"),
-        license=openapi.License(name="Awesome IP"),
+        description="Welcome to the world of Social Distribution",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
