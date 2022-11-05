@@ -28,6 +28,9 @@ import uuid
 import json
 import database
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 def uuidGenerator():
     result = uuid.uuid4()
     return result.hex
@@ -97,6 +100,13 @@ class PostsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID/posts/{POST_ID}
     #get the public post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Fetches the post with specific post_id and author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -110,6 +120,13 @@ class PostsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/posts
     #get the public posts of this author
+    @swagger_auto_schema(
+        operation_description="Fetches all the public posts made by an author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'])
     def getPublicPosts(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -134,6 +151,27 @@ class PostsAPIs(viewsets.ViewSet):
 
     #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
+    @swagger_auto_schema(
+        operation_description="updates a post made by an author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['id'],
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_STRING, description='The Post ID'),
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='The title of the post'),
+                'source': openapi.Schema(type=openapi.TYPE_STRING, description='The source of the post'),
+                'origin': openapi.Schema(type=openapi.TYPE_STRING, description='The origin of the post'),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description='The description of the post'),
+                'contentType': openapi.Schema(type=openapi.TYPE_STRING, description='The conte type of the post, can only be text/plain or text/markdown'),
+                'visibility': openapi.Schema(type=openapi.TYPE_STRING, description='The visibility of the post, can only be PUBLIC or FRIENDS or UNLISTED'),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
+            }
+        )
+    )
     @action(detail=True, methods=['post'],)
     def updatePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -151,6 +189,13 @@ class PostsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID/posts/{POST_ID}
     #remove the post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Deletes an author's post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'],)
     def deletePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -160,6 +205,27 @@ class PostsAPIs(viewsets.ViewSet):
 
     #PUT authors/{AUTHOR_ID/posts
     #create a post where its id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Creates a post for an author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['title','source','origin','description','contentType','visibility','content','originalAuthor','author','published'],
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='The title of the post'),
+                'source': openapi.Schema(type=openapi.TYPE_STRING, description='The source of the post'),
+                'origin': openapi.Schema(type=openapi.TYPE_STRING, description='The origin of the post'),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description='The description of the post'),
+                'contentType': openapi.Schema(type=openapi.TYPE_STRING, description='The conte type of the post, can only be text/plain or text/markdown'),
+                'visibility': openapi.Schema(type=openapi.TYPE_STRING, description='The visibility of the post, can only be PUBLIC or FRIENDS or UNLISTED'),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
+                'published': openapi.Schema(type=openapi.FORMAT_DATETIME, description='The publish date of the post'),
+            }
+        )
+    )
     @action(detail=True, methods=['put'],)
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -205,7 +271,7 @@ class CommentsAPIs(viewsets.ViewSet):
     def getComments(self, request, *args, **kwargs):
         postId = kwargs["postId"]
         if not Posts.objects.filter(id=postId).count() == 1:
-            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = Comments.objects.filter(post_id=postId).order_by('-published')
         serializer = CommentsSerializer(queryset, many=True)
@@ -222,9 +288,9 @@ class CommentsAPIs(viewsets.ViewSet):
 
         #check that authorId and postId exist
         if not Authors.objects.filter(id=authorId).count() ==1:
-            return Response({"Tried to send post to non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
         if not Posts.objects.filter(id=postId).count() == 1:
-            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Tried to make comment on non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
         author = Authors.objects.get(id=authorId)
         post = Posts.objects.get(id=postId)
@@ -233,13 +299,13 @@ class CommentsAPIs(viewsets.ViewSet):
         body = JSONParser().parse(io.BytesIO(request.body))
         contentType = 'text/plain'
         if 'contentType' in body:
-            if body['contentBody'] == 'text/markdown':
+            if body['contentType'] == 'text/markdown':
                 contentType = 'text/markdown'
-            elif body['contentBody'] != 'text/plain':
-                return Response({"Failed comment creation. Invalid input for contentBody."}, status=status.HTTP_400_BAD_REQUEST)
+            elif body['contentType'] != 'text/plain':
+                return Response({"Failed comment creation. Invalid input for contentType."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if 'comment' in body:
-            comment = str(body['comment'])
+        if 'comment' in body and str(body['comment']).strip() != '':
+            comment = str(body['comment']).strip()
         else:
             return Response({"Failed comment creation. Missing 'comment' column."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -329,7 +395,9 @@ class LikesAPIs(viewsets.ViewSet):
             return Response({"Tried to delete a like on a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
         liker = Authors.objects.get(id=likerId)
         post = Posts.objects.get(id=postId)
-        
+
+        if Likes.objects.filter(post=post, author=liker).count() < 1:
+            return Response({"Tried to delete a non-existent like"}, status=status.HTTP_400_BAD_REQUEST)
         Likes.objects.filter(post=post, author=liker).delete()
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
@@ -349,8 +417,10 @@ class LikesAPIs(viewsets.ViewSet):
             return Response({"Tried to delete a like on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
         liker = Authors.objects.get(id=likerId)
         comment = Comments.objects.get(id=commentId)
-        
-        Likes.objects.filter(comment=comment, author=liker).delete()
+
+        if LikesComments.objects.filter(comment=comment, author=liker).count() < 1:
+            return Response({"Tried to delete a non-existent like"}, status=status.HTTP_400_BAD_REQUEST)
+        LikesComments.objects.filter(comment=comment, author=liker).delete()
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
@@ -367,6 +437,9 @@ class LikesAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if Posts.objects.filter(id=postId).count() < 1:
+            return Response({"Tried to get likes from a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
             
         likeObjs = []
         for like in Likes.objects.filter(post_id=postId):
@@ -393,6 +466,9 @@ class LikesAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if Comments.objects.filter(id=commentId).count() < 1:
+            return Response({"Tried to get likes from a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
 
         commentLikeObjs = []
         for like in LikesComments.objects.filter(comment_id=commentId):
@@ -443,6 +519,9 @@ class LikedAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if not Authors.objects.filter(id=authorId).count() == 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         likeObjs = []
         for like in Likes.objects.filter(author_id=authorId):
@@ -616,6 +695,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followRequest
     #get all the people who want to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all follow requests with a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -628,6 +714,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
+    @swagger_auto_schema(
+        operation_description="Delete a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )    
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -642,6 +735,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -655,6 +755,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -673,6 +780,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followers
     #get all the followers of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all the followers with a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -685,6 +799,13 @@ class FollowsAPIs(viewsets.ViewSet):
     
     #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -698,6 +819,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #PUT authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['put'],)
     def addFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -715,6 +843,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Deletes a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -728,6 +863,13 @@ class FollowsAPIs(viewsets.ViewSet):
     
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         return FollowRequestsAPIs.requestToFollow(self, request, *args, **kwargs)
