@@ -1,32 +1,27 @@
-from email.mime import image
 import io
-from xmlrpc.client import Boolean
 from rest_framework.parsers import JSONParser
 import json
 from datetime import datetime
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework.response import Response
-from django.http import JsonResponse
 from rest_framework import status
 import io
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-#Models defines how their objects are stored in the database
-#serializers defines how to convert a post object to JSON
-
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
 from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
-
 import uuid
 import json
 import database
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -56,6 +51,13 @@ class UserAPIs(viewsets.ViewSet):
     """
     #POST users/
     #adds a user to the default Django user table
+    @swagger_auto_schema(
+        operation_description="Create a new user when they first register",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
@@ -80,6 +82,13 @@ class UserAPIs(viewsets.ViewSet):
     """ 
     Login the user. 
     """
+    @swagger_auto_schema(
+        operation_description="Authenticate the user and log in.",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['PUT'])
     def loginUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
@@ -101,7 +110,8 @@ class PostsAPIs(viewsets.ViewSet):
     #GET authors/{AUTHOR_ID/posts/{POST_ID}
     #get the public post whose id is POST_ID
     @swagger_auto_schema(
-        operation_description="Fetches the post with specific post_id and author_id",
+        operation_description="Fetches the post with specific postId and authorId",
+        operation_summary="Fetches the post with specific postId and authorId",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -122,6 +132,7 @@ class PostsAPIs(viewsets.ViewSet):
     #get the public posts of this author
     @swagger_auto_schema(
         operation_description="Fetches all the public posts made by an author",
+        operation_summary="Fetches all the public posts made by an author",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -152,7 +163,9 @@ class PostsAPIs(viewsets.ViewSet):
     #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
     @swagger_auto_schema(
-        operation_description="updates a post made by an author",
+        operation_description="Updates a post made by an author",
+        operation_summary="Updates a post made by an author",
+        operation_id="authors_posts_update",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -191,6 +204,7 @@ class PostsAPIs(viewsets.ViewSet):
     #remove the post whose id is POST_ID
     @swagger_auto_schema(
         operation_description="Deletes an author's post",
+        operation_summary="Deletes an author's post",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -207,6 +221,8 @@ class PostsAPIs(viewsets.ViewSet):
     #create a post where its id is POST_ID
     @swagger_auto_schema(
         operation_description="Creates a post for an author",
+        operation_summary="Creates a post for an author",
+        operation_id="authors_posts_create",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -264,6 +280,14 @@ class CommentsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Gets Comments on a Post",
+        operation_summary="Gets the comments on a Post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
         postId = kwargs["postId"]
@@ -784,6 +808,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followRequest
     #get all the people who want to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all follow requests with a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -796,6 +827,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
+    @swagger_auto_schema(
+        operation_description="Delete a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )    
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -810,6 +848,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -823,6 +868,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -841,6 +893,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followers
     #get all the followers of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all the followers with a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -853,6 +912,13 @@ class FollowsAPIs(viewsets.ViewSet):
     
     #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -866,6 +932,14 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #PUT authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        operation_id="authors_followers_create",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['put'],)
     def addFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -883,6 +957,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Deletes a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -896,6 +977,14 @@ class FollowsAPIs(viewsets.ViewSet):
     
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_id="authors_followers_update",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         return FollowRequestsAPIs.requestToFollow(self, request, *args, **kwargs)

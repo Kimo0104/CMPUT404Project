@@ -6,42 +6,6 @@ from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, Follo
 from django.db.utils import IntegrityError
 import ast
 
-class AccountsTest(APITestCase):
-    def setUp(self):
-        # We want to go ahead and originally create a user. 
-        self.test_user = User.objects.create_user(
-            username="testuser", 
-            email="testuser@gmail.com",
-            password="12345"
-        )
-    
-    # Test whether user exists 
-    def test_user_exists(self):
-        self.assertEqual(self.test_user.username,"testuser")
-        self.assertEqual(self.test_user.email,"testuser@gmail.com")
-
-    # Test whether user gets created
-    def test_create_user_with_preexisting_email(self):
-        data = {
-            "username": "testuser2",
-            "email": "testuser2@gmail.com",
-            "password": "testuser2"
-        }
-        response = self.client.post(reverse('users'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    # Test user with empty credentials
-    def test_create_user_with_no_info(self):
-        data = {
-                'username' : '',
-                'email': '',
-                'password': ''
-        }
-
-        response = self.client.put(reverse('authors'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        
-
 class CommentsAPITest(APITestCase):
     def setUp(self):
         self.test_author1 = Authors.objects.create(
@@ -911,3 +875,32 @@ class FollowsAPITest(APITestCase):
     def testRequestToFollow(self):
         response = self.client.post(reverse('manage-followers', args=[3,1]), format='json')
         assert(response.status_code==status.HTTP_200_OK)
+
+class AccountsTest(APITestCase):
+    def setUp(self):
+        self.test_user = User.objects.create_user(
+            username="testuser", 
+            email="testuser@gmail.com",
+            password="12345"
+        )
+    
+    # Test whether user gets created
+    def test_create_user_with_preexisting_email(self):
+        data = {
+            "username": "testuser2",
+            "email": "testuser2@gmail.com",
+            "password": "testuser2"
+        }
+        response = self.client.post(reverse('users'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # Test user with empty credentials
+    def test_create_user_with_no_info(self):
+        data = {
+                'username' : '',
+                'email': '',
+                'password': ''
+        }
+
+        response = self.client.put(reverse('authors'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
