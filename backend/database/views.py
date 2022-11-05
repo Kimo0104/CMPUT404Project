@@ -1,28 +1,20 @@
 import io
-from rest_framework.parsers import JSONParser
 import json
 from datetime import datetime
 from rest_framework.decorators import action
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework import status
-import io
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from rest_framework.response import Response
-from rest_framework import status
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
 from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 import uuid
-import json
 import database
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
