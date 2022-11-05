@@ -583,10 +583,101 @@ class LikedTests(APITestCase):
 
 class InboxTest(APITestCase):
     def setUp(self):
-        pass
+        # make two authors
+        # author 1 makes a post
+        # author 1 makes a comment on post
+        # author 2 make a comment on post
+        # author 2 likes post
+        # author 2 likes author 1s comment
+        # post 1 goes into author 1s inbox
+        self.test_author1 = Authors.objects.create(
+            id = "1",
+            host = "test-host",
+            displayName = "testAuthor1",
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        ) 
+        self.test_author2 = Authors.objects.create(
+            id = "2",
+            host = "test-host",
+            displayName = "testAuthor2", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_post = Posts.objects.create(
+            id = "1",
+            title = "This is a test",
+            source = "test source",
+            origin = "test origin",
+            description = "test description",
+            content = "test content",
+            originalAuthor = self.test_author1,
+            author = self.test_author1
+        )
+        self.test_comment1 = Comments.objects.create(
+            id = "1",
+            author = self.test_author1,
+            post = self.test_post,
+            comment = "test comment"
+        )
+        self.test_comment2 = Comments.objects.create(
+            id = "2",
+            author = self.test_author2,
+            post = self.test_post,
+            comment = "test comment"
+        )
+        self.test_post_like1 = Likes.objects.create(
+            id = "1",
+            context = self.test_post.title,
+            summary = f'{self.test_author2.displayName} likes your post',
+            author = self.test_author2,
+            post = self.test_post
+        )
+        self.test_comment_like1 = LikesComments.objects.create(
+            id = "1",
+            context = self.test_comment1.comment,
+            summary = f'{self.test_author2.displayName} likes your comment',
+            author = self.test_author2,
+            comment = self.test_comment1
+        )
+        self.inbox = Inbox.objects.create(
+            id = "1",
+            author = self.test_author1,
+            post = self.test_post
+        )
+
+    '''
+    test getInbox by getting all things in inbox
+    '''
+    def testGetInbox(self):
+        args = [self.test_author1.id]
+        response = self.client.get(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(len(response.data["inbox"]) == 5) #the post, like, comments, comment like
+        assert(response.data["count"] == 5)
+    
+    '''
+    test getInbox pagination
+    '''
+    def testGetInboxPagination(self):
+        args = [self.test_author1.id]
+        response = self.client.get(reverse('inbox', args=args), {'page': 1,'size': 3}, format='json')
+        assert(len(response.data["inbox"]) == 3)
+        response = self.client.get(reverse('inbox', args=args), {'page': 2,'size': 3}, format='json')
+        assert(len(response.data["inbox"]) == 2)
+        response = self.client.get(reverse('inbox', args=args), {'page': 3,'size': 5}, format='json')
+        assert(len(response.data["inbox"]) == 0)
 
     
-
+    '''
+    test getInbox with an invalid authorId
+    '''
+    def testGetInboxWithInvalidAuthorId(self):
+        args = [10]
+        response = self.client.get(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
 
 class PostTest(APITestCase):
     def setUp(self):
