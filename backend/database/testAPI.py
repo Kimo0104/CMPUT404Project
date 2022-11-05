@@ -904,3 +904,221 @@ class AccountsTest(APITestCase):
 
         response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+class AuthorsTest(APITestCase):
+    def setUp(self):
+        # Creates Authors with IDs 1 to 10 (We need multiple authors to test
+        # pagination in some API methods)
+        self.test_author = Authors.objects.create(
+                            id="1", 
+                            host="//service", 
+                            displayName="test_author_1", 
+                            url="//service/author/1", 
+                            github="http://github.com/test_author_1", 
+                            accepted=True, 
+                            profileImage="url_to_profile_image"
+                            )
+        for i in range(2, 11):
+            Authors.objects.create(
+                        id=str(i), 
+                        host="//service", 
+                        displayName=f"test_author_{i}", 
+                        url=f"//service/author/{i}", 
+                        github=f"http://github.com/test_author_{i}", 
+                        accepted=True, 
+                        profileImage="url_to_profile_image"
+                        )
+        
+
+    '''
+    Tests the getAuthor API method when getting an author that already exists.
+    '''
+    def testGetExistingAuthor(self):
+        response = self.client.get(reverse('manage-authors', args=[str(self.test_author.id)]), format="json")
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(len(response.data) == len(Authors._meta.fields))
+        returned_author = response.data
+        assert(returned_author["id"] == str(self.test_author.id))
+        assert(returned_author["type"] == self.test_author.type)
+        assert(returned_author["host"] == self.test_author.host)
+        assert(returned_author["displayName"] == self.test_author.displayName)
+        assert(returned_author["url"] == self.test_author.url)
+        assert(returned_author["github"] == self.test_author.github)
+        assert(returned_author["accepted"] == self.test_author.accepted)
+        assert(returned_author["profileImage"] == self.test_author.profileImage)
+    
+    '''
+    Tests the getAuthor API method when getting an Authors that does not exist.
+    '''
+    def testGetNonExistingAuthor(self):
+        response = self.client.get(reverse('manage-authors', args=["100"]), format="json")
+        assert(response.status_code == status.HTTP_404_NOT_FOUND)
+    
+    '''
+    Tests that editing an existing author actually modifies that Authors object in the
+    database.
+    '''
+    def testPostToExistingAuthorWithValidData(self):
+        # The only fields that are editable are github and profileImage.
+        data = {
+            "github": "http://github.com/new_github_url",
+            "profileImage": "new_profileImage_url"
+        }
+        response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
+        assert(response.status_code == status.HTTP_202_ACCEPTED)
+        # self.test_author contains outdated data now, so we get the updatedAuthor
+        # by getting the Authors object with the same id
+        updatedAuthor = Authors.objects.get(id=self.test_author.id)
+        assert(updatedAuthor.github == data["github"])
+        assert(updatedAuthor.profileImage == data["profileImage"])
+    
+    '''
+    Tests that trying to edit an author that does not exist returns the proper
+    response (404 NOT FOUND)
+    '''
+    def testPostToNonExistingAuthor(self):
+        data = {
+            "github": "http://github.com/new_github_url",
+            "profileImage": "new_profileImage_url"
+        }
+        response = self.client.post(reverse('manage-authors', args=["100"]), data, format="json")
+        assert(response.status_code == status.HTTP_404_NOT_FOUND)
+    
+    '''
+    Tests that sending a POST request with a body containing data in a format
+    other than JSON returns 400 BAD REQUEST
+    '''
+    def testPostToExistingAuthorWithNonJSONBody(self):
+        data = "profileImage=new_profileImage_url"
+        response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that sending a request that tries to edit fields that are not editable or 
+    don't exist returns 400 BAD REQUEST
+    '''
+    def testPostToExistingAuthorWithInvalidFields(self):
+        data = {
+            "displayName": "new_display_name"
+        }
+        response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the getAuthors API method works as expected, i.e. returns the appropriate
+    page with the appropriate page_size.
+    '''
+    def testGetMultipleAuthors(self):
+        data = {
+            "page": 2,
+            "size": 3
+        }
+        response = self.client.get(reverse('authors'), data, format="json")
+        assert(len(response.data) == 2)
+        assert(len(response.data["authorsPage"]) == 3)
+        assert(response.data["numPages"] == "4")  # There are 4 pages total, 4 = ceil(10/3)
+
+        # Now make sure that the 4th page only has 1 item
+        data["page"] = 4
+        response = self.client.get(reverse('authors'), data, format="json")
+        assert(len(response.data["authorsPage"]) == 1)
+
+
+    '''
+    Tests that the findAuthors API method works as expected. I will be searching for 
+    authors whose displayNames contain "1", there should be two authors.
+    '''
+    def testFindAuthors(self):
+        # Making sure pagination works right in this method as well,
+        # there should exist an author on both page 1 and page 2 with 
+        # this query.
+        page_1_query = {
+            "query": "1",
+            "page": "1",
+            "size": "1"
+        }
+        page_2_query = {
+            "query": "1",
+            "page": "2",
+            "size": "1"
+        }
+        response_1 = self.client.get(reverse('find-authors'), page_1_query, format="json")
+        response_2 = self.client.get(reverse('find-authors'), page_2_query, format="json")
+        assert(len(response_1.data) == len(response_2.data) and len(response_1.data) == 2)
+        assert(response_1.data["numPages"] == response_2.data["numPages"])
+        assert(len(response_1.data["authorsPage"]) == 1 and len(response_1.data["authorsPage"]) == 1)
+        assert("1" in response_1.data["authorsPage"][0]["displayName"])
+        assert("1" in response_2.data["authorsPage"][0]["displayName"])
+
+    '''
+    Tests that the createAuthor API method works as expected, with valid input. 
+    '''    
+    def testCreateNewAuthor(self):
+        data = {
+            "authorId": "11",
+            "displayName": "test_creation"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_201_CREATED)
+        created_author = Authors.objects.filter(id=data["authorId"])
+        assert(created_author.count() == 1)
+        created_author = Authors.objects.get(id=data["authorId"])
+        assert(created_author.id == data["authorId"])
+        assert(created_author.displayName == data["displayName"])
+    
+    '''
+    Tests that the createAuthor API method returns a 400 Bad Request if given a PUT request body
+    containing data in a format other than JSON
+    '''
+    def testCreateNewAuthorNonJSONData(self):
+        data = "authorId=11&displayName=test_creation"
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the createAuthor API method returns a 400 Bad Request if it is given a
+    body in JSON format but missing the "authorId" key
+    '''
+    def testCreateNewAuthorNoAuthorId(self):
+        data = {
+            "displayName": "test_author_creation"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the createAuthor API method returns a 400 Bad Request if it is given a
+    body in JSON format but missing the "displayName" key
+    '''
+    def testCreateNewAuthorNoDisplayName(self):
+        data = {
+            "authorId": "11"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the createAuthor API method returns a 409 Conflict if the authorId that 
+    is passed to it already exists in the database
+    '''
+    def testCreateNewAuthorDuplicateAuthorId(self):
+        data = {
+            "authorId": "1",
+            "displayName": "test_author_creation"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_409_CONFLICT)
+
+    '''
+    Tests that the createAuthor API method returns a 409 Conflict if the displayName that 
+    is passed to it already exists in the database
+    '''
+    def testCreateNewAuthorDuplicateAuthorId(self):
+        data = {
+            "authorId": "11",
+            "displayName": "test_author_1"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_409_CONFLICT)
+
+    

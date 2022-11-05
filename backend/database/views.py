@@ -16,7 +16,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
-from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 import uuid
 import json
 import database
@@ -907,6 +907,14 @@ class AuthorsAPIs(viewsets.ViewSet):
 
     #TESTED
     #GET //service/authors/{AUTHOR_ID}
+    @swagger_auto_schema(
+        operation_description="Fetches the author with id authorId.",
+        operation_summary="Fetches the author with id authorId.",
+        responses={
+            "200": "Success",
+            "404": "Author with id authorId does not exist in database"
+        }
+    )
     @action(detail=True, methods=['get'])
     def getAuthor(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -919,11 +927,19 @@ class AuthorsAPIs(viewsets.ViewSet):
         
         author = author.get(id=authorId)
 
-        serializer = AuthorSerializer(author, many=False)
+        serializer = AuthorsSerializer(author, many=False)
         return Response(serializer.data)
     
     #TESTED
     #GET //service/find?query={SEARCH_QUERY}&page={PAGE_NUM}&size={PAGE_SIZE}
+    @swagger_auto_schema(
+        operation_description="Fetches a page of authors whose displayName contains the value of the \"query\" query parameter.",
+        operation_summary="Fetches authors whose displayName contains the value of the \"query\" query parameter.",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'])
     def searchForAuthors(self, request, *args, **kwargs):
         #We search for displayName matching search_query
@@ -934,7 +950,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         authors = Authors.objects.filter(displayName__icontains=search_query)
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
-        serializer = AuthorSerializer(page_obj, many=True)
+        serializer = AuthorsSerializer(page_obj, many=True)
 
         res = {
             "numPages": f"{paginator.num_pages}",
@@ -943,6 +959,14 @@ class AuthorsAPIs(viewsets.ViewSet):
 
         return Response(res, content_type="application/json")
 
+    @swagger_auto_schema(
+        operation_description="Fetches a page of authors.",
+        operation_summary="Fetches a page of authors.",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     #TESTED
     #GET //service/authors?page={PAGE_NUM}&size={PAGE_SIZE}
     @action(detail=True, methods=['get'])
@@ -953,7 +977,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         authors = Authors.objects.all()
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
-        serializer = AuthorSerializer(page_obj, many=True)
+        serializer = AuthorsSerializer(page_obj, many=True)
 
         res = {
             "numPages": f"{paginator.num_pages}",
@@ -962,9 +986,26 @@ class AuthorsAPIs(viewsets.ViewSet):
 
         return Response(res, content_type="application/json")
 
-    
     #TESTED
     #POST //service/authors/{AUTHOR_ID}
+    @swagger_auto_schema(
+        operation_description="Modifies either the github or profileImage attributes of an author with id authorId or both.",
+        operation_summary="Modifies either the github or profileImage attributes of an author with id authorId or both",
+        operation_id="authors_update",
+        responses={
+            "202": "Modification Accepted",
+            "400": "Bad Request",
+            "404": "Author with id authorId does not exist in database"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=[],
+            properties={
+                'github': openapi.Schema(type=openapi.TYPE_STRING, description='The new Github URL of the author.'),
+                'profileimage': openapi.Schema(type=openapi.TYPE_STRING, description='The new profile image URL of the author.'),
+            }
+        )
+    )
     @action(detail=True, methods=['post'])
     def modifyAuthor(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -976,14 +1017,20 @@ class AuthorsAPIs(viewsets.ViewSet):
             return Response("Author does not exist!", status=status.HTTP_404_NOT_FOUND)
         author = author.get(id=authorId)
 
-        request_body = json.loads(request.body.decode("utf-8"))
-        if len(request_body) == 0:
-            return Response("Empty POST body. Did you mean GET?", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
+            # as the beginning and end of that string. This is a way to get around that. I then replace the 
+            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
+            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
+            # again.
+            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        except json.decoder.JSONDecodeError:
+            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
 
         editable_fields = ["github", "profileImage"]
         for field in request_body.keys():
             if field not in editable_fields:
-                return Response("Problem with POST. Aborting!", status=status.HTTP_400_BAD_REQUEST)
+                return Response(f"You are not allowed to modify field {field} or {field} does not exist!", status=status.HTTP_400_BAD_REQUEST)
         
         for field, value in request_body.items():
             if field == "profileImage":
@@ -999,10 +1046,38 @@ class AuthorsAPIs(viewsets.ViewSet):
     
     #TESTED
     #PUT //service/authors
+    @swagger_auto_schema(
+        operation_description="Creates an author with a certain ID and displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
+        operation_summary="Creates an author with a certain ID and displayName.",
+        operation_id="authors_create",
+
+        responses={
+            "201": "Created author successfully",
+            "400": "Bad Request",
+            "404": "Author with id authorId does not exist in database",
+            "409": "Conflict. An author already exists with either the id or the displayName specified in the request."
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=["authorId", "displayName"],
+            properties={
+                'authorId': openapi.Schema(type=openapi.TYPE_STRING, description='The id of the author to be created.'),
+                'displayName': openapi.Schema(type=openapi.TYPE_STRING, description='The displayName of the author to be created.'),
+            }
+        )
+    )
     @action(detail=True, methods=['put'])
     def createAuthor(self, request, *args, **kwargs):
         
-        request_body = json.loads(request.body.decode('utf-8'))
+        try:
+            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
+            # as the beginning and end of that string. This is a way to get around that. I then replace the 
+            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
+            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
+            # again.
+            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        except json.decoder.JSONDecodeError:
+            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
 
         host = request.build_absolute_uri().split('/authors/')[0]
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
@@ -1016,7 +1091,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             if authorById.count() == 1:
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
-            return Response("Can't create a profile with no display name/ or no ID!", status=status.HTTP_400_BAD_REQUEST)
+            return Response("Can't create a profile with no display name or no ID!", status=status.HTTP_400_BAD_REQUEST)
         url = host + '/authors/' + authorId
         if "profileImage" in request_body and request_body["profileImage"].strip() != "":
             profileImage = request_body["profileImage"]
