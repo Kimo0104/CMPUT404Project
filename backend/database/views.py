@@ -23,6 +23,9 @@ import database
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 def uuidGenerator():
     result = uuid.uuid4()
     return result.hex
@@ -270,7 +273,7 @@ class CommentsAPIs(viewsets.ViewSet):
     def getComments(self, request, *args, **kwargs):
         postId = kwargs["postId"]
         if not Posts.objects.filter(id=postId).count() == 1:
-            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = Comments.objects.filter(post_id=postId).order_by('-published')
         serializer = CommentsSerializer(queryset, many=True)
@@ -287,9 +290,9 @@ class CommentsAPIs(viewsets.ViewSet):
 
         #check that authorId and postId exist
         if not Authors.objects.filter(id=authorId).count() ==1:
-            return Response({"Tried to send post to non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
         if not Posts.objects.filter(id=postId).count() == 1:
-            return Response({"Tried to send non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Tried to make comment on non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
         author = Authors.objects.get(id=authorId)
         post = Posts.objects.get(id=postId)
@@ -298,13 +301,13 @@ class CommentsAPIs(viewsets.ViewSet):
         body = JSONParser().parse(io.BytesIO(request.body))
         contentType = 'text/plain'
         if 'contentType' in body:
-            if body['contentBody'] == 'text/markdown':
+            if body['contentType'] == 'text/markdown':
                 contentType = 'text/markdown'
-            elif body['contentBody'] != 'text/plain':
-                return Response({"Failed comment creation. Invalid input for contentBody."}, status=status.HTTP_400_BAD_REQUEST)
+            elif body['contentType'] != 'text/plain':
+                return Response({"Failed comment creation. Invalid input for contentType."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if 'comment' in body:
-            comment = str(body['comment'])
+        if 'comment' in body and str(body['comment']).strip() != '':
+            comment = str(body['comment']).strip()
         else:
             return Response({"Failed comment creation. Missing 'comment' column."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -394,7 +397,9 @@ class LikesAPIs(viewsets.ViewSet):
             return Response({"Tried to delete a like on a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
         liker = Authors.objects.get(id=likerId)
         post = Posts.objects.get(id=postId)
-        
+
+        if Likes.objects.filter(post=post, author=liker).count() < 1:
+            return Response({"Tried to delete a non-existent like"}, status=status.HTTP_400_BAD_REQUEST)
         Likes.objects.filter(post=post, author=liker).delete()
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
@@ -414,8 +419,10 @@ class LikesAPIs(viewsets.ViewSet):
             return Response({"Tried to delete a like on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
         liker = Authors.objects.get(id=likerId)
         comment = Comments.objects.get(id=commentId)
-        
-        Likes.objects.filter(comment=comment, author=liker).delete()
+
+        if LikesComments.objects.filter(comment=comment, author=liker).count() < 1:
+            return Response({"Tried to delete a non-existent like"}, status=status.HTTP_400_BAD_REQUEST)
+        LikesComments.objects.filter(comment=comment, author=liker).delete()
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
@@ -432,6 +439,9 @@ class LikesAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if Posts.objects.filter(id=postId).count() < 1:
+            return Response({"Tried to get likes from a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
             
         likeObjs = []
         for like in Likes.objects.filter(post_id=postId):
@@ -458,6 +468,9 @@ class LikesAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if Comments.objects.filter(id=commentId).count() < 1:
+            return Response({"Tried to get likes from a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
 
         commentLikeObjs = []
         for like in LikesComments.objects.filter(comment_id=commentId):
@@ -508,6 +521,9 @@ class LikedAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if not Authors.objects.filter(id=authorId).count() == 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         likeObjs = []
         for like in Likes.objects.filter(author_id=authorId):
