@@ -793,7 +793,7 @@ class InboxAPIs(viewsets.ViewSet):
     def deleteInbox(self, request, *args, **kwargs):
         authorId = str(kwargs["authorId"])
         if not Authors.objects.filter(id=authorId).count() == 1:
-            return Response({"This Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"Tried to delete inbox on non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         authorObj = Authors.objects.get(id=authorId)
         Inbox.objects.filter(author=authorObj).delete()

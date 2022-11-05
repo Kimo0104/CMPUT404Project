@@ -41,7 +41,9 @@ class CommentsAPITest(APITestCase):
             comment = "test comment"
         )
 
-    # test getComment for post 1 returns only the comments for post 1
+    '''
+    test getComment for post 1 returns only the comments for post 1
+    '''
     def testGetCorrectComment(self):
         response = self.client.get(reverse('comments', args=[self.test_author1.id,self.test_post1.id]), format='json')
         assert(response.status_code == status.HTTP_200_OK)
@@ -51,12 +53,16 @@ class CommentsAPITest(APITestCase):
         assert(response.data[0]['post'] == "1")
         assert(response.data[0]['comment'] == "test comment")
 
-    # test getComment for invalid post
+    '''
+    test getComment for invalid post
+    '''
     def testGetCommentWithInvalidPost(self):
         response = self.client.get(reverse('comments', args=[self.test_author1.id,10]), format='json')
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
 
-    # test createComment for creating exactly one comment as specified
+    '''
+    test createComment for creating exactly one comment as specified
+    '''
     def testCreateCorrectComment(self):
         commentStr = 'this is a test comment!'
         data = {
@@ -71,8 +77,9 @@ class CommentsAPITest(APITestCase):
         assert(createdComment.contentType == 'text/plain')
         assert(createdComment.author.id == self.test_author2.id)
         assert(createdComment.post.id == self.test_post1.id)
-
-    # test createComment for invalid author
+    '''
+    test createComment for invalid author
+    '''
     def testCreateCommentWithInvalidAuthor(self):
         data = {
             'comment' : 'this is a test comment!'
@@ -81,7 +88,9 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
         assert(Comments.objects.all().count() == 1) # no extra comments
 
-    # test createComment for invalid post
+    '''
+    test createComment for invalid post
+    '''
     def testCreateCommentWithInvalidPost(self):
         data = {
             'comment' : 'this is a test comment!'
@@ -90,7 +99,9 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
         assert(Comments.objects.all().count() == 1) # no extra comments
 
+    '''
     # test createComment for invalid contentType
+    '''
     def testCreateCommentWithInvalidContentType(self):
         data = {
             'comment' : 'this is a test comment!',
@@ -100,7 +111,9 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
         assert(Comments.objects.all().count() == 1) # no extra comments
 
-    # test createComment with invalid content
+    '''
+    test createComment with invalid content    
+    '''
     def testCreateCommentWithInvalidContent(self):
         data = {
             'comment' : ''
@@ -670,7 +683,6 @@ class InboxTest(APITestCase):
         response = self.client.get(reverse('inbox', args=args), {'page': 3,'size': 5}, format='json')
         assert(len(response.data["inbox"]) == 0)
 
-    
     '''
     test getInbox with an invalid authorId
     '''
@@ -678,6 +690,138 @@ class InboxTest(APITestCase):
         args = [10]
         response = self.client.get(reverse('inbox', args=args), format='json')
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    test sendPost with valid input
+    '''
+    def testSendPost(self):
+        args = [self.test_author2.id, self.test_post.id]
+        response = self.client.post(reverse('send-direct-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 1)
+
+    '''
+    test sendPost with invalid authorId
+    '''
+    def testSendPostWithInvalidAuthor(self):
+        args = [10, self.test_post.id]
+        response = self.client.post(reverse('send-direct-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPost with invalid postId
+    '''
+    def testSendPostWithInvalidPost(self):
+        args = [self.test_author2.id, 10]
+        response = self.client.post(reverse('send-direct-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPublicPost with a follower
+    '''
+    def testSendPublicPostWithFollower(self):
+        Followers.objects.create(
+            id = "1",
+            followed = self.test_author1,
+            follower = self.test_author2
+        )
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 1)
+
+    '''
+    test sendPublicPost on a non-follower
+    '''
+    def testSendPublicPostWithoutFollower(self):
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPublicPost with as an invalid author
+    '''
+    def testSendPublicPostWithInvalidAuthor(self):
+        args = [10, self.test_post.id]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPublicPost with an invalid post
+    '''
+    def testSendPublicPostWithInvalidPost(self):
+        args = [self.test_author1.id, 10]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendFriendPost with a friend
+    '''
+    def testSendPublicPostWithFollower(self):
+        Followers.objects.create(
+            id = "1",
+            followed = self.test_author1,
+            follower = self.test_author2
+        )
+        Followers.objects.create(
+            id = "2",
+            followed = self.test_author2,
+            follower = self.test_author1
+        )
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 1)
+
+    '''
+    test sendFriendPost on a non-follower
+    '''
+    def testSendPublicPostWithoutFollower(self):
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendFriendPost with as an invalid author
+    '''
+    def testSendPublicPostWithInvalidAuthor(self):
+        args = [10, self.test_post.id]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendFriendPost with an invalid post
+    '''
+    def testSendPublicPostWithInvalidPost(self):
+        args = [self.test_author1.id, 10]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test deleteInbox by deleting all inbox entries
+    '''
+    def testDeleteInbox(self):
+        args = [self.test_author1.id]
+        response = self.client.delete(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.all().count() == 0)
+
+    '''
+    test deleteInbox with invalid authorId
+    '''
+    def testDeleteInboxWithInvalidAuthor(self):
+        args = [10]
+        response = self.client.delete(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.all().count() == 1)
 
 class PostTest(APITestCase):
     def setUp(self):
