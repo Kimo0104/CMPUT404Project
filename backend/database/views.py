@@ -260,11 +260,8 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#completed and tested
 class CommentsAPIs(viewsets.ViewSet):
 
-    #TESTED
-    #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
     @action(detail=True, methods=['get'],)
@@ -277,10 +274,23 @@ class CommentsAPIs(viewsets.ViewSet):
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    #TESTED
-    #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
-    #if you post an object of “type”:”comment”, it will add your comment to the post whose id is POST_ID
+    #creates a comment for POST_ID
+    @swagger_auto_schema(
+        operation_description="creates a comment for POST_ID",
+        operation_summary="creates a comment for POST_ID",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['comment'],
+            properties={
+                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='The text of the comment')
+            }
+        )
+    )
     @action(detail=True, methods=['post'],)
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -319,13 +329,18 @@ class CommentsAPIs(viewsets.ViewSet):
 
         return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
 
-#completed and tested
 class LikesAPIs(viewsets.ViewSet):
-
-    #TESTED
-    #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
+    #like a post given a POST_ID and LIKER_ID
     @action(detail=True, methods=['post'])
+    @swagger_auto_schema(
+        operation_description="like a post",
+        operation_summary="like a post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     def createPostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
         postId = kwargs["postId"]
@@ -351,10 +366,17 @@ class LikesAPIs(viewsets.ViewSet):
 
         return Response("{Like created successfully}", status=status.HTTP_200_OK )
 
-    #TESTED
-    #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
+    #like a comment given a COMMENT_ID and LIKER_ID
     @action(detail=True, methods=['post'])
+    @swagger_auto_schema(
+        operation_description="like a comment",
+        operation_summary="like a comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     def createCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
         commentId = kwargs["commentId"]
@@ -380,9 +402,16 @@ class LikesAPIs(viewsets.ViewSet):
 
         return Response("{Like created successfully}", status=status.HTTP_200_OK )
 
-    #ESTED
-    #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
+    #deletes a post like given a POST_ID and a LIKER_ID
+    @swagger_auto_schema(
+        operation_description="deletes a post",
+        operation_summary="deletes a post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'])
     def deletePostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
@@ -402,9 +431,16 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-    #TESTED
-    #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
+    #deletes a comment like given a COMMENT_ID and a LIKER_ID
+    @swagger_auto_schema(
+        operation_description="deletes a comment",
+        operation_summary="deletes a comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'])
     def deleteCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
@@ -424,11 +460,16 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-
-    #TESTED
-    #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes/inbox?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
+    @swagger_auto_schema(
+        operation_description="a list of likes on this post",
+        operation_summary="a list of likes on this post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getPostLikes(self, request, *args, **kwargs):
         postId = kwargs["postId"]
@@ -454,10 +495,16 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-    #TESTED
-    #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/inbox?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
+    @swagger_auto_schema(
+        operation_description="a list of likes on this comment",
+        operation_summary="a list of likes on this comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
         commentId = kwargs["commentId"]
@@ -483,12 +530,17 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-#completed and tested
 class LikedAPIs(viewsets.ViewSet):
-    #TESTED
-    #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/like/{LIKER_ID}
     #returns true if authorId has made a like on postId, otherwise false
+    @swagger_auto_schema(
+        operation_description="returns true if authorId has made a like on postId, otherwise false",
+        operation_summary="returns true if authorId has made a like on postId, otherwise false",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'])
     def getAuthorPostLiked(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
@@ -507,10 +559,16 @@ class LikedAPIs(viewsets.ViewSet):
             return Response(True, status=status.HTTP_200_OK)
         return Response(False, status=status.HTTP_200_OK)
 
-    #TESTED
-    #
     #GET authors/{AUTHOR_ID}/liked/inbox?page=value&size=value
     #list what public things AUTHOR_ID liked
+    @swagger_auto_schema(
+        operation_description="list what public things the author has liked",
+        operation_summary="list what public things the author has liked",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -538,13 +596,19 @@ class LikedAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-#completed and not tested
+
 class InboxAPIs(viewsets.ViewSet):
 
-    #NOT TESTED
-    #
-    #GET authors/{AUTHOR_ID}/inbox?page=value&size=value
+    #*GET authors/{AUTHOR_ID}/inbox?page=value&size=value
     #if authenticated get a list of posts sent to AUTHOR_ID (paginated)
+    @swagger_auto_schema(
+        operation_description="get a list of posts/likes/comments sent to author (paginated)",
+        operation_summary="get a list of posts/likes/comments sent to author (paginated)",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -585,10 +649,16 @@ class InboxAPIs(viewsets.ViewSet):
 
         return Response(outputDic, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
+    #*POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
+    @swagger_auto_schema(
+        operation_description="send a post to the author",
+        operation_summary="send a post to the author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['post'])
     def sendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -610,10 +680,16 @@ class InboxAPIs(viewsets.ViewSet):
 
         return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #POST inbox/public/{AUTHOR_ID}/{POST_ID}
+    #*POST inbox/public/{AUTHOR_ID}/{POST_ID}
     #send a post to the people following this author
+    @swagger_auto_schema(
+        operation_description="send a post to the people following this author",
+        operation_summary="send a post to the people following this author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['post'])
     def sendPublicPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -642,10 +718,17 @@ class InboxAPIs(viewsets.ViewSet):
         string = f'Successfully sent post to your {numFollowers} followers'
         return Response({string}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #POST inbox/friend/{AUTHOR_ID}/{POST_ID}
+
+    #*POST inbox/friend/{AUTHOR_ID}/{POST_ID}
     #send a post to this author's friends
+    @swagger_auto_schema(
+        operation_description="send a post to this author's friends",
+        operation_summary="send a post to this author's friends",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['post'])
     def sendFriendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -676,10 +759,16 @@ class InboxAPIs(viewsets.ViewSet):
         string = f'Successfully sent post to your {numFriends} friends'
         return Response({string}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #DELETE authors/{AUTHOR_ID}/inbox
+    #*DELETE authors/{AUTHOR_ID}/inbox
     #clear the inbox
+    @swagger_auto_schema(
+        operation_description="clear the inbox",
+        operation_summary="clear the inbox",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
         authorId = str(kwargs["authorId"])
