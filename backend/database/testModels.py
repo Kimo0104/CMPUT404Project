@@ -618,4 +618,85 @@ class FollowsTests(TestCase):
                 followed = self.test_foreign_author
             )
     
+class AuthorsTest(TestCase):
+    '''
+    Sets up the authors to be tested.
+    One author will have set values, and another will have default values.
+    '''
+    def setUp(self):
+        self.test_author_set_values = Authors.objects.create(
+                                        id=1, 
+                                        host="//service", 
+                                        displayName="test_author_1", 
+                                        url="//service/author/1", 
+                                        github="http://github.com/test_author", 
+                                        accepted=True, 
+                                        profileImage="url_to_profile_image"
+                                        )
+        
+        self.test_author_default_values = Authors.objects.create(
+                                            id=2, 
+                                            host="//service", 
+                                            displayName="test_author_2", 
+                                            url=f"//service/author/2", 
+                                            profileImage="url_to_profile_image"
+                                            )
+    
+    '''
+    Ensures that the values we set in the Authors object are the values
+    actually stored in the database for that author.
+    '''
+    def testSetValues(self):
+        test_author = Authors.objects.filter(id=1)
+        assert(test_author.count() == 1)
+        test_author = test_author.get(id=1)
+        assert(test_author.host == "//service")
+        assert(test_author.displayName=="test_author_1")
+        assert(test_author.url == "//service/author/1")
+        assert(test_author.github=="http://github.com/test_author")
+        assert(test_author.accepted==True)
+        assert(test_author.profileImage == "url_to_profile_image")
+    
+    '''
+    Ensures that the default values we set in the Authors model are the values
+    actually stored in the database for an Authors object we created and we 
+    didn't specify what those values should be.
+    '''
+    def testDefaultValues(self):
+        test_author = Authors.objects.filter(id=2)
+        assert(test_author.count() == 1)
+        test_author = test_author.get(id=2)
+        assert(test_author.type=="author")
+        assert(test_author.github==None)
+        assert(test_author.accepted==False)
+
+    '''
+    Ensures the UNIQUE constraint on the id field (the primary key) of the Authors model is
+    met 
+    '''
+    def testDuplicateId(self):
+        with self.assertRaisesRegex(IntegrityError, "duplicate key value violates unique constraint"):
+            Authors.objects.create(
+                id=1, 
+                host="//service", 
+                displayName="different_displayName", 
+                url=f"//service/author/2", 
+                profileImage="url_to_profile_image"
+            )
+    
+    '''
+    Ensures that the UNIQUE constraint on the displayName field of the Authors model
+    is actually met.
+    '''
+    def testDuplicateDisplayName(self):
+        with self.assertRaisesRegex(IntegrityError, "duplicate key value violates unique constraint"):
+            Authors.objects.create(
+                id=3,
+                host="//service", 
+                displayName="test_author_1", 
+                url=f"//service/author/2", 
+                profileImage="url_to_profile_image"
+            )
+    
+
 
