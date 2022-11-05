@@ -177,18 +177,8 @@ class LikesTest(APITestCase):
             github = "github.com",
             profileImage = "image"
         ) 
-        self.test_post1 = Posts.objects.create(
+        self.test_post = Posts.objects.create(
             id = "1",
-            title = "This is a test",
-            source = "test source",
-            origin = "test origin",
-            description = "test description",
-            content = "test content",
-            originalAuthor = self.test_author1,
-            author = self.test_author1
-        )
-        self.test_post2 = Posts.objects.create(
-            id = 2,
             title = "This is a test",
             source = "test source",
             origin = "test origin",
