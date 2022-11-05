@@ -682,6 +682,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followRequest
     #get all the people who want to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all follow requests with a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -694,6 +701,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
+    @swagger_auto_schema(
+        operation_description="Delete a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )    
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -708,6 +722,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followRequest/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -721,6 +742,13 @@ class FollowRequestsAPIs(viewsets.ViewSet):
 
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -739,6 +767,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/followers
     #get all the followers of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all the followers with a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -751,6 +786,13 @@ class FollowsAPIs(viewsets.ViewSet):
     
     #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -764,6 +806,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #PUT authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['put'],)
     def addFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -781,6 +830,13 @@ class FollowsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Deletes a follow relationship object with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -794,6 +850,13 @@ class FollowsAPIs(viewsets.ViewSet):
     
     #POST authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         return FollowRequestsAPIs.requestToFollow(self, request, *args, **kwargs)
