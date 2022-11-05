@@ -269,6 +269,14 @@ class CommentsAPIs(viewsets.ViewSet):
     #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Gets Comments on a Post",
+        operation_summary="Gets the comments on a Post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
         postId = kwargs["postId"]
