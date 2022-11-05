@@ -806,6 +806,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #get all the people who want to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches all follow requests with a specific author_id",
+        operation_summary="Fetches all follow requests with a specific author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -825,6 +826,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
     @swagger_auto_schema(
         operation_description="Delete a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Delete a follow request with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -846,6 +848,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Fetches a follow request with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -866,6 +869,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Adds a follow request with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -891,6 +895,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #get all the followers of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches all the followers with a specific author_id",
+        operation_summary="Fetches all the followers with a specific author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -910,6 +915,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches a follow relationship object with a specific author_id and foreign_author_id",
+        operation_summary="Fetches a follow relationship object with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -930,6 +936,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        operation_summary="Adds a follow relationship object with a specific author_id and foreign_author_id",
         operation_id="authors_followers_create",
         responses={
             "200": "Success",
@@ -955,6 +962,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Deletes a follow relationship object with a specific author_id and foreign_author_id",
+        operation_summary="Deletes a follow relationship object with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -975,6 +983,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Adds a follow request with a specific author_id and foreign_author_id",
         operation_id="authors_followers_update",
         responses={
             "200": "Success",
@@ -1020,6 +1029,19 @@ class AuthorsAPIs(viewsets.ViewSet):
     @swagger_auto_schema(
         operation_description="Fetches a page of authors whose displayName contains the value of the \"query\" query parameter.",
         operation_summary="Fetches authors whose displayName contains the value of the \"query\" query parameter.",
+        manual_parameters=[
+            openapi.Parameter('query', openapi.IN_QUERY,
+                        "The query parameter.",
+                        type=openapi.TYPE_INTEGER),
+            openapi.Parameter('page', openapi.IN_QUERY,
+                      "The page number required.",
+                      type=openapi.TYPE_INTEGER
+                      ),
+            openapi.Parameter('size', openapi.IN_QUERY,
+                      "The size of each page.",
+                      type=openapi.TYPE_INTEGER
+                      )
+        ],
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -1047,6 +1069,14 @@ class AuthorsAPIs(viewsets.ViewSet):
     @swagger_auto_schema(
         operation_description="Fetches a page of authors.",
         operation_summary="Fetches a page of authors.",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY,
+                      "The page number required.",
+                      type=openapi.TYPE_INTEGER),
+            openapi.Parameter('size', openapi.IN_QUERY,
+                      "The size of each page.",
+                      type=openapi.TYPE_INTEGER)
+        ],
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -1075,7 +1105,7 @@ class AuthorsAPIs(viewsets.ViewSet):
     #POST //service/authors/{AUTHOR_ID}
     @swagger_auto_schema(
         operation_description="Modifies either the github or profileImage attributes of an author with id authorId or both.",
-        operation_summary="Modifies either the github or profileImage attributes of an author with id authorId or both",
+        operation_summary="Modifies either the github or profileImage attributes of an author with id authorId or both.",
         operation_id="authors_update",
         responses={
             "202": "Modification Accepted",
@@ -1135,7 +1165,6 @@ class AuthorsAPIs(viewsets.ViewSet):
         operation_description="Creates an author with a certain ID and displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
         operation_summary="Creates an author with a certain ID and displayName.",
         operation_id="authors_create",
-
         responses={
             "201": "Created author successfully",
             "400": "Bad Request",
