@@ -194,7 +194,7 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#completed and tested
+#completed
 class CommentsAPIs(viewsets.ViewSet):
 
     #TESTED
@@ -211,7 +211,7 @@ class CommentsAPIs(viewsets.ViewSet):
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    #TESTED
+    #NOT TESTED
     #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #if you post an object of “type”:”comment”, it will add your comment to the post whose id is POST_ID
@@ -253,10 +253,10 @@ class CommentsAPIs(viewsets.ViewSet):
 
         return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
 
-#completed and tested
+#completed
 class LikesAPIs(viewsets.ViewSet):
 
-    #TESTED
+    #NOT TESTED
     #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
     @action(detail=True, methods=['post'])
@@ -285,7 +285,7 @@ class LikesAPIs(viewsets.ViewSet):
 
         return Response("{Like created successfully}", status=status.HTTP_200_OK )
 
-    #TESTED
+    #NOT TESTED
     #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
     @action(detail=True, methods=['post'])
@@ -314,7 +314,7 @@ class LikesAPIs(viewsets.ViewSet):
 
         return Response("{Like created successfully}", status=status.HTTP_200_OK )
 
-    #TESTED
+    #NOT TESTED
     #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
     @action(detail=True, methods=['delete'])
@@ -336,7 +336,7 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-    #TESTED
+    #NOT TESTED
     #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
     @action(detail=True, methods=['delete'])
@@ -359,7 +359,7 @@ class LikesAPIs(viewsets.ViewSet):
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
 
-    #TESTED
+    #NOT TESTED
     #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes/inbox?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
@@ -388,7 +388,7 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-    #TESTED
+    #NOT TESTED
     #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/inbox?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
@@ -419,7 +419,7 @@ class LikesAPIs(viewsets.ViewSet):
 
 #completed and tested
 class LikedAPIs(viewsets.ViewSet):
-    #TESTED
+    #NOT TESTED
     #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/like/{LIKER_ID}
     #returns true if authorId has made a like on postId, otherwise false
@@ -441,7 +441,7 @@ class LikedAPIs(viewsets.ViewSet):
             return Response(True, status=status.HTTP_200_OK)
         return Response(False, status=status.HTTP_200_OK)
 
-    #TESTED
+    #NOT TESTED
     #
     #GET authors/{AUTHOR_ID}/liked/inbox?page=value&size=value
     #list what public things AUTHOR_ID liked
