@@ -96,7 +96,6 @@ urlpatterns = [
         "delete": "removeFollower",
         "post": "requestToFollow"}), name = 'manage-followers'),
 
-
     #authors
     path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"}), name = 'authors'),
     path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"}), name = 'manage-authors'),
