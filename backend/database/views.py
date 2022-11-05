@@ -823,6 +823,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        operation_id="authors_followers_create",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -867,6 +868,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_id="authors_followers_update",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
