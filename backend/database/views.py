@@ -51,6 +51,13 @@ class UserAPIs(viewsets.ViewSet):
     """
     #POST users/
     #adds a user to the default Django user table
+    @swagger_auto_schema(
+        operation_description="Create a new user when they first register",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
@@ -75,6 +82,13 @@ class UserAPIs(viewsets.ViewSet):
     """ 
     Login the user. 
     """
+    @swagger_auto_schema(
+        operation_description="Authenticate the user and log in.",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
     @action(detail=True, methods=['PUT'])
     def loginUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
