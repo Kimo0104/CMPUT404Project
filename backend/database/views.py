@@ -1,32 +1,27 @@
-from email.mime import image
 import io
-from xmlrpc.client import Boolean
 from rest_framework.parsers import JSONParser
 import json
 from datetime import datetime
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework.response import Response
-from django.http import JsonResponse
 from rest_framework import status
 import io
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-#Models defines how their objects are stored in the database
-#serializers defines how to convert a post object to JSON
-
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
 from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
-
 import uuid
 import json
 import database
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -101,7 +96,8 @@ class PostsAPIs(viewsets.ViewSet):
     #GET authors/{AUTHOR_ID/posts/{POST_ID}
     #get the public post whose id is POST_ID
     @swagger_auto_schema(
-        operation_description="Fetches the post with specific post_id and author_id",
+        operation_description="Fetches the post with specific postId and authorId",
+        operation_summary="Fetches the post with specific postId and authorId",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -122,6 +118,7 @@ class PostsAPIs(viewsets.ViewSet):
     #get the public posts of this author
     @swagger_auto_schema(
         operation_description="Fetches all the public posts made by an author",
+        operation_summary="Fetches all the public posts made by an author",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -152,7 +149,9 @@ class PostsAPIs(viewsets.ViewSet):
     #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
     @swagger_auto_schema(
-        operation_description="updates a post made by an author",
+        operation_description="Updates a post made by an author",
+        operation_summary="Updates a post made by an author",
+        operation_id="authors_posts_update",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -191,6 +190,7 @@ class PostsAPIs(viewsets.ViewSet):
     #remove the post whose id is POST_ID
     @swagger_auto_schema(
         operation_description="Deletes an author's post",
+        operation_summary="Deletes an author's post",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -207,6 +207,8 @@ class PostsAPIs(viewsets.ViewSet):
     #create a post where its id is POST_ID
     @swagger_auto_schema(
         operation_description="Creates a post for an author",
+        operation_summary="Creates a post for an author",
+        operation_id="authors_posts_create",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
