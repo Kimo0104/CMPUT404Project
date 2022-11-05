@@ -28,6 +28,9 @@ import uuid
 import json
 import database
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 def uuidGenerator():
     result = uuid.uuid4()
     return result.hex
@@ -97,6 +100,13 @@ class PostsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID/posts/{POST_ID}
     #get the public post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Fetches the post with specific post_id and author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -110,6 +120,13 @@ class PostsAPIs(viewsets.ViewSet):
 
     #GET authors/{AUTHOR_ID}/posts
     #get the public posts of this author
+    @swagger_auto_schema(
+        operation_description="Fetches all the public posts made by an author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'])
     def getPublicPosts(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -134,6 +151,27 @@ class PostsAPIs(viewsets.ViewSet):
 
     #POST authors/{AUTHOR_ID/posts/{POST_ID}
     #update the post whose id is POST_ID (must be authenticated)
+    @swagger_auto_schema(
+        operation_description="updates a post made by an author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['id'],
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_STRING, description='The Post ID'),
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='The title of the post'),
+                'source': openapi.Schema(type=openapi.TYPE_STRING, description='The source of the post'),
+                'origin': openapi.Schema(type=openapi.TYPE_STRING, description='The origin of the post'),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description='The description of the post'),
+                'contentType': openapi.Schema(type=openapi.TYPE_STRING, description='The conte type of the post, can only be text/plain or text/markdown'),
+                'visibility': openapi.Schema(type=openapi.TYPE_STRING, description='The visibility of the post, can only be PUBLIC or FRIENDS or UNLISTED'),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
+            }
+        )
+    )
     @action(detail=True, methods=['post'],)
     def updatePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -151,6 +189,13 @@ class PostsAPIs(viewsets.ViewSet):
 
     #DELETE authors/{AUTHOR_ID/posts/{POST_ID}
     #remove the post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Deletes an author's post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'],)
     def deletePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -160,6 +205,27 @@ class PostsAPIs(viewsets.ViewSet):
 
     #PUT authors/{AUTHOR_ID/posts
     #create a post where its id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Creates a post for an author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['title','source','origin','description','contentType','visibility','content','originalAuthor','author','published'],
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='The title of the post'),
+                'source': openapi.Schema(type=openapi.TYPE_STRING, description='The source of the post'),
+                'origin': openapi.Schema(type=openapi.TYPE_STRING, description='The origin of the post'),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description='The description of the post'),
+                'contentType': openapi.Schema(type=openapi.TYPE_STRING, description='The conte type of the post, can only be text/plain or text/markdown'),
+                'visibility': openapi.Schema(type=openapi.TYPE_STRING, description='The visibility of the post, can only be PUBLIC or FRIENDS or UNLISTED'),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
+                'published': openapi.Schema(type=openapi.FORMAT_DATETIME, description='The publish date of the post'),
+            }
+        )
+    )
     @action(detail=True, methods=['put'],)
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
