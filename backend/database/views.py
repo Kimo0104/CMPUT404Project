@@ -616,7 +616,7 @@ class LikedAPIs(viewsets.ViewSet):
 
 class InboxAPIs(viewsets.ViewSet):
 
-    #*GET authors/{AUTHOR_ID}/inbox?page=value&size=value
+    #GET authors/{AUTHOR_ID}/inbox?page=value&size=value
     #if authenticated get a list of posts sent to AUTHOR_ID (paginated)
     @swagger_auto_schema(
         operation_description="get a list of posts/likes/comments sent to author (paginated)",
@@ -634,6 +634,9 @@ class InboxAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if not Authors.objects.filter(id=authorId).count() == 1:
+            return Response({"Tried to check inbox of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         inboxObjs = []
         #get enough posts, sorted
