@@ -9,6 +9,8 @@ import Grid from '@mui/material/Grid';
 import Share from '../share/Share'
 import Like from '../like/Like'
 import { getAuthor } from '../../APIRequests'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function BasicCard(props) {
   //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
@@ -32,9 +34,14 @@ export default function BasicCard(props) {
         <Typography sx={{ fontSize: 32 }} color="text.primary" gutterBottom>
           {props.title}
         </Typography>
-        <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
-          {props.content}
-        </Typography>
+        { props.contentType === "text/plain" &&
+          <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
+            {props.content}
+          </Typography>
+        }
+        { props.contentType === "text/markdown" &&
+          <ReactMarkdown children={props.content} remarkPlugins={[remarkGfm]} />
+        }
       </CardContent>
       <Grid>
         <Grid container spacing={2}>
