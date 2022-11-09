@@ -9,8 +9,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
-import Inbox from '../inbox/Inbox'
-import MyPosts from '../myPosts/MyPosts'
 import HomeTab from '../homeTab/HomeTab'
 import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
 

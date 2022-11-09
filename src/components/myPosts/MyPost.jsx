@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { deletePost, modifyPost } from "../../APIRequests.js";
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import ReactMarkdown from 'react-markdown'
 const formats = [
   {
     value: 'text/plain',
@@ -259,9 +259,14 @@ export default function BasicCard(props) {
         <Typography sx={{ fontSize: 32 }} color="text.primary" gutterBottom>
           {props.item.title}
         </Typography>
-        <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
-          {props.item.content}
-        </Typography>
+        { props.item.contentType === "text/plain" &&
+          <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
+            {content}
+          </Typography>
+        }
+        { props.item.contentType === "text/markdown" &&
+          <ReactMarkdown children={content} />
+        }
       </CardContent>
     </Card>
   );
