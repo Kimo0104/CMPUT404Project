@@ -21,10 +21,10 @@ export default function TabsWrappedLabel(props) {
         <Tab value="two" label="My Posts" />
       </Tabs>
         {
-          value == "one" && <Inbox authorId={props.authorId}/>
+          value === "one" && <Inbox authorId={props.authorId}/>
         }
         {
-          value == "two" && <MyPosts authorId={props.authorId}/>
+          value === "two" && <MyPosts authorId={props.authorId}/>
         }
     </Box>
   );
