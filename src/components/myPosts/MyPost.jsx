@@ -15,6 +15,8 @@ import { deletePost, modifyPost } from "../../APIRequests.js";
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
 const formats = [
   {
     value: 'text/plain',
@@ -265,7 +267,7 @@ export default function BasicCard(props) {
           </Typography>
         }
         { props.item.contentType === "text/markdown" &&
-          <ReactMarkdown children={content} />
+          <ReactMarkdown children={content} remarkPlugins={[remarkGfm]}/>
         }
       </CardContent>
     </Card>

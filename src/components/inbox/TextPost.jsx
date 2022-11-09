@@ -10,6 +10,7 @@ import Share from '../share/Share'
 import Like from '../like/Like'
 import { getAuthor } from '../../APIRequests'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export default function BasicCard(props) {
   //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
@@ -39,7 +40,7 @@ export default function BasicCard(props) {
           </Typography>
         }
         { props.contentType === "text/markdown" &&
-          <ReactMarkdown children={props.content} />
+          <ReactMarkdown children={props.content} remarkPlugins={[remarkGfm]} />
         }
       </CardContent>
       <Grid>
