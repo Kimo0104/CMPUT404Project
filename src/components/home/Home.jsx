@@ -17,11 +17,11 @@ import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.
 
 const formats = [
   {
-    value: 'text',
+    value: 'text/plain',
     label: 'Plain Text',
   },
   {
-    value: 'markdown',
+    value: 'text/markdown',
     label: 'Markdown',
   }
 ];
@@ -41,7 +41,7 @@ const visibilities = [
 ];
 export default function Home() {
   const [open, setOpen] = useState(false);
-  const [format, setFormat] = useState("text");
+  const [format, setFormat] = useState("text/plain");
   const [visibility, setVisibility] = useState("PUBLIC");
   const [title, setTitle] = useState("");
   const [source, setSource] = useState("");

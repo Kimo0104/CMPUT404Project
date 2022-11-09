@@ -17,11 +17,11 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 const formats = [
   {
-    value: 'text',
+    value: 'text/plain',
     label: 'Plain Text',
   },
   {
-    value: 'markdown',
+    value: 'text/markdown',
     label: 'Markdown',
   }
 ];
