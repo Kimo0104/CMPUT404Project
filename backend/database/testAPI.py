@@ -532,6 +532,40 @@ class LikedTests(APITestCase):
         args = [self.test_author1.id, self.test_post.id, 10]
         response = self.client.get(reverse('has-liked', args=args), format='json')
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    test getAuthorCommentsLiked returns true on a comment the author has liked
+    '''
+    def testGetAuthorCommentsLikedTrue(self):
+        args = [self.test_author1.id, self.test_post.id, self.test_comment.id, self.test_author2.id]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(response.data)
+
+    '''
+    test getAuthorCommentLiked returns false on a comment the author has not liked
+    '''
+    def testGetAuthorCommentsLikedFalse(self):
+        args = [self.test_author1.id, self.test_post.id, self.test_comment.id, self.test_author1.id]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(not response.data)
+
+    '''
+    test getAuthorCommentLiked with an invalid commentId
+    '''
+    def testGetAuthorCommentsLikedWithInvalidPost(self):
+        args = [self.test_author1.id, self.test_post.id, 10, self.test_author2.id]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    test getAuthorCommentLiked with an invalid likerId
+    '''
+    def testGetAuthorCommentsLikedWithInvalidLiker(self):
+        args = [self.test_author1.id, self.test_post.id, self.test_comment.id, 10]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
     
     '''
     test getAuthorLiked by getting all things liked
