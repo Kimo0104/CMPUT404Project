@@ -2,8 +2,10 @@ import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 
 import { getPost, getAuthor } from '../../APIRequests';
+import CommentLike from '../like/CommentLike'
 
 export default function BasicCard(props) {
   //props has commenterAuthorId, commentPostId, comment
@@ -22,8 +24,8 @@ export default function BasicCard(props) {
   }, [props]);
 
   return (
-    <Card sx={{ minWidth: 275 }}>
-      <CardContent style={{backgroundColor: "#F8B195"}}>
+    <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#F8B195"}}>
+      <CardContent>
         <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
           {commenterAuthor.displayName} commented on "{commentPost.title}":
         </Typography>
@@ -31,6 +33,13 @@ export default function BasicCard(props) {
           {props.comment}
         </Typography>
       </CardContent>
+      <Grid>
+        <Grid container spacing={2}>
+          <Grid item xs align="center">
+            <CommentLike authorId={props.commenterAuthorId} commentId={props.commentPostId} showCount={false}/>
+          </Grid>
+        </Grid>
+      </Grid>
     </Card>
   );
 }
