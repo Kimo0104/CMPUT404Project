@@ -6,13 +6,15 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 
 import { createPost, sendFriendInbox, sendPublicInbox } from '../../APIRequests'
 
 export default function FormDialog(props) {
-  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
+  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor, visibility
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -21,6 +23,26 @@ export default function FormDialog(props) {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  var visibilities = [];
+  if (props.visiblity == "PUBLIC") {
+    visibilities.push(
+      {
+        value: 'PUBLIC',
+        label: 'Public',
+      }
+    )
+  }
+  visibilities.push(
+    {
+      value: 'FRIENDS',
+      label: 'Friends Only',
+    }
+  )
+  const [visibility, setVisibility] = React.useState("PUBLIC");
+  const handleVisibilityChange = (event) => {
+      setVisibility(event.target.value);
   };
 
   const sharePost = () => {
@@ -35,7 +57,7 @@ export default function FormDialog(props) {
       description: props.description,
       contentType: props.contentType,
       content: props.content,
-      visibility: "PUBLIC",
+      visibility: visibility,
       originalAuthor: props.originalAuthor
     }
     async function sendPostToInbox(){
@@ -58,12 +80,27 @@ export default function FormDialog(props) {
       <Dialog open={open} onClose={handleClose} fullWidth={true} maxWidth={'sm'} align="center">
         <DialogTitle sx={{ fontSize: 32 }}>Share Post</DialogTitle>
         <DialogContent>
-          <Grid container rowSpacing={4} paddingBottom={10}>
-              <Grid item xs = {12}>
-                <DialogContentText align="center">
-                    REPLACE THIS WITH PERSON GROUP SELECTION
-                </DialogContentText>
-              </Grid>
+          <Grid container rowSpacing={4} paddingBottom={10} paddingTop={1}>
+            <Grid style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+                }}
+                item xs={12}>
+                <TextField
+                id="outlined-select-visibility"
+                select
+                label="Select"
+                value={visibility}
+                onChange={handleVisibilityChange}
+                helperText="select visibility of shared post">
+                {visibilities.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                    </MenuItem>
+                ))}
+                </TextField>
+            </Grid>
           </Grid>
           <Grid container>
               <Grid item xs={6}>

@@ -14,6 +14,7 @@ export default function InboxItem(props) {
                 contentType={props.item.contentType}
                 content={props.item.content} 
                 originalAuthor={props.item.originalAuthor}
+                visibility={props.item.visibility}
                 postId={props.item.id}
             />
         );
