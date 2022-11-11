@@ -71,6 +71,7 @@ urlpatterns = [
     #liked
     path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"}), name = 'liked'),
     path('authors/<str:authorId>/posts/<str:postId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorPostLiked"}), name = 'has-liked'),
+    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorCommentLiked"}), name = 'has-liked-comment'),
 
     #inbox
     path('authors/<str:authorId>/inbox', InboxAPIs.as_view({
@@ -95,7 +96,6 @@ urlpatterns = [
         "put": "addFollower",
         "delete": "removeFollower",
         "post": "requestToFollow"}), name = 'manage-followers'),
-
 
     #authors
     path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"}), name = 'authors'),

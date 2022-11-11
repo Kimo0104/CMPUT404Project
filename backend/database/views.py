@@ -481,7 +481,7 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes/inbox?page=value&size=value
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
     @swagger_auto_schema(
         operation_description="a list of likes on this post",
@@ -516,7 +516,7 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/inbox?page=value&size=value
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
     @swagger_auto_schema(
         operation_description="a list of likes on this comment",
@@ -577,6 +577,33 @@ class LikedAPIs(viewsets.ViewSet):
         post = Posts.objects.get(id=postId)
 
         if Likes.objects.filter(post=post, author=liker).count() >= 1:
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(False, status=status.HTTP_200_OK)
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comment/{COMMENT_ID}/like/{LIKER_ID}
+    #returns true if authorId has made a like on commentId, otherwise false
+    @swagger_auto_schema(
+        operation_description="returns true if authorId has made a like on commentId, otherwise false",
+        operation_summary="returns true if authorId has made a like on commentId, otherwise false",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
+    @action(detail=True, methods=['get'])
+    def getAuthorCommentLiked(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        commentId = kwargs["commentId"]
+        
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=likerId).count() == 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Comments.objects.filter(id=commentId).count() == 1:
+            return Response({"Tried to check likes on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
+
+        liker = Authors.objects.get(id=likerId)
+        comment = Comments.objects.get(id=commentId)
+
+        if LikesComments.objects.filter(comment=comment, author=liker).count() >= 1:
             return Response(True, status=status.HTTP_200_OK)
         return Response(False, status=status.HTTP_200_OK)
 
@@ -797,7 +824,7 @@ class InboxAPIs(viewsets.ViewSet):
     def deleteInbox(self, request, *args, **kwargs):
         authorId = str(kwargs["authorId"])
         if not Authors.objects.filter(id=authorId).count() == 1:
-            return Response({"This Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"Tried to delete inbox on non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         authorObj = Authors.objects.get(id=authorId)
         Inbox.objects.filter(author=authorObj).delete()
