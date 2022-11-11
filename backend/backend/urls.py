@@ -103,6 +103,6 @@ urlpatterns = [
     path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"}), name = 'find-authors'),
 
     #images
-    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
-
+    #path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
+    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"}))
 ]

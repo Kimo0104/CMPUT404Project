@@ -24,7 +24,7 @@ export default function Profile(props)  {
 
     React.useEffect(() => {
         fetchAuthor();
-    }, {});
+    }, []);
 
     let button = "";
     let requestList = "";

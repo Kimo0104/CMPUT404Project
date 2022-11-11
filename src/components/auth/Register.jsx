@@ -12,7 +12,8 @@ export default function Register() {
         e.preventDefault();
 
         let data = {
-            "username": name,
+            // Do NOT change. Leave key as "displayName"
+            "displayName": name,
             "email": email,
             "password": pass
           }
