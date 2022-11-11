@@ -13,7 +13,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 export default function BasicCard(props) {
-  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
+  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor, visibility
   //textPosts have a title, a description, a share button, a comments button, and a like button
   const [postAuthor, setPostAuthor] = React.useState({});
 
@@ -59,6 +59,7 @@ export default function BasicCard(props) {
               contentType={props.contentType}
               content={props.content}
               originalAuthor={props.originalAuthor}
+              visiblity={props.visibility}
             />
           </Grid>
           <Grid item xs align="center">
