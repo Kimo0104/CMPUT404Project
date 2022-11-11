@@ -11,6 +11,22 @@ import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 
 import { createPost, sendFriendInbox, sendPublicInbox } from '../../APIRequests'
 
+
+const visibilities = [
+  {
+      value: 'PUBLIC',
+      label: 'Public',
+  },
+  {
+      value: 'FRIENDS',
+      label: 'Friends Only',
+  },
+  {
+      value: 'UNLISTED',
+      label: 'Unlisted',
+  }
+];
+
 export default function FormDialog(props) {
   //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
   const [open, setOpen] = React.useState(false);
