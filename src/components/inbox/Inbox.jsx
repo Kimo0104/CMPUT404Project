@@ -27,7 +27,6 @@ export default function BasicStack(props) {
     // State change will cause component re-render
     async function fetchInbox() {
       const output = await getInbox(props.authorId, page, size);
-      console.log(output);
       if (output == "{Nothing to show}") { return; }
       setInbox(output.inbox);
       setNumPages(Math.ceil(output.count/size));
