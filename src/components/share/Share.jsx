@@ -80,7 +80,7 @@ export default function FormDialog(props) {
       <Dialog open={open} onClose={handleClose} fullWidth={true} maxWidth={'sm'} align="center">
         <DialogTitle sx={{ fontSize: 32 }}>Share Post</DialogTitle>
         <DialogContent>
-          <Grid container rowSpacing={4} paddingBottom={10} paddingTop={1}>
+          <Grid container rowSpacing={4} paddingBottom={5} paddingTop={1}>
             <Grid style={{
                     display: "flex",
                     justifyContent: "center",

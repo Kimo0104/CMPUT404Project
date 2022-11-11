@@ -87,8 +87,14 @@ export const getAuthor = async(authorId) => {
 };
 
 export const createPost = async (authorId, data) => {
-    const path = SERVER_URL + `/authors/${authorId}/posts`
+    const path = SERVER_URL + `/authors/${authorId}/posts`;
     const response = await axios.put(`${path}`,data);
+    return response.data;
+}
+
+export const createComment = async (authorId, postId, data) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}/comments`;
+    const response = await axios.post(`${path}`,data);
     return response.data;
 }
 

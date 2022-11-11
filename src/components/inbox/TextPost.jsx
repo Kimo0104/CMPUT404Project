@@ -1,12 +1,11 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import IconButton from '@mui/material/IconButton';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
 import Share from '../share/Share'
+import Comment from '../comment/Comment'
 import Like from '../like/Like'
 import { getAuthor } from '../../APIRequests'
 import ReactMarkdown from 'react-markdown'
@@ -63,9 +62,10 @@ export default function BasicCard(props) {
             />
           </Grid>
           <Grid item xs align="center">
-            <IconButton aria-label="comments">
-              <ChatBubbleOutlineIcon />
-            </IconButton>
+            <Comment 
+              authorId={props.authorId}
+              postId={props.postId}
+            />
           </Grid>
         </Grid>
       </Grid>
