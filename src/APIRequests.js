@@ -62,8 +62,8 @@ export const getAuthorPostLiked = async(authorId, postId) => {
     return response.data;
 };
 
-export const getAuthorCommentLiked = async(authorId, postId) => {
-    const path = SERVER_URL + `/authors/1/posts/1/comments/${postId}liked/${authorId}`;
+export const getAuthorCommentLiked = async(authorId, commentId) => {
+    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/liked/${authorId}`;
     const response = await axios.get(path);
     return response.data;
 };

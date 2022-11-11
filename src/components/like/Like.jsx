@@ -19,8 +19,10 @@ export default function FormDialog(props) {
     async function loadInfo() {
       const liked = await getAuthorPostLiked(props.authorId, props.postId);
       setLiked(liked);
-      const likes = await getPostLikes(props.postId);
-      setCount(likes.length)
+      if (props.showCount) {
+        const likes = await getPostLikes(props.postId);
+        setCount(likes.length);
+      }
     }
     loadInfo();
   }, [props]);

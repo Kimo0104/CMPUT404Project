@@ -17,10 +17,12 @@ export default function FormDialog(props) {
 
   React.useEffect(() => {
     async function loadInfo() {
-      const liked = await getAuthorCommentLiked(props.authorId, props.postId);
+      const liked = await getAuthorCommentLiked(props.authorId, props.commentId);
       setLiked(liked);
-      const likes = await getCommentLikes(props.postId);
-      setCount(likes.length)
+      if (props.showCount) {
+        const likes = await getCommentLikes(props.commentId);
+        setCount(likes.length);
+      }
     }
     loadInfo();
   }, [props]);
@@ -31,18 +33,18 @@ export default function FormDialog(props) {
     setDebounce(nowTimeMilli);
 
     if (!liked) {
-      createCommentLike(props.authorId, props.postId)
+      createCommentLike(props.authorId, props.commentId)
       setLiked(true);
       setCount(count+1);
     } else {
-      deleteCommentLike(props.authorId, props.postId)
+      deleteCommentLike(props.authorId, props.commentId)
       setLiked(false);
       setCount(count-1);
     }
   }
 
   return (
-    <Stack alignItems="center"spacing={-1.5}>
+    <Stack alignItems="center"spacing={0}>
       <DialogContentText align="center">
           {
             liked &&
