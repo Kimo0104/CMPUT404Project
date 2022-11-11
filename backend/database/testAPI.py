@@ -1009,16 +1009,18 @@ class AuthorsTest(APITestCase):
                             accepted=True, 
                             profileImage="url_to_profile_image"
                             )
+        User.objects.create(username=self.test_author.displayName, email="test_", password="test")
         for i in range(2, 11):
-            Authors.objects.create(
-                        id=str(i), 
-                        host="//service", 
-                        displayName=f"test_author_{i}", 
-                        url=f"//service/author/{i}", 
-                        github=f"http://github.com/test_author_{i}", 
-                        accepted=True, 
-                        profileImage="url_to_profile_image"
-                        )
+            test_author_i = Authors.objects.create(
+                                id=str(i), 
+                                host="//service", 
+                                displayName=f"test_author_{i}", 
+                                url=f"//service/author/{i}", 
+                                github=f"http://github.com/test_author_{i}", 
+                                accepted=True, 
+                                profileImage="url_to_profile_image"
+                                )
+            User.objects.create(username=test_author_i.displayName, email=f"test_{i}", password="test")
         
 
     '''
@@ -1176,7 +1178,7 @@ class AuthorsTest(APITestCase):
         }
         response = self.client.put(reverse('authors'), data, format="json")
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
-    
+
     '''
     Tests that the createAuthor API method returns a 400 Bad Request if it is given a
     body in JSON format but missing the "displayName" key

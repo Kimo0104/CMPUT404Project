@@ -2,6 +2,7 @@ import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from '../../APIRequests';
+import { usernameContext, passwordContext } from "../../App";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -22,6 +23,8 @@ export default function Login() {
             const isValid = await loginUser(data);
             console.log(isValid);
             if (isValid){
+                //usernameContext.Provider.value = data.username;
+                //passwordContext.Provider.value = data.password;
                 navigate('/home')
             }
                

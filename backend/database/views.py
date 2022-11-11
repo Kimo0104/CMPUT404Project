@@ -10,7 +10,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
 from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 import uuid
@@ -18,6 +18,7 @@ import database
 import ast
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import base64
 
 def uuidGenerator():
     result = uuid.uuid4()
@@ -64,11 +65,14 @@ class UserAPIs(viewsets.ViewSet):
         #     if user:
         #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        User.objects.create_user(
-            username=body['username'], 
-            email=body['email'],
-            password=body['password']
-        )
+        new_user = User.objects.create_user(
+                        username=body['displayName'], 
+                        email=body['email'],
+                        password=body['password']
+                    )
+        #AuthorsAPIs.createAuthor(request)
+        
+        
 
         return HttpResponse(status=200)
 
@@ -89,9 +93,9 @@ class UserAPIs(viewsets.ViewSet):
         password = body['password']
         # username = form.cleaned_data.get('username')
         # password = form.cleaned_data.get('password')
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, username=username, password=password)
         if user is not None:
-            # login(request, user)
+            login(request, user)
             # return redirect("main:homepage")
             return Response(True, status=status.HTTP_200_OK)
         else:
@@ -1042,7 +1046,7 @@ class AuthorsAPIs(viewsets.ViewSet):
                       type=openapi.TYPE_INTEGER
                       )
         ],
-        responses={
+        responses= {
             "200": "Success",
             "4XX": "Bad Request"
         }
@@ -1077,7 +1081,7 @@ class AuthorsAPIs(viewsets.ViewSet):
                       "The size of each page.",
                       type=openapi.TYPE_INTEGER)
         ],
-        responses={
+        responses= {
             "200": "Success",
             "4XX": "Bad Request"
         }
@@ -1123,6 +1127,7 @@ class AuthorsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['post'])
     def modifyAuthor(self, request, *args, **kwargs):
+       # if request.user.is_authenticated and (request.user.id==kwargs["authorId"] or request.user.is_superuser):
         authorId = kwargs["authorId"]
 
         author = Authors.objects.filter(id=authorId)
@@ -1141,6 +1146,8 @@ class AuthorsAPIs(viewsets.ViewSet):
             request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
         except json.decoder.JSONDecodeError:
             return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         editable_fields = ["github", "profileImage"]
         for field in request_body.keys():
@@ -1158,12 +1165,14 @@ class AuthorsAPIs(viewsets.ViewSet):
         author.save()
 
         return Response("Modified Author successfully", status=status.HTTP_202_ACCEPTED)
+        #else:
+        #    return Response("Authentication Required", status=status.HTTP_401_UNAUTHORIZED)
     
     #TESTED
     #PUT //service/authors
     @swagger_auto_schema(
-        operation_description="Creates an author with a certain ID and displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
-        operation_summary="Creates an author with a certain ID and displayName.",
+        operation_description="Creates an author with a certain displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
+        operation_summary="Creates an author with a certain displayName.",
         operation_id="authors_create",
         responses={
             "201": "Created author successfully",
@@ -1175,14 +1184,12 @@ class AuthorsAPIs(viewsets.ViewSet):
             type = openapi.TYPE_OBJECT,
             required=["authorId", "displayName"],
             properties={
-                'authorId': openapi.Schema(type=openapi.TYPE_STRING, description='The id of the author to be created.'),
                 'displayName': openapi.Schema(type=openapi.TYPE_STRING, description='The displayName of the author to be created.'),
             }
         )
     )
     @action(detail=True, methods=['put'])
     def createAuthor(self, request, *args, **kwargs):
-        
         try:
             # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
             # as the beginning and end of that string. This is a way to get around that. I then replace the 
@@ -1205,7 +1212,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             if authorById.count() == 1:
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
-            return Response("Can't create a profile with no display name or no ID!", status=status.HTTP_400_BAD_REQUEST)
+            return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
         url = host + '/authors/' + authorId
         if "profileImage" in request_body and request_body["profileImage"].strip() != "":
             profileImage = request_body["profileImage"]
@@ -1213,7 +1220,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             profileImage = request.build_absolute_uri(self.generic_profile_image_path) 
         github = request_body["github"] if "github" in request_body and request_body["github"].strip() != "" else None
 
-        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage, password="test")
+        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
 
         author.save()
 
@@ -1223,6 +1230,7 @@ class AuthorsAPIs(viewsets.ViewSet):
 # Made by following this tutorial: https://medium.com/@cole_ruche/uploading-images-to-rest-api-backend-in-react-js-b931376b5833
 class ImagesAPIs(viewsets.ViewSet):
 
+    '''
     parser_classes = (MultiPartParser, FormParser)
 
     #PUT //service/images/{AUTHOR_ID}
@@ -1258,7 +1266,46 @@ class ImagesAPIs(viewsets.ViewSet):
         imageObj = Images.objects.get(authorId=authorId)
         serializer = ImageSerializer(imageObj, many=False)
         return Response(serializer.data)
-         
+    '''
+
+    #POST //service/images/{REFERENCE_ID}
+    @action(detail=True, methods=['put'])
+    def uploadImage(self, request, *args, **kwargs):
+        referenceId = kwargs["referenceId"]
+        request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        image_base64 = request_body["imageContent"]
+        try:
+            image_record = Images.objects.get(referenceId=referenceId)
+            update = True
+        except database.models.Images.DoesNotExist:
+            update = False
+        
+        if update:
+            image_record.imageContent = image_base64
+        else:
+            image_record = Images.objects.create(id=uuidGenerator(), imageContent=image_base64, referenceId=referenceId)
+        
+        image_record.save()
+
+        return Response("Image Uploaded")
+
+    #GET //service/images/{REFERENCE_ID}
+    @action(detail=True, method=['get'])
+    def getImage(self, request, *args, **kwargs):
+        referenceId = kwargs["referenceId"]
+        image_record = Images.objects.filter(referenceId=referenceId)
+        if image_record.count() == 0:
+            return Response("Image not found!", status=status.HTTP_404_NOT_FOUND)
+        else:
+            image_record = image_record.get(referenceId=referenceId)
+            image_content_b64 = image_record.imageContent
+            image_content = bytes(base64.b64decode(image_content_b64))
+
+            # https://stackoverflow.com/a/53888054
+            response = HttpResponse(image_content, content_type="image/*")
+            return response
+        
+
 
 
 
