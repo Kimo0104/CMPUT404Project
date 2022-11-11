@@ -7,19 +7,19 @@ import FavoriteBorderTwoToneIcon from '@mui/icons-material/FavoriteBorderTwoTone
 import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone';
 import IconButton from '@mui/material/IconButton';
 
-import { getAuthorPostLiked, createPostLike, deletePostLike, getPostLikes } from '../../APIRequests'
+import { getAuthorCommentLiked, createCommentLike, deleteCommentLike, getCommentLikes } from '../../APIRequests'
 
 export default function FormDialog(props) {
-  //props has authorId, postId, showCount
+  //props has authorId, commentId, showCount
   const [debounce, setDebounce] = React.useState((new Date()).getTime());
   const [liked, setLiked] = React.useState(false);
   const [count, setCount] = React.useState(0);
 
   React.useEffect(() => {
     async function loadInfo() {
-      const liked = await getAuthorPostLiked(props.authorId, props.postId);
+      const liked = await getAuthorCommentLiked(props.authorId, props.postId);
       setLiked(liked);
-      const likes = await getPostLikes(props.postId);
+      const likes = await getCommentLikes(props.postId);
       setCount(likes.length)
     }
     loadInfo();
@@ -31,11 +31,11 @@ export default function FormDialog(props) {
     setDebounce(nowTimeMilli);
 
     if (!liked) {
-      createPostLike(props.authorId, props.postId)
+      createCommentLike(props.authorId, props.postId)
       setLiked(true);
       setCount(count+1);
     } else {
-      deletePostLike(props.authorId, props.postId)
+      deleteCommentLike(props.authorId, props.postId)
       setLiked(false);
       setCount(count-1);
     }
