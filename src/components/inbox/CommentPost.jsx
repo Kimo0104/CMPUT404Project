@@ -3,12 +3,14 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 import { getPost, getAuthor } from '../../APIRequests';
 import CommentLike from '../like/CommentLike'
 
 export default function BasicCard(props) {
-  //props has commenterAuthorId, commentPostId, comment
+  //props has commenterAuthorId, commentPostId, comment, contentType
   //likes show the title of the post with a desc "User liked this post!"
   const [commenterAuthor, setCommenterAuthor] = React.useState({});
   const [commentPost, setCommentPost] = React.useState({});
@@ -29,9 +31,14 @@ export default function BasicCard(props) {
         <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
           {commenterAuthor.displayName} commented on "{commentPost.title}":
         </Typography>
-        <Typography sx={{ mb: 1.5, frontSize: 14 }} color="text.secondary">
-          {props.comment}
-        </Typography>
+        { props.contentType === "text/plain" &&
+          <Typography sx={{ mb: 1.5, frontSize: 16 }} color="text.secondary">
+            {props.comment}
+          </Typography>
+        }
+        { props.contentType === "text/markdown" &&
+          <ReactMarkdown children={props.comment} remarkPlugins={[remarkGfm]} />
+        }
       </CardContent>
       <Grid>
         <Grid container spacing={2}>
