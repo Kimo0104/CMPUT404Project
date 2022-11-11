@@ -42,7 +42,6 @@ export default function FormDialog(props) {
     async function loadAuthor() {
         const following = await checkFollowStatus(props.authorId, props.posterId);
         const followed = await checkFollowStatus(props.posterId, props.authorId);
-        console.log(props.authorId, props.posterId);
         setIsFriends(following === 2 && followed === 2);
     }
     loadAuthor();
