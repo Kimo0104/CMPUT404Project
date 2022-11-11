@@ -14,7 +14,7 @@ import remarkGfm from 'remark-gfm'
 export default function BasicCard(props) {
   //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor, visibility
   //textPosts have a title, a description, a share button, a comments button, and a like button
-  const [postAuthor, setPostAuthor] = React.useState({});
+  const [postAuthor, setPostAuthor] = React.useState(false);
 
   React.useEffect(() => {
     async function loadInfo() {
@@ -23,6 +23,10 @@ export default function BasicCard(props) {
     }
     loadInfo();
   }, [props]);
+
+  if (!postAuthor) {
+    return;
+  }
 
   return (
     <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#F9F0C1"}}>
@@ -65,6 +69,7 @@ export default function BasicCard(props) {
             <Comment 
               authorId={props.authorId}
               postId={props.postId}
+              posterId={postAuthor.id}
             />
           </Grid>
         </Grid>
