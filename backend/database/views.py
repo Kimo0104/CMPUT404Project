@@ -477,7 +477,7 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes/inbox?page=value&size=value
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
     @swagger_auto_schema(
         operation_description="a list of likes on this post",

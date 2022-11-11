@@ -46,9 +46,9 @@ export default function BasicCard(props) {
       <Grid>
         <Grid container spacing={2}>
           <Grid item xs align="center">
-            <Like authorId={props.authorId} postId={props.postId}/>
+            <Like authorId={props.authorId} postId={props.postId} showCount={props.visibility === "FRIEND"}/>
           </Grid>
-          <Grid item xs align="center">
+          <Grid item xs align="center" >
             <Share 
               authorId={props.authorId}
               postId={props.postId}
