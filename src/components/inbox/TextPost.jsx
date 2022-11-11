@@ -1,21 +1,20 @@
 import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import IconButton from '@mui/material/IconButton';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
 import Share from '../share/Share'
+import Comment from '../comment/Comment'
 import Like from '../like/Like'
 import { getAuthor } from '../../APIRequests'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 export default function BasicCard(props) {
-  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor
+  //props contains authorId, postId, title, source, origin, description, content, contentType, originalAuthor, visibility
   //textPosts have a title, a description, a share button, a comments button, and a like button
-  const [postAuthor, setPostAuthor] = React.useState({});
+  const [postAuthor, setPostAuthor] = React.useState(false);
 
   React.useEffect(() => {
     async function loadInfo() {
@@ -24,6 +23,10 @@ export default function BasicCard(props) {
     }
     loadInfo();
   }, [props]);
+
+  if (!postAuthor) {
+    return;
+  }
 
   return (
     <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#F9F0C1"}}>
@@ -46,9 +49,9 @@ export default function BasicCard(props) {
       <Grid>
         <Grid container spacing={2}>
           <Grid item xs align="center">
-            <Like authorId={props.authorId} postId={props.postId}/>
+            <Like authorId={props.authorId} postId={props.postId} showCount={props.visibility === "FRIEND"}/>
           </Grid>
-          <Grid item xs align="center">
+          <Grid item xs align="center" >
             <Share 
               authorId={props.authorId}
               postId={props.postId}
@@ -59,12 +62,15 @@ export default function BasicCard(props) {
               contentType={props.contentType}
               content={props.content}
               originalAuthor={props.originalAuthor}
+              visiblity={props.visibility}
             />
           </Grid>
           <Grid item xs align="center">
-            <IconButton aria-label="comments">
-              <ChatBubbleOutlineIcon />
-            </IconButton>
+            <Comment 
+              authorId={props.authorId}
+              postId={props.postId}
+              posterId={postAuthor.id}
+            />
           </Grid>
         </Grid>
       </Grid>
