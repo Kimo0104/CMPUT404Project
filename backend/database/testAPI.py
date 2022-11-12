@@ -1236,7 +1236,7 @@ class AuthorsTest(APITestCase):
             "profileImage": "new_profileImage_url"
         }
         response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
-        assert(response.status_code == status.HTTP_202_ACCEPTED)
+        assert(response.status_code == status.HTTP_204_NO_CONTENT)
         # self.test_author contains outdated data now, so we get the updatedAuthor
         # by getting the Authors object with the same id
         updatedAuthor = Authors.objects.get(id=self.test_author.id)
