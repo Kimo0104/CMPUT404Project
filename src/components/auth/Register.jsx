@@ -4,7 +4,8 @@ import { createUser } from '../../APIRequests'
 
 
 export default function Register() {
-    // const [email, setEmail] = useState('');
+    const [email, setEmail] = useState('');
+    const navigate = useNavigate();
     const [password, setPass] = useState('');
     const [confirmPassword, setConfirmedPass] = useState('');
     const [name, setName] = useState('');
@@ -19,6 +20,7 @@ export default function Register() {
             let data = {
                 // Do NOT change. Leave key as "displayName"
                 "displayName": name,
+                "email": email,
                 "password": password
             }
             async function register() {
@@ -48,14 +50,14 @@ export default function Register() {
                     <label htmlFor="name">username</label>
                     <input value={name} onChange={(e) => setName(e.target.value)}name="name" id="name" placeholder="username" />
 
-                    {/* <label htmlFor="email">email</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)}type="email" placeholder="youremail@gmail.com" id="email" name="email" /> */}
+                    <label htmlFor="email">email</label>
+                    <input value={email} onChange={(e) => setEmail(e.target.value)}type="email" placeholder="youremail@gmail.com" id="email" name="email" />
 
                     <label htmlFor="password">password</label>
-                    <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="********" id="password" name="password" />
+                    <input value={password} onChange={(e) => setPass(e.target.value)} type="password" placeholder="********" id="password" name="password" />
 
                     <label htmlFor="password">comfirm password</label>
-                    <input value={pass} onChange={(e) => setConfirmedPass(e.target.value)} type="password" placeholder="********" id="password" name="password" />
+                    <input value={confirmPassword} onChange={(e) => setConfirmedPass(e.target.value)} type="password" placeholder="********" id="confirmPassword" name="confirmPassword" />
 
                     <button type="submit">Register</button>
                 </form>

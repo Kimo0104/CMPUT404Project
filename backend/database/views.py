@@ -57,18 +57,17 @@ class UserAPIs(viewsets.ViewSet):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
         usernameFromFrontend = body['displayName']
-        user = User.objects.get(username=usernameFromFrontend)
 
-        if user:
+        if User.objects.filter(username = usernameFromFrontend).exists():
             return Response(False, status=status.HTTP_200_OK)
         else:
-
-            new_user = User.objects.create_user(
-                            username=body['displayName'], 
-                            password=body['password']
-                        )
+            User.objects.create_user(
+                        username=body['displayName'], 
+                        email=body['email'],
+                        password=body['password']
+                    )
             # AuthorsAPIs.createAuthor(request)
-            return Response(False, status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
         # return HttpResponse(status=200)
 
     """ 
