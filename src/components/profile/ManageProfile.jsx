@@ -15,7 +15,7 @@ export default function ManageProfile(props)  {
     // Get the author object corresponding to the user
     const [author, setAuthor] = React.useState({});
     const [githubValue, setGithubValue] = React.useState("");
-    const [imageLink, setImageLink] = React.useState(author.profileImage);
+    const [imageLink, setImageLink] = React.useState("");
 
     const navigate = useNavigate();
 
@@ -23,18 +23,19 @@ export default function ManageProfile(props)  {
         const author = await getAuthor(userId);
         setAuthor(author);
         setGithubValue(author.github);
+        setImageLink(author.profileImage);
     };
 
     React.useEffect(() => {
         fetchAuthor();
-    });
+    }, []);
 
     const [open, setOpen] = React.useState(false);
     const [imageLinkText, setImageLinkText] = React.useState("");
     const [imageFile, setImageFile] = React.useState(Object);
     const [imageUploaded, setImageUploaded] = React.useState(false);
 
-    const handleChange = (e) => {
+    const handleGithubChange = (e) => {
         setGithubValue(e.target.value);
     }
 
@@ -55,18 +56,15 @@ export default function ManageProfile(props)  {
     }
 
     const onDialogDoneClicked = async (e) => {
-        setImageUploaded(false);
-        // If an image was uploaded, display that image, else display the 
-        // current profile image or whatever the user set the link of the 
-        // profile image to.
-        if (!imageUploaded) {
-            // If empty link, use user's current profile image, else
-            // set the link of the profile image to what the user specified
-            if (typeof imagelinkText === "undefined" || imageLinkText.trim() === "") {
-                setImageLink(setImageSource(author.profileImage));
-            } else {
-                setImageLink(setImageSource(imageLinkText));
-            }
+        // Done will only be clicked if the user enters a link. If they upload an image
+        // the dialog box just closes.
+
+        // If empty link, use user's current profile image, else
+        // set the link of the profile image to what the user specified
+        if (typeof imageLinkText === "undefined" || imageLinkText.trim() === "") {
+            setImageLink(setImageSource(author.profileImage));
+        } else {
+            setImageLink(setImageSource(imageLinkText));
         }
         setOpen(false);
     }
@@ -120,13 +118,13 @@ export default function ManageProfile(props)  {
         <div>
             <TopBar />
             <Typography variant="h3">{author.displayName}</Typography>
-            <img id="profileImage" alt="Profile" src={author.profileImage} style={{width:"40%"}} onClick={handleImagePress} />
+            <img id="profileImage" alt="Profile" src={imageLink} style={{width:"40%"}} onClick={handleImagePress} />
             <Grid container spacing={1} style={{justifyContent: "center", display: "flex"}}>
                 <Grid item xs={2} style={{paddingTop:"20px"}}>
                     <Typography>Github URL: </Typography>
                 </Grid>
                 <Grid item xs={2}>
-                    <TextField value={githubValue} onChange={handleChange}/>
+                    <TextField value={githubValue} onChange={handleGithubChange}/>
                 </Grid>
             </Grid>
             <Grid container spacing={1} style={{justifyContent: "center", display: "flex", paddingTop:"20px"}}>
