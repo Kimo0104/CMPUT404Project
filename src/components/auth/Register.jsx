@@ -13,17 +13,29 @@ export default function Register() {
         e.preventDefault();
 
         if (password !== confirmPassword) {
-            alert("Passwords don't match");
+            alert("Passwords don't match!");
         }
         else{
             let data = {
                 // Do NOT change. Leave key as "displayName"
                 "displayName": name,
-                "email": email,
-                "password": pass
+                "password": password
             }
-            createUser(data);
-            navigate('/login')
+            async function register() {
+                const isValid = await createUser(data);
+                console.log(isValid);
+                if (isValid){
+                    //usernameContext.Provider.value = data.username;
+                    //passwordContext.Provider.value = data.password;
+                    navigate('/login')
+                }
+                else{
+                    alert("User already exists with this username.");
+                }
+                   
+            }
+            register()
+
         }
             
     };

@@ -56,25 +56,20 @@ class UserAPIs(viewsets.ViewSet):
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
-        # serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     if user:
-        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        usernameFromFrontend = body['displayName']
+        user = User.objects.get(username=usernameFromFrontend)
 
-        new_user = User.objects.create_user(
-                        username=body['displayName'], 
-                        email=body['email'],
-                        password=body['password']
-                    )
-        #AuthorsAPIs.createAuthor(request)
-        
-        
+        if user:
+            return Response(False, status=status.HTTP_200_OK)
+        else:
 
-        return HttpResponse(status=200)
+            new_user = User.objects.create_user(
+                            username=body['displayName'], 
+                            password=body['password']
+                        )
+            # AuthorsAPIs.createAuthor(request)
+            return Response(False, status=status.HTTP_200_OK)
+        # return HttpResponse(status=200)
 
     """ 
     Login the user. 
