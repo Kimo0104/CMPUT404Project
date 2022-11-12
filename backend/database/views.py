@@ -8,7 +8,6 @@ from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
@@ -56,25 +55,21 @@ class UserAPIs(viewsets.ViewSet):
     def createUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
-        # serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     serializer = UserSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     if user:
-        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        usernameFromFrontend = body['displayName']
+        usernameExists = User.objects.filter(username = usernameFromFrontend).exists()
 
-        new_user = User.objects.create_user(
+        print(usernameExists)
+        if usernameExists == True:
+            return Response(False, status=status.HTTP_200_OK)
+        else:
+            User.objects.create_user(
                         username=body['displayName'], 
                         email=body['email'],
                         password=body['password']
                     )
-        #AuthorsAPIs.createAuthor(request)
-        
-        
-
-        return HttpResponse(status=200)
+            # AuthorsAPIs.createAuthor(request)
+            return Response(True, status=status.HTTP_200_OK)
+        # return HttpResponse(status=200)
 
     """ 
     Login the user. 
@@ -91,13 +86,14 @@ class UserAPIs(viewsets.ViewSet):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
         username = body['username'] 
         password = body['password']
-        # username = form.cleaned_data.get('username')
-        # password = form.cleaned_data.get('password')
-        user = authenticate(request, username=username, password=password)
+        
+        user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            # return redirect("main:homepage")
-            return Response(True, status=status.HTTP_200_OK)
+            if user.is_authenticated:
+                return Response(True, status=status.HTTP_200_OK)
+            else:
+                return Response(False, status=status.HTTP_200_OK)
         else:
             return Response(False, status=status.HTTP_200_OK)
         
@@ -1198,8 +1194,8 @@ class AuthorsAPIs(viewsets.ViewSet):
     #TESTED
     #PUT //service/authors
     @swagger_auto_schema(
-        operation_description="Creates an author with a certain ID and displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
-        operation_summary="Creates an author with a certain ID and displayName.",
+        operation_description="Creates an author with a certain displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
+        operation_summary="Creates an author with a certain displayName.",
         operation_id="authors_create",
         responses={
             "201": "Created author successfully",
@@ -1242,7 +1238,6 @@ class AuthorsAPIs(viewsets.ViewSet):
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
             return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
-
         url = host + '/authors/' + authorId
         if "profileImage" in request_body and request_body["profileImage"].strip() != "":
             profileImage = request_body["profileImage"]

@@ -62,7 +62,6 @@ export default function ManageProfile(props)  {
         if (!imageUploaded) {
             // If empty link, use user's current profile image, else
             // set the link of the profile image to what the user specified
-            console.log("onDoneClicked", imageLinkText)
             if (typeof imagelinkText === "undefined" || imageLinkText.trim() === "") {
                 setImageLink(setImageSource(author.profileImage));
             } else {
