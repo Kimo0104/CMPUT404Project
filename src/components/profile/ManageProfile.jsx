@@ -91,9 +91,8 @@ export default function ManageProfile(props)  {
         setImageUploaded(false);
     }
 
-    //https://stackoverflow.com/a/46120369
+    // Handles uploadiing an image file - https://stackoverflow.com/a/46120369
     const onImageUpload = async (e) => {
-        // Handles uploadiing an image file
         let file = e.target.files[0];
         
         if (file) {
