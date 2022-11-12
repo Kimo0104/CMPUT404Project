@@ -1,19 +1,21 @@
 import * as React from 'react';
 import TopBar from '../topbar/TopBar.jsx'
 import { getAuthor, modifyAuthor, uploadImage } from '../../APIRequests'
-import { borderLeft } from '@mui/system';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { userIdContext } from '../../App.js';
 import { SERVER_URL } from '../../APIRequests';
 
 
 export default function ManageProfile(props)  {
 
+    // Get the ID of the user
     const userId = React.useContext(userIdContext);
     
+    // Get the author object corresponding to the user
     const [author, setAuthor] = React.useState({});
     const [githubValue, setGithubValue] = React.useState("");
+    const [imageLink, setImageLink] = React.useState(author.profileImage);
 
     const navigate = useNavigate();
 
@@ -25,11 +27,10 @@ export default function ManageProfile(props)  {
 
     React.useEffect(() => {
         fetchAuthor();
-    }, []);
+    });
 
     const [open, setOpen] = React.useState(false);
-    const [link, setLink] = React.useState("");
-    const [linkText, setLinkText] = React.useState("");
+    const [imageLinkText, setImageLinkText] = React.useState("");
     const [imageFile, setImageFile] = React.useState(Object);
     const [imageUploaded, setImageUploaded] = React.useState(false);
 
@@ -41,8 +42,7 @@ export default function ManageProfile(props)  {
         if (imageUploaded) {
             uploadImage(userId, imageFile);
         }
-        await modifyAuthor(userId, githubValue, link);
-        console.log(link);
+        await modifyAuthor(userId, githubValue, imageLink);
         navigate(`/profile/${userId}`, {userId: userId});
     }
 
@@ -62,20 +62,21 @@ export default function ManageProfile(props)  {
         if (!imageUploaded) {
             // If empty link, use user's current profile image, else
             // set the link of the profile image to what the user specified
-            console.log("onDoneClicked", linkText)
-            if (typeof linkText === "undefined" || linkText.trim() === "") {
-                setLink(setImageSource(author.profileImage));
+            if (typeof imagelinkText === "undefined" || imageLinkText.trim() === "") {
+                setImageLink(setImageSource(author.profileImage));
             } else {
-                setLink(setImageSource(linkText));
+                setImageLink(setImageSource(imageLinkText));
             }
         }
         setOpen(false);
     }
 
+    // If an image is to be deleted, it sets the profileImage to a generic image
     const onDialogDeleteClicked = async (e) => {
+        // This image is licensed under Adobe Standard License
         let generic_profile_image_path = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
         setImageSource(generic_profile_image_path);
-        setLink(generic_profile_image_path);
+        setImageLink(generic_profile_image_path);
         setImageUploaded(false);
         setOpen(false);
     }
@@ -84,29 +85,34 @@ export default function ManageProfile(props)  {
         setOpen(false);
     }
 
-    const onLinkChange = async (e) => {
-        setLinkText(e.target.value);
+    // Handles changing an image link
+    const onImageLinkChange = async (e) => {
+        setImageLinkText(e.target.value);
         setImageUploaded(false);
     }
 
-    //https://stackoverflow.com/a/46120369
+    // Handles uploadiing an image file - https://stackoverflow.com/a/46120369
     const onImageUpload = async (e) => {
         let file = e.target.files[0];
         
         if (file) {
-            //let contents = await file.text(); 
-            setImageFile(file);
-            setImageUploaded(true);
-            setLink(SERVER_URL+`/images/${userId}`)
-            setImageSource(URL.createObjectURL(file));
+            // Checks if the file is an image or not
+            if (file["type"].includes("image/")) {
+                setImageFile(file);
+                setImageUploaded(true);
+                setImageLink(SERVER_URL+`/images/${userId}`);
+                setImageSource(URL.createObjectURL(file));
+            } else {
+                alert("Invalid file type! Please upload an image.");
+            }
             setOpen(false);
         }
     }
 
     const setImageSource = (URL) => {
+        // Sets the source of profile image
         let img = document.getElementById("profileImage");
         img.src = URL;
-        console.log(img.src);
         return img.src;
     }
    
@@ -132,7 +138,7 @@ export default function ManageProfile(props)  {
             <Dialog open={open}>
                 <DialogTitle>Change Profile Image</DialogTitle>
                 <DialogContent>
-                    <TextField placeholder='Choose Link' onChange={onLinkChange} onPaste={onLinkChange}></TextField>
+                    <TextField placeholder='Choose Link' onChange={onImageLinkChange} onPaste={onImageLinkChange}></TextField>
                     {/* https://stackoverflow.com/a/49408555 */}
                     <input accept="image/*" style={{ display: 'none' }} id="raised-button-file" type="file" onChange={onImageUpload}/>
                     <label htmlFor="raised-button-file">
