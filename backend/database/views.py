@@ -8,7 +8,6 @@ from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
@@ -57,8 +56,10 @@ class UserAPIs(viewsets.ViewSet):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
         usernameFromFrontend = body['displayName']
+        usernameExists = User.objects.filter(username = usernameFromFrontend).exists()
 
-        if User.objects.filter(username = usernameFromFrontend).exists():
+        print(usernameExists)
+        if usernameExists == True:
             return Response(False, status=status.HTTP_200_OK)
         else:
             User.objects.create_user(
@@ -67,7 +68,7 @@ class UserAPIs(viewsets.ViewSet):
                         password=body['password']
                     )
             # AuthorsAPIs.createAuthor(request)
-        return Response(True, status=status.HTTP_200_OK)
+            return Response(True, status=status.HTTP_200_OK)
         # return HttpResponse(status=200)
 
     """ 

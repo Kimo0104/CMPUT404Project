@@ -29,15 +29,13 @@ export default function Register() {
                 if (isValid){
                     //usernameContext.Provider.value = data.username;
                     //passwordContext.Provider.value = data.password;
-                    navigate('/login')
+                    navigate('/')
                 }
                 else{
                     alert("User already exists with this username.");
-                }
-                   
+                }      
             }
             register()
-
         }
             
     };
