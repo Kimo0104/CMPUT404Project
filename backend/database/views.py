@@ -91,13 +91,14 @@ class UserAPIs(viewsets.ViewSet):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
         username = body['username'] 
         password = body['password']
-        # username = form.cleaned_data.get('username')
-        # password = form.cleaned_data.get('password')
-        user = authenticate(request, username=username, password=password)
+        
+        user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            # return redirect("main:homepage")
-            return Response(True, status=status.HTTP_200_OK)
+            if user.is_authenticated:
+                return Response(True, status=status.HTTP_200_OK)
+            else:
+                return Response(False, status=status.HTTP_200_OK)
         else:
             return Response(False, status=status.HTTP_200_OK)
         

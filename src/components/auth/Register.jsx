@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createUser } from '../../APIRequests'
 
 
@@ -18,6 +18,7 @@ export default function Register() {
             "password": pass
           }
         createUser(data);
+        navigate('/login')
     };
     
     return (
