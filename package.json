@@ -28,12 +28,12 @@
     "setup-db-role": "psql -U postgres -c \"CREATE ROLE socialdistribution WITH LOGIN PASSWORD 'cmput404'; ALTER ROLE socialdistribution CREATEDB;\"",
     "create-db": "psql -d postgres -U socialdistribution -c \"CREATE DATABASE socialdistribution;\"",
     "reset-db": "psql -d postgres -U socialdistribution -c \"DROP DATABASE socialdistribution WITH (FORCE);\"",
-    "run-server": "python3 backend/manage.py runserver",
-    "make-migrations": "python3 backend/manage.py makemigrations",
-    "migrate": "python3 backend/manage.py migrate",
-    "run-model-tests": "python3 backend/manage.py test database.testModels",
-    "run-api-tests": "python3 backend/manage.py test database.testAPI",
-    "run-backend-tests": "python3 backend/manage.py test database"
+    "run-server": "python backend/manage.py runserver",
+    "make-migrations": "python backend/manage.py makemigrations",
+    "migrate": "python backend/manage.py migrate",
+    "run-model-tests": "python backend/manage.py test database.testModels",
+    "run-api-tests": "python backend/manage.py test database.testAPI",
+    "run-backend-tests": "python backend/manage.py test database"
   },
   "eslintConfig": {
     "extends": [
