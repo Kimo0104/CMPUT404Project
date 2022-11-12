@@ -11,6 +11,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import HomeTab from '../homeTab/HomeTab'
 import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
+import FriendRequestList from "../friendRequestList/FriendRequestList";
+import { userIdContext } from '../../App';
 
 
 const formats = [
@@ -38,6 +40,9 @@ const visibilities = [
   }
 ];
 export default function Home() {
+    
+  const userId = React.useContext(userIdContext);
+
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState("text/plain");
   const [visibility, setVisibility] = useState("PUBLIC");
@@ -100,6 +105,8 @@ export default function Home() {
     sendPostToInbox();
   }
 
+  let requestList = <FriendRequestList authorId={userId} />
+
   return (
     <div>
       <TopBar/>
@@ -118,6 +125,7 @@ export default function Home() {
                 <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
                   Publish Post
                 </Button>
+                {requestList}
                 <Dialog open={open}>
                       <DialogTitle>Publish Post</DialogTitle>
                       <DialogContent>
