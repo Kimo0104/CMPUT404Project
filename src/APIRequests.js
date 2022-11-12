@@ -231,7 +231,6 @@ export const uploadImage = async (referenceId, imageFile) => {
     };
 
     // https://stackoverflow.com/questions/10982712/convert-binary-data-to-base64-with-javascript
-
     reader.readAsDataURL(imageFile);
 }
 
