@@ -1,30 +1,24 @@
 import io
-from rest_framework.parsers import JSONParser
 import json
 from datetime import datetime
 from rest_framework.decorators import action
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework import status
-import io
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from rest_framework.response import Response
-from rest_framework import status
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
-from .serializers import AuthorSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
 import uuid
-import json
 import database
+import ast
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+import base64
 
 def uuidGenerator():
     result = uuid.uuid4()
@@ -71,11 +65,14 @@ class UserAPIs(viewsets.ViewSet):
         #     if user:
         #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        User.objects.create_user(
-            username=body['username'], 
-            email=body['email'],
-            password=body['password']
-        )
+        new_user = User.objects.create_user(
+                        username=body['displayName'], 
+                        email=body['email'],
+                        password=body['password']
+                    )
+        #AuthorsAPIs.createAuthor(request)
+        
+        
 
         return HttpResponse(status=200)
 
@@ -96,9 +93,9 @@ class UserAPIs(viewsets.ViewSet):
         password = body['password']
         # username = form.cleaned_data.get('username')
         # password = form.cleaned_data.get('password')
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, username=username, password=password)
         if user is not None:
-            # login(request, user)
+            login(request, user)
             # return redirect("main:homepage")
             return Response(True, status=status.HTTP_200_OK)
         else:
@@ -276,13 +273,18 @@ class PostsAPIs(viewsets.ViewSet):
         serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#completed
 class CommentsAPIs(viewsets.ViewSet):
 
-    #TESTED
-    #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #get the list of comments of the post whose id is POST_ID
+    @swagger_auto_schema(
+        operation_description="Gets Comments on a Post",
+        operation_summary="Gets the comments on a Post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
         postId = kwargs["postId"]
@@ -293,10 +295,23 @@ class CommentsAPIs(viewsets.ViewSet):
         serializer = CommentsSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    #NOT TESTED
-    #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
-    #if you post an object of “type”:”comment”, it will add your comment to the post whose id is POST_ID
+    #creates a comment for POST_ID
+    @swagger_auto_schema(
+        operation_description="creates a comment for POST_ID",
+        operation_summary="creates a comment for POST_ID",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['comment'],
+            properties={
+                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='The text of the comment')
+            }
+        )
+    )
     @action(detail=True, methods=['post'],)
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -335,13 +350,18 @@ class CommentsAPIs(viewsets.ViewSet):
 
         return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
 
-#completed
 class LikesAPIs(viewsets.ViewSet):
-
-    #NOT TESTED
-    #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
+    #like a post given a POST_ID and LIKER_ID
     @action(detail=True, methods=['post'])
+    @swagger_auto_schema(
+        operation_description="like a post",
+        operation_summary="like a post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     def createPostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
         postId = kwargs["postId"]
@@ -367,10 +387,17 @@ class LikesAPIs(viewsets.ViewSet):
 
         return Response("{Like created successfully}", status=status.HTTP_200_OK )
 
-    #NOT TESTED
-    #
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
+    #like a comment given a COMMENT_ID and LIKER_ID
     @action(detail=True, methods=['post'])
+    @swagger_auto_schema(
+        operation_description="like a comment",
+        operation_summary="like a comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     def createCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
         commentId = kwargs["commentId"]
@@ -396,9 +423,16 @@ class LikesAPIs(viewsets.ViewSet):
 
         return Response("{Like created successfully}", status=status.HTTP_200_OK )
 
-    #NOT TESTED
-    #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
+    #deletes a post like given a POST_ID and a LIKER_ID
+    @swagger_auto_schema(
+        operation_description="deletes a post",
+        operation_summary="deletes a post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'])
     def deletePostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
@@ -418,9 +452,16 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
     #DELETE authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/{LIKER_ID}
+    #deletes a comment like given a COMMENT_ID and a LIKER_ID
+    @swagger_auto_schema(
+        operation_description="deletes a comment",
+        operation_summary="deletes a comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'])
     def deleteCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
@@ -440,11 +481,16 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response({"Delete Like Successful"}, status=status.HTTP_200_OK)
 
-
-    #NOT TESTED
-    #
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes/inbox?page=value&size=value
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/likes?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID
+    @swagger_auto_schema(
+        operation_description="a list of likes on this post",
+        operation_summary="a list of likes on this post",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getPostLikes(self, request, *args, **kwargs):
         postId = kwargs["postId"]
@@ -470,10 +516,16 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes/inbox?page=value&size=value
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes?page=value&size=value
     #a list of likes from other authors on AUTHOR_ID’s post POST_ID comment COMMENT_ID
+    @swagger_auto_schema(
+        operation_description="a list of likes on this comment",
+        operation_summary="a list of likes on this comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getCommentLikes(self, request, *args, **kwargs):
         commentId = kwargs["commentId"]
@@ -499,12 +551,17 @@ class LikesAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-#completed and tested
 class LikedAPIs(viewsets.ViewSet):
-    #NOT TESTED
-    #
     #GET authors/{AUTHOR_ID}/posts/{POST_ID}/like/{LIKER_ID}
     #returns true if authorId has made a like on postId, otherwise false
+    @swagger_auto_schema(
+        operation_description="returns true if authorId has made a like on postId, otherwise false",
+        operation_summary="returns true if authorId has made a like on postId, otherwise false",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'])
     def getAuthorPostLiked(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
@@ -522,11 +579,44 @@ class LikedAPIs(viewsets.ViewSet):
         if Likes.objects.filter(post=post, author=liker).count() >= 1:
             return Response(True, status=status.HTTP_200_OK)
         return Response(False, status=status.HTTP_200_OK)
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comment/{COMMENT_ID}/like/{LIKER_ID}
+    #returns true if authorId has made a like on commentId, otherwise false
+    @swagger_auto_schema(
+        operation_description="returns true if authorId has made a like on commentId, otherwise false",
+        operation_summary="returns true if authorId has made a like on commentId, otherwise false",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
+    @action(detail=True, methods=['get'])
+    def getAuthorCommentLiked(self, request, *args, **kwargs):
+        likerId = kwargs["likerId"]
+        commentId = kwargs["commentId"]
+        
+        #check that authorId and postId exist
+        if not Authors.objects.filter(id=likerId).count() == 1:
+            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+        if not Comments.objects.filter(id=commentId).count() == 1:
+            return Response({"Tried to check likes on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
 
-    #NOT TESTED
-    #
+        liker = Authors.objects.get(id=likerId)
+        comment = Comments.objects.get(id=commentId)
+
+        if LikesComments.objects.filter(comment=comment, author=liker).count() >= 1:
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(False, status=status.HTTP_200_OK)
+
     #GET authors/{AUTHOR_ID}/liked/inbox?page=value&size=value
     #list what public things AUTHOR_ID liked
+    @swagger_auto_schema(
+        operation_description="list what public things the author has liked",
+        operation_summary="list what public things the author has liked",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -554,13 +644,19 @@ class LikedAPIs(viewsets.ViewSet):
         
         return Response(output, status=status.HTTP_200_OK)
 
-#completed
+
 class InboxAPIs(viewsets.ViewSet):
 
-    #NOT TESTED
-    #
     #GET authors/{AUTHOR_ID}/inbox?page=value&size=value
     #if authenticated get a list of posts sent to AUTHOR_ID (paginated)
+    @swagger_auto_schema(
+        operation_description="get a list of posts/likes/comments sent to author (paginated)",
+        operation_summary="get a list of posts/likes/comments sent to author (paginated)",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -569,6 +665,9 @@ class InboxAPIs(viewsets.ViewSet):
             size = int(request.GET.get('size',10))
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
+
+        if not Authors.objects.filter(id=authorId).count() == 1:
+            return Response({"Tried to check inbox of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         inboxObjs = []
         #get enough posts, sorted
@@ -601,10 +700,16 @@ class InboxAPIs(viewsets.ViewSet):
 
         return Response(outputDic, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
+    #*POST authors/{AUTHOR_ID}/inbox + /{POST_ID}
     #send a post to the author
+    @swagger_auto_schema(
+        operation_description="send a post to the author",
+        operation_summary="send a post to the author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['post'])
     def sendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -626,10 +731,16 @@ class InboxAPIs(viewsets.ViewSet):
 
         return Response({"Post Sent to Inbox Successfully"}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #POST inbox/public/{AUTHOR_ID}/{POST_ID}
+    #*POST inbox/public/{AUTHOR_ID}/{POST_ID}
     #send a post to the people following this author
+    @swagger_auto_schema(
+        operation_description="send a post to the people following this author",
+        operation_summary="send a post to the people following this author",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['post'])
     def sendPublicPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -658,10 +769,17 @@ class InboxAPIs(viewsets.ViewSet):
         string = f'Successfully sent post to your {numFollowers} followers'
         return Response({string}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #POST inbox/friend/{AUTHOR_ID}/{POST_ID}
+
+    #*POST inbox/friend/{AUTHOR_ID}/{POST_ID}
     #send a post to this author's friends
+    @swagger_auto_schema(
+        operation_description="send a post to this author's friends",
+        operation_summary="send a post to this author's friends",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['post'])
     def sendFriendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -692,15 +810,21 @@ class InboxAPIs(viewsets.ViewSet):
         string = f'Successfully sent post to your {numFriends} friends'
         return Response({string}, status=status.HTTP_200_OK)
 
-    #NOT TESTED
-    #
-    #DELETE authors/{AUTHOR_ID}/inbox
+    #*DELETE authors/{AUTHOR_ID}/inbox
     #clear the inbox
+    @swagger_auto_schema(
+        operation_description="clear the inbox",
+        operation_summary="clear the inbox",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
         authorId = str(kwargs["authorId"])
         if not Authors.objects.filter(id=authorId).count() == 1:
-            return Response({"This Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"Tried to delete inbox on non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
         authorObj = Authors.objects.get(id=authorId)
         Inbox.objects.filter(author=authorObj).delete()
@@ -713,6 +837,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #get all the people who want to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches all follow requests with a specific author_id",
+        operation_summary="Fetches all follow requests with a specific author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -732,6 +857,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #remove FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID (when AUTHOR_ID approve/deny a request)
     @swagger_auto_schema(
         operation_description="Delete a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Delete a follow request with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -753,6 +879,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #check if FOREIGN_AUTHOR_ID has requested to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Fetches a follow request with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -773,6 +900,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     #create AUTHOR_ID request to follow FOREIGN_AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Adds a follow request with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -798,6 +926,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #get all the followers of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches all the followers with a specific author_id",
+        operation_summary="Fetches all the followers with a specific author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -817,6 +946,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Fetches a follow relationship object with a specific author_id and foreign_author_id",
+        operation_summary="Fetches a follow relationship object with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -837,6 +967,8 @@ class FollowsAPIs(viewsets.ViewSet):
     #add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        operation_summary="Adds a follow relationship object with a specific author_id and foreign_author_id",
+        operation_id="authors_followers_create",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -861,6 +993,7 @@ class FollowsAPIs(viewsets.ViewSet):
     #remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Deletes a follow relationship object with a specific author_id and foreign_author_id",
+        operation_summary="Deletes a follow relationship object with a specific author_id and foreign_author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -881,6 +1014,8 @@ class FollowsAPIs(viewsets.ViewSet):
     #create FOREIGN_AUTHOR_ID's request to follow AUTHOR_ID
     @swagger_auto_schema(
         operation_description="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_summary="Adds a follow request with a specific author_id and foreign_author_id",
+        operation_id="authors_followers_update",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -897,6 +1032,14 @@ class AuthorsAPIs(viewsets.ViewSet):
 
     #TESTED
     #GET //service/authors/{AUTHOR_ID}
+    @swagger_auto_schema(
+        operation_description="Fetches the author with id authorId.",
+        operation_summary="Fetches the author with id authorId.",
+        responses={
+            "200": "Success",
+            "404": "Author with id authorId does not exist in database"
+        }
+    )
     @action(detail=True, methods=['get'])
     def getAuthor(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
@@ -909,11 +1052,32 @@ class AuthorsAPIs(viewsets.ViewSet):
         
         author = author.get(id=authorId)
 
-        serializer = AuthorSerializer(author, many=False)
+        serializer = AuthorsSerializer(author, many=False)
         return Response(serializer.data)
     
     #TESTED
     #GET //service/find?query={SEARCH_QUERY}&page={PAGE_NUM}&size={PAGE_SIZE}
+    @swagger_auto_schema(
+        operation_description="Fetches a page of authors whose displayName contains the value of the \"query\" query parameter.",
+        operation_summary="Fetches authors whose displayName contains the value of the \"query\" query parameter.",
+        manual_parameters=[
+            openapi.Parameter('query', openapi.IN_QUERY,
+                        "The query parameter.",
+                        type=openapi.TYPE_INTEGER),
+            openapi.Parameter('page', openapi.IN_QUERY,
+                      "The page number required.",
+                      type=openapi.TYPE_INTEGER
+                      ),
+            openapi.Parameter('size', openapi.IN_QUERY,
+                      "The size of each page.",
+                      type=openapi.TYPE_INTEGER
+                      )
+        ],
+        responses= {
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     @action(detail=True, methods=['get'])
     def searchForAuthors(self, request, *args, **kwargs):
         #We search for displayName matching search_query
@@ -924,7 +1088,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         authors = Authors.objects.filter(displayName__icontains=search_query)
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
-        serializer = AuthorSerializer(page_obj, many=True)
+        serializer = AuthorsSerializer(page_obj, many=True)
 
         res = {
             "numPages": f"{paginator.num_pages}",
@@ -933,6 +1097,22 @@ class AuthorsAPIs(viewsets.ViewSet):
 
         return Response(res, content_type="application/json")
 
+    @swagger_auto_schema(
+        operation_description="Fetches a page of authors.",
+        operation_summary="Fetches a page of authors.",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY,
+                      "The page number required.",
+                      type=openapi.TYPE_INTEGER),
+            openapi.Parameter('size', openapi.IN_QUERY,
+                      "The size of each page.",
+                      type=openapi.TYPE_INTEGER)
+        ],
+        responses= {
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
     #TESTED
     #GET //service/authors?page={PAGE_NUM}&size={PAGE_SIZE}
     @action(detail=True, methods=['get'])
@@ -943,7 +1123,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         authors = Authors.objects.all()
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
-        serializer = AuthorSerializer(page_obj, many=True)
+        serializer = AuthorsSerializer(page_obj, many=True)
 
         res = {
             "numPages": f"{paginator.num_pages}",
@@ -952,11 +1132,29 @@ class AuthorsAPIs(viewsets.ViewSet):
 
         return Response(res, content_type="application/json")
 
-    
     #TESTED
     #POST //service/authors/{AUTHOR_ID}
+    @swagger_auto_schema(
+        operation_description="Modifies either the github or profileImage attributes of an author with id authorId or both.",
+        operation_summary="Modifies either the github or profileImage attributes of an author with id authorId or both.",
+        operation_id="authors_update",
+        responses={
+            "202": "Modification Accepted",
+            "400": "Bad Request",
+            "404": "Author with id authorId does not exist in database"
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=[],
+            properties={
+                'github': openapi.Schema(type=openapi.TYPE_STRING, description='The new Github URL of the author.'),
+                'profileimage': openapi.Schema(type=openapi.TYPE_STRING, description='The new profile image URL of the author.'),
+            }
+        )
+    )
     @action(detail=True, methods=['post'])
     def modifyAuthor(self, request, *args, **kwargs):
+       # if request.user.is_authenticated and (request.user.id==kwargs["authorId"] or request.user.is_superuser):
         authorId = kwargs["authorId"]
 
         author = Authors.objects.filter(id=authorId)
@@ -966,14 +1164,22 @@ class AuthorsAPIs(viewsets.ViewSet):
             return Response("Author does not exist!", status=status.HTTP_404_NOT_FOUND)
         author = author.get(id=authorId)
 
-        request_body = json.loads(request.body.decode("utf-8"))
-        if len(request_body) == 0:
-            return Response("Empty POST body. Did you mean GET?", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
+            # as the beginning and end of that string. This is a way to get around that. I then replace the 
+            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
+            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
+            # again.
+            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        except json.decoder.JSONDecodeError:
+            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         editable_fields = ["github", "profileImage"]
         for field in request_body.keys():
             if field not in editable_fields:
-                return Response("Problem with POST. Aborting!", status=status.HTTP_400_BAD_REQUEST)
+                return Response(f"You are not allowed to modify field {field} or {field} does not exist!", status=status.HTTP_400_BAD_REQUEST)
         
         for field, value in request_body.items():
             if field == "profileImage":
@@ -986,13 +1192,40 @@ class AuthorsAPIs(viewsets.ViewSet):
         author.save()
 
         return Response("Modified Author successfully", status=status.HTTP_202_ACCEPTED)
+        #else:
+        #    return Response("Authentication Required", status=status.HTTP_401_UNAUTHORIZED)
     
     #TESTED
     #PUT //service/authors
+    @swagger_auto_schema(
+        operation_description="Creates an author with a certain displayName. This is meant to be used only after someone registers, as a unique ID will be generated then.",
+        operation_summary="Creates an author with a certain displayName.",
+        operation_id="authors_create",
+        responses={
+            "201": "Created author successfully",
+            "400": "Bad Request",
+            "404": "Author with id authorId does not exist in database",
+            "409": "Conflict. An author already exists with either the id or the displayName specified in the request."
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=["authorId", "displayName"],
+            properties={
+                'displayName': openapi.Schema(type=openapi.TYPE_STRING, description='The displayName of the author to be created.'),
+            }
+        )
+    )
     @action(detail=True, methods=['put'])
     def createAuthor(self, request, *args, **kwargs):
-        
-        request_body = json.loads(request.body.decode('utf-8'))
+        try:
+            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
+            # as the beginning and end of that string. This is a way to get around that. I then replace the 
+            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
+            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
+            # again.
+            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        except json.decoder.JSONDecodeError:
+            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
 
         host = request.build_absolute_uri().split('/authors/')[0]
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
@@ -1006,7 +1239,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             if authorById.count() == 1:
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
-            return Response("Can't create a profile with no display name/ or no ID!", status=status.HTTP_400_BAD_REQUEST)
+            return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
         url = host + '/authors/' + authorId
         if "profileImage" in request_body and request_body["profileImage"].strip() != "":
             profileImage = request_body["profileImage"]
@@ -1014,7 +1247,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             profileImage = request.build_absolute_uri(self.generic_profile_image_path) 
         github = request_body["github"] if "github" in request_body and request_body["github"].strip() != "" else None
 
-        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage, password="test")
+        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
 
         author.save()
 
@@ -1024,6 +1257,7 @@ class AuthorsAPIs(viewsets.ViewSet):
 # Made by following this tutorial: https://medium.com/@cole_ruche/uploading-images-to-rest-api-backend-in-react-js-b931376b5833
 class ImagesAPIs(viewsets.ViewSet):
 
+    '''
     parser_classes = (MultiPartParser, FormParser)
 
     #PUT //service/images/{AUTHOR_ID}
@@ -1059,7 +1293,46 @@ class ImagesAPIs(viewsets.ViewSet):
         imageObj = Images.objects.get(authorId=authorId)
         serializer = ImageSerializer(imageObj, many=False)
         return Response(serializer.data)
-         
+    '''
+
+    #POST //service/images/{REFERENCE_ID}
+    @action(detail=True, methods=['put'])
+    def uploadImage(self, request, *args, **kwargs):
+        referenceId = kwargs["referenceId"]
+        request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        image_base64 = request_body["imageContent"]
+        try:
+            image_record = Images.objects.get(referenceId=referenceId)
+            update = True
+        except database.models.Images.DoesNotExist:
+            update = False
+        
+        if update:
+            image_record.imageContent = image_base64
+        else:
+            image_record = Images.objects.create(id=uuidGenerator(), imageContent=image_base64, referenceId=referenceId)
+        
+        image_record.save()
+
+        return Response("Image Uploaded")
+
+    #GET //service/images/{REFERENCE_ID}
+    @action(detail=True, method=['get'])
+    def getImage(self, request, *args, **kwargs):
+        referenceId = kwargs["referenceId"]
+        image_record = Images.objects.filter(referenceId=referenceId)
+        if image_record.count() == 0:
+            return Response("Image not found!", status=status.HTTP_404_NOT_FOUND)
+        else:
+            image_record = image_record.get(referenceId=referenceId)
+            image_content_b64 = image_record.imageContent
+            image_content = bytes(base64.b64decode(image_content_b64))
+
+            # https://stackoverflow.com/a/53888054
+            response = HttpResponse(image_content, content_type="image/*")
+            return response
+        
+
 
 
 

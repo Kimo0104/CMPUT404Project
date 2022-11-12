@@ -10,7 +10,6 @@ class Authors(models.Model):
     github = models.CharField(max_length = 255, null=True)
     accepted = models.BooleanField(default = False)
     profileImage = models.CharField(max_length = 255)
-    password = models.CharField(max_length = 255, null=True)
 
 class Posts(models.Model):
     PLAINTEXT = 'text/plain'
@@ -111,5 +110,8 @@ class Images(models.Model):
         # return the whole path to the file
         return os.path.join(upload_to, filename)
 
-    authorId = models.CharField(max_length=255, primary_key=True)
-    image = models.ImageField(upload_to=change_name, default='images/generic_profile_image.png')
+    id = models.CharField(max_length=255, primary_key=True)
+    #image = models.ImageField(upload_to=change_name, default='images/generic_profile_image.png')
+    imageContent = models.TextField()
+    referenceId = models.CharField(max_length=255, unique=True)
+

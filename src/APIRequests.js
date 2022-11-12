@@ -1,6 +1,19 @@
+import { getMenuItemUnstyledUtilityClass } from '@mui/base';
 import axios from 'axios';
+//import React from 'react';
+//import { usernameContext, passwordContext } from './App';
+
 export const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000"
 
+/*
+const GetAuthDetails = ()=> {
+    let auth = {
+            "username": React.use,
+            "password": passwordContext.Provider.value
+        }
+    return auth;
+}
+*/
 
 export const getPost  = async (authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
@@ -38,14 +51,44 @@ export const createPostLike = async(likerId, postId) => {
     return response.data;
 };
 
+export const createCommentLike = async(likerId, commentId) => {
+    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
+    const response = await axios.post(path);
+    return response.data;
+};
+
 export const deletePostLike = async(likerId, postId) => {
     const path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
     const response = await axios.delete(path);
     return response.data;
 };
 
-export const getAuthorPostLike = async(authorId, postId) => {
+export const deleteCommentLike = async(likerId, commentId) => {
+    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
+    const response = await axios.delete(path);
+    return response.data;
+};
+
+export const getAuthorPostLiked = async(authorId, postId) => {
     const path = SERVER_URL + `/authors/1/posts/${postId}/liked/${authorId}`;
+    const response = await axios.get(path);
+    return response.data;
+};
+
+export const getAuthorCommentLiked = async(authorId, commentId) => {
+    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/liked/${authorId}`;
+    const response = await axios.get(path);
+    return response.data;
+};
+
+export const getPostLikes = async(postId) => {
+    const path = SERVER_URL + `/authors/1/posts/${postId}/likes`;
+    const response = await axios.get(path);
+    return response.data;
+};
+
+export const getCommentLikes = async(commentId) => {
+    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes`;
     const response = await axios.get(path);
     return response.data;
 };
@@ -57,8 +100,14 @@ export const getAuthor = async(authorId) => {
 };
 
 export const createPost = async (authorId, data) => {
-    const path = SERVER_URL + `/authors/${authorId}/posts`
+    const path = SERVER_URL + `/authors/${authorId}/posts`;
     const response = await axios.put(`${path}`,data);
+    return response.data;
+}
+
+export const createComment = async (authorId, postId, data) => {
+    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}/comments`;
+    const response = await axios.post(`${path}`,data);
     return response.data;
 }
 
@@ -82,8 +131,8 @@ export const modifyAuthor = async (authorId, newGithub, newProfileImage) => {
         "github": newGithub,
         "profileImage": newProfileImage
     }
-
-    axios.post(path, data);
+    //console.log(GetAuthDetails());
+    axios.post(path, data);//, {auth: GetAuthDetails()});
 
 }
 
@@ -163,4 +212,32 @@ export const deletePost = async(authorId, postId) => {
 export const modifyPost = async (authorId, postId, data) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
     axios.post(path, data);
+}
+
+export const uploadImage = async (referenceId, imageFile) => {
+    const path = SERVER_URL + `/images/${referenceId}`;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        console.log(e);
+
+        // https://stackoverflow.com/a/52311051
+        let imageContent = e.currentTarget.result.replace(/^data:(.*,)?/, '');
+        if ((imageContent.length % 4) > 0) {
+          imageContent += '='.repeat(4 - (imageContent.length % 4));
+        }
+        //let imageContent = e.currentTarget.result
+
+        const data = {"imageContent": imageContent};
+
+        axios.post(path, data);
+    };
+
+    // https://stackoverflow.com/questions/10982712/convert-binary-data-to-base64-with-javascript
+    const imageContent = reader.readAsDataURL(imageFile);
+}
+
+export const getImage = async (imageUrl) => {
+    let response = await axios.get(imageUrl);
+    return response.data;
 }

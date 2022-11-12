@@ -23,7 +23,6 @@ class AuthorsSerializer(serializers.ModelSerializer):
             'github',
             'accepted',
             'profileImage',
-            'password'
         ]
 
 class PostsSerializer(serializers.ModelSerializer):
@@ -111,24 +110,11 @@ class InboxSerializer(serializers.ModelSerializer):
             'post'
         ]
 
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Authors
-        fields = [
-            'id',
-            'type',
-            'host',
-            'displayName',
-            'url',
-            'github',
-            'accepted',
-            'profileImage'
-        ]
-
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Images
         fields = [
-            'authorId',
-            'image'
+            'id',
+            'imageContent',
+            'referenceId'
         ]

@@ -23,12 +23,9 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 schema_view = get_schema_view(
     openapi.Info(
-        title="Jaseci API",
+        title="Social Distribution API",
         default_version='v1',
-        description="Welcome to the world of Jaseci",
-        terms_of_service="https://www.jaseci.org",
-        contact=openapi.Contact(email="jason@jaseci.org"),
-        license=openapi.License(name="Awesome IP"),
+        description="Welcome to the world of Social Distribution",
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -74,6 +71,7 @@ urlpatterns = [
     #liked
     path('authors/<str:authorId>/liked', LikedAPIs.as_view({"get": "getAuthorLiked"}), name = 'liked'),
     path('authors/<str:authorId>/posts/<str:postId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorPostLiked"}), name = 'has-liked'),
+    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>/liked/<str:likerId>', LikedAPIs.as_view({"get": "getAuthorCommentLiked"}), name = 'has-liked-comment'),
 
     #inbox
     path('authors/<str:authorId>/inbox', InboxAPIs.as_view({
@@ -99,13 +97,12 @@ urlpatterns = [
         "delete": "removeFollower",
         "post": "requestToFollow"}), name = 'manage-followers'),
 
-
     #authors
     path('authors', AuthorsAPIs.as_view({"get":"getAuthors", "put":"createAuthor"}), name = 'authors'),
     path('authors/<str:authorId>', AuthorsAPIs.as_view({"get":"getAuthor", "post":"modifyAuthor"}), name = 'manage-authors'),
     path('find', AuthorsAPIs.as_view({"get":"searchForAuthors"}), name = 'find-authors'),
 
     #images
-    path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
-
+    #path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
+    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"}))
 ]

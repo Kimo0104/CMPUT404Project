@@ -77,7 +77,9 @@ class CommentsAPITest(APITestCase):
             comment = "test comment"
         )
 
-    # test getComment for post 1 returns only the comments for post 1
+    '''
+    test getComment for post 1 returns only the comments for post 1
+    '''
     def testGetCorrectComment(self):
         response = self.client.get(reverse('comments', args=[self.test_author1.id,self.test_post1.id]), format='json')
         assert(response.status_code == status.HTTP_200_OK)
@@ -87,12 +89,16 @@ class CommentsAPITest(APITestCase):
         assert(response.data[0]['post'] == "1")
         assert(response.data[0]['comment'] == "test comment")
 
-    # test getComment for invalid post
+    '''
+    test getComment for invalid post
+    '''
     def testGetCommentWithInvalidPost(self):
         response = self.client.get(reverse('comments', args=[self.test_author1.id,10]), format='json')
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
 
-    # test createComment for creating exactly one comment as specified
+    '''
+    test createComment for creating exactly one comment as specified
+    '''
     def testCreateCorrectComment(self):
         commentStr = 'this is a test comment!'
         data = {
@@ -107,8 +113,9 @@ class CommentsAPITest(APITestCase):
         assert(createdComment.contentType == 'text/plain')
         assert(createdComment.author.id == self.test_author2.id)
         assert(createdComment.post.id == self.test_post1.id)
-
-    # test createComment for invalid author
+    '''
+    test createComment for invalid author
+    '''
     def testCreateCommentWithInvalidAuthor(self):
         data = {
             'comment' : 'this is a test comment!'
@@ -117,7 +124,9 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
         assert(Comments.objects.all().count() == 1) # no extra comments
 
-    # test createComment for invalid post
+    '''
+    test createComment for invalid post
+    '''
     def testCreateCommentWithInvalidPost(self):
         data = {
             'comment' : 'this is a test comment!'
@@ -126,7 +135,9 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
         assert(Comments.objects.all().count() == 1) # no extra comments
 
+    '''
     # test createComment for invalid contentType
+    '''
     def testCreateCommentWithInvalidContentType(self):
         data = {
             'comment' : 'this is a test comment!',
@@ -136,7 +147,9 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
         assert(Comments.objects.all().count() == 1) # no extra comments
 
-    # test createComment with invalid content
+    '''
+    test createComment with invalid content    
+    '''
     def testCreateCommentWithInvalidContent(self):
         data = {
             'comment' : ''
@@ -555,6 +568,40 @@ class LikedTests(APITestCase):
         args = [self.test_author1.id, self.test_post.id, 10]
         response = self.client.get(reverse('has-liked', args=args), format='json')
         assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    test getAuthorCommentsLiked returns true on a comment the author has liked
+    '''
+    def testGetAuthorCommentsLikedTrue(self):
+        args = [self.test_author1.id, self.test_post.id, self.test_comment.id, self.test_author2.id]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(response.data)
+
+    '''
+    test getAuthorCommentLiked returns false on a comment the author has not liked
+    '''
+    def testGetAuthorCommentsLikedFalse(self):
+        args = [self.test_author1.id, self.test_post.id, self.test_comment.id, self.test_author1.id]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(not response.data)
+
+    '''
+    test getAuthorCommentLiked with an invalid commentId
+    '''
+    def testGetAuthorCommentsLikedWithInvalidPost(self):
+        args = [self.test_author1.id, self.test_post.id, 10, self.test_author2.id]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    test getAuthorCommentLiked with an invalid likerId
+    '''
+    def testGetAuthorCommentsLikedWithInvalidLiker(self):
+        args = [self.test_author1.id, self.test_post.id, self.test_comment.id, 10]
+        response = self.client.get(reverse('has-liked-comment', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
     
     '''
     test getAuthorLiked by getting all things liked
@@ -619,10 +666,232 @@ class LikedTests(APITestCase):
 
 class InboxTest(APITestCase):
     def setUp(self):
-        pass
+        # make two authors
+        # author 1 makes a post
+        # author 1 makes a comment on post
+        # author 2 make a comment on post
+        # author 2 likes post
+        # author 2 likes author 1s comment
+        # post 1 goes into author 1s inbox
+        self.test_author1 = Authors.objects.create(
+            id = "1",
+            host = "test-host",
+            displayName = "testAuthor1",
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        ) 
+        self.test_author2 = Authors.objects.create(
+            id = "2",
+            host = "test-host",
+            displayName = "testAuthor2", 
+            url = "test-url",
+            github = "github.com",
+            profileImage = "image"
+        )
+        self.test_post = Posts.objects.create(
+            id = "1",
+            title = "This is a test",
+            source = "test source",
+            origin = "test origin",
+            description = "test description",
+            content = "test content",
+            originalAuthor = self.test_author1,
+            author = self.test_author1
+        )
+        self.test_comment1 = Comments.objects.create(
+            id = "1",
+            author = self.test_author1,
+            post = self.test_post,
+            comment = "test comment"
+        )
+        self.test_comment2 = Comments.objects.create(
+            id = "2",
+            author = self.test_author2,
+            post = self.test_post,
+            comment = "test comment"
+        )
+        self.test_post_like1 = Likes.objects.create(
+            id = "1",
+            context = self.test_post.title,
+            summary = f'{self.test_author2.displayName} likes your post',
+            author = self.test_author2,
+            post = self.test_post
+        )
+        self.test_comment_like1 = LikesComments.objects.create(
+            id = "1",
+            context = self.test_comment1.comment,
+            summary = f'{self.test_author2.displayName} likes your comment',
+            author = self.test_author2,
+            comment = self.test_comment1
+        )
+        self.inbox = Inbox.objects.create(
+            id = "1",
+            author = self.test_author1,
+            post = self.test_post
+        )
 
+    '''
+    test getInbox by getting all things in inbox
+    '''
+    def testGetInbox(self):
+        args = [self.test_author1.id]
+        response = self.client.get(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(len(response.data["inbox"]) == 5) #the post, like, comments, comment like
+        assert(response.data["count"] == 5)
     
+    '''
+    test getInbox pagination
+    '''
+    def testGetInboxPagination(self):
+        args = [self.test_author1.id]
+        response = self.client.get(reverse('inbox', args=args), {'page': 1,'size': 3}, format='json')
+        assert(len(response.data["inbox"]) == 3)
+        response = self.client.get(reverse('inbox', args=args), {'page': 2,'size': 3}, format='json')
+        assert(len(response.data["inbox"]) == 2)
+        response = self.client.get(reverse('inbox', args=args), {'page': 3,'size': 5}, format='json')
+        assert(len(response.data["inbox"]) == 0)
 
+    '''
+    test getInbox with an invalid authorId
+    '''
+    def testGetInboxWithInvalidAuthorId(self):
+        args = [10]
+        response = self.client.get(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    test sendPost with valid input
+    '''
+    def testSendPost(self):
+        args = [self.test_author2.id, self.test_post.id]
+        response = self.client.post(reverse('send-direct-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 1)
+
+    '''
+    test sendPost with invalid authorId
+    '''
+    def testSendPostWithInvalidAuthor(self):
+        args = [10, self.test_post.id]
+        response = self.client.post(reverse('send-direct-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPost with invalid postId
+    '''
+    def testSendPostWithInvalidPost(self):
+        args = [self.test_author2.id, 10]
+        response = self.client.post(reverse('send-direct-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPublicPost with a follower
+    '''
+    def testSendPublicPostWithFollower(self):
+        Followers.objects.create(
+            id = "1",
+            followed = self.test_author1,
+            follower = self.test_author2
+        )
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 1)
+
+    '''
+    test sendPublicPost on a non-follower
+    '''
+    def testSendPublicPostWithoutFollower(self):
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPublicPost with as an invalid author
+    '''
+    def testSendPublicPostWithInvalidAuthor(self):
+        args = [10, self.test_post.id]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendPublicPost with an invalid post
+    '''
+    def testSendPublicPostWithInvalidPost(self):
+        args = [self.test_author1.id, 10]
+        response = self.client.post(reverse('send-public-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendFriendPost with a friend
+    '''
+    def testSendPublicPostWithFollower(self):
+        Followers.objects.create(
+            id = "1",
+            followed = self.test_author1,
+            follower = self.test_author2
+        )
+        Followers.objects.create(
+            id = "2",
+            followed = self.test_author2,
+            follower = self.test_author1
+        )
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 1)
+
+    '''
+    test sendFriendPost on a non-follower
+    '''
+    def testSendPublicPostWithoutFollower(self):
+        args = [self.test_author1.id, self.test_post.id]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendFriendPost with as an invalid author
+    '''
+    def testSendPublicPostWithInvalidAuthor(self):
+        args = [10, self.test_post.id]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test sendFriendPost with an invalid post
+    '''
+    def testSendPublicPostWithInvalidPost(self):
+        args = [self.test_author1.id, 10]
+        response = self.client.post(reverse('send-friend-inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.filter(author_id=self.test_author2.id).count() == 0)
+
+    '''
+    test deleteInbox by deleting all inbox entries
+    '''
+    def testDeleteInbox(self):
+        args = [self.test_author1.id]
+        response = self.client.delete(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(Inbox.objects.all().count() == 0)
+
+    '''
+    test deleteInbox with invalid authorId
+    '''
+    def testDeleteInboxWithInvalidAuthor(self):
+        args = [10]
+        response = self.client.delete(reverse('inbox', args=args), format='json')
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+        assert(Inbox.objects.all().count() == 1)
 
 class PostTest(APITestCase):
     def setUp(self):
@@ -940,3 +1209,223 @@ class AccountsTest(APITestCase):
 
         response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+class AuthorsTest(APITestCase):
+    def setUp(self):
+        # Creates Authors with IDs 1 to 10 (We need multiple authors to test
+        # pagination in some API methods)
+        self.test_author = Authors.objects.create(
+                            id="1", 
+                            host="//service", 
+                            displayName="test_author_1", 
+                            url="//service/author/1", 
+                            github="http://github.com/test_author_1", 
+                            accepted=True, 
+                            profileImage="url_to_profile_image"
+                            )
+        User.objects.create(username=self.test_author.displayName, email="test_", password="test")
+        for i in range(2, 11):
+            test_author_i = Authors.objects.create(
+                                id=str(i), 
+                                host="//service", 
+                                displayName=f"test_author_{i}", 
+                                url=f"//service/author/{i}", 
+                                github=f"http://github.com/test_author_{i}", 
+                                accepted=True, 
+                                profileImage="url_to_profile_image"
+                                )
+            User.objects.create(username=test_author_i.displayName, email=f"test_{i}", password="test")
+        
+
+    '''
+    Tests the getAuthor API method when getting an author that already exists.
+    '''
+    def testGetExistingAuthor(self):
+        response = self.client.get(reverse('manage-authors', args=[str(self.test_author.id)]), format="json")
+        assert(response.status_code == status.HTTP_200_OK)
+        assert(len(response.data) == len(Authors._meta.fields))
+        returned_author = response.data
+        assert(returned_author["id"] == str(self.test_author.id))
+        assert(returned_author["type"] == self.test_author.type)
+        assert(returned_author["host"] == self.test_author.host)
+        assert(returned_author["displayName"] == self.test_author.displayName)
+        assert(returned_author["url"] == self.test_author.url)
+        assert(returned_author["github"] == self.test_author.github)
+        assert(returned_author["accepted"] == self.test_author.accepted)
+        assert(returned_author["profileImage"] == self.test_author.profileImage)
+    
+    '''
+    Tests the getAuthor API method when getting an Authors that does not exist.
+    '''
+    def testGetNonExistingAuthor(self):
+        response = self.client.get(reverse('manage-authors', args=["100"]), format="json")
+        assert(response.status_code == status.HTTP_404_NOT_FOUND)
+    
+    '''
+    Tests that editing an existing author actually modifies that Authors object in the
+    database.
+    '''
+    def testPostToExistingAuthorWithValidData(self):
+        # The only fields that are editable are github and profileImage.
+        data = {
+            "github": "http://github.com/new_github_url",
+            "profileImage": "new_profileImage_url"
+        }
+        response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
+        assert(response.status_code == status.HTTP_202_ACCEPTED)
+        # self.test_author contains outdated data now, so we get the updatedAuthor
+        # by getting the Authors object with the same id
+        updatedAuthor = Authors.objects.get(id=self.test_author.id)
+        assert(updatedAuthor.github == data["github"])
+        assert(updatedAuthor.profileImage == data["profileImage"])
+    
+    '''
+    Tests that trying to edit an author that does not exist returns the proper
+    response (404 NOT FOUND)
+    '''
+    def testPostToNonExistingAuthor(self):
+        data = {
+            "github": "http://github.com/new_github_url",
+            "profileImage": "new_profileImage_url"
+        }
+        response = self.client.post(reverse('manage-authors', args=["100"]), data, format="json")
+        assert(response.status_code == status.HTTP_404_NOT_FOUND)
+    
+    '''
+    Tests that sending a POST request with a body containing data in a format
+    other than JSON returns 400 BAD REQUEST
+    '''
+    def testPostToExistingAuthorWithNonJSONBody(self):
+        data = "profileImage=new_profileImage_url"
+        response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that sending a request that tries to edit fields that are not editable or 
+    don't exist returns 400 BAD REQUEST
+    '''
+    def testPostToExistingAuthorWithInvalidFields(self):
+        data = {
+            "displayName": "new_display_name"
+        }
+        response = self.client.post(reverse('manage-authors', args=["1"]), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the getAuthors API method works as expected, i.e. returns the appropriate
+    page with the appropriate page_size.
+    '''
+    def testGetMultipleAuthors(self):
+        data = {
+            "page": 2,
+            "size": 3
+        }
+        response = self.client.get(reverse('authors'), data, format="json")
+        assert(len(response.data) == 2)
+        assert(len(response.data["authorsPage"]) == 3)
+        assert(response.data["numPages"] == "4")  # There are 4 pages total, 4 = ceil(10/3)
+
+        # Now make sure that the 4th page only has 1 item
+        data["page"] = 4
+        response = self.client.get(reverse('authors'), data, format="json")
+        assert(len(response.data["authorsPage"]) == 1)
+
+
+    '''
+    Tests that the findAuthors API method works as expected. I will be searching for 
+    authors whose displayNames contain "1", there should be two authors.
+    '''
+    def testFindAuthors(self):
+        # Making sure pagination works right in this method as well,
+        # there should exist an author on both page 1 and page 2 with 
+        # this query.
+        page_1_query = {
+            "query": "1",
+            "page": "1",
+            "size": "1"
+        }
+        page_2_query = {
+            "query": "1",
+            "page": "2",
+            "size": "1"
+        }
+        response_1 = self.client.get(reverse('find-authors'), page_1_query, format="json")
+        response_2 = self.client.get(reverse('find-authors'), page_2_query, format="json")
+        assert(len(response_1.data) == len(response_2.data) and len(response_1.data) == 2)
+        assert(response_1.data["numPages"] == response_2.data["numPages"])
+        assert(len(response_1.data["authorsPage"]) == 1 and len(response_1.data["authorsPage"]) == 1)
+        assert("1" in response_1.data["authorsPage"][0]["displayName"])
+        assert("1" in response_2.data["authorsPage"][0]["displayName"])
+
+    '''
+    Tests that the createAuthor API method works as expected, with valid input. 
+    '''    
+    def testCreateNewAuthor(self):
+        data = {
+            "authorId": "11",
+            "displayName": "test_creation"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_201_CREATED)
+        created_author = Authors.objects.filter(id=data["authorId"])
+        assert(created_author.count() == 1)
+        created_author = Authors.objects.get(id=data["authorId"])
+        assert(created_author.id == data["authorId"])
+        assert(created_author.displayName == data["displayName"])
+    
+    '''
+    Tests that the createAuthor API method returns a 400 Bad Request if given a PUT request body
+    containing data in a format other than JSON
+    '''
+    def testCreateNewAuthorNonJSONData(self):
+        data = "authorId=11&displayName=test_creation"
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the createAuthor API method returns a 400 Bad Request if it is given a
+    body in JSON format but missing the "authorId" key
+    '''
+    def testCreateNewAuthorNoAuthorId(self):
+        data = {
+            "displayName": "test_author_creation"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+
+    '''
+    Tests that the createAuthor API method returns a 400 Bad Request if it is given a
+    body in JSON format but missing the "displayName" key
+    '''
+    def testCreateNewAuthorNoDisplayName(self):
+        data = {
+            "authorId": "11"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_400_BAD_REQUEST)
+    
+    '''
+    Tests that the createAuthor API method returns a 409 Conflict if the authorId that 
+    is passed to it already exists in the database
+    '''
+    def testCreateNewAuthorDuplicateAuthorId(self):
+        data = {
+            "authorId": "1",
+            "displayName": "test_author_creation"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_409_CONFLICT)
+
+    '''
+    Tests that the createAuthor API method returns a 409 Conflict if the displayName that 
+    is passed to it already exists in the database
+    '''
+    def testCreateNewAuthorDuplicateAuthorId(self):
+        data = {
+            "authorId": "11",
+            "displayName": "test_author_1"
+        }
+        response = self.client.put(reverse('authors'), data, format="json")
+        assert(response.status_code == status.HTTP_409_CONFLICT)
+
+    

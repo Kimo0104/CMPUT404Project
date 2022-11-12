@@ -11,6 +11,8 @@ import Follow from './components/follow/Follow.jsx'
 import FriendRequestList from './components/friendRequestList/FriendRequestList.jsx'
 
 export const userIdContext = React.createContext("1");
+//export const usernameContext = React.createContext("");
+//export const passwordContext = React.createContext("");
 
 function App() {
 
