@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
@@ -18,6 +18,8 @@ import ast
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import base64
+from django.views import View
+import os
 
 def uuidGenerator():
     result = uuid.uuid4()
@@ -25,6 +27,17 @@ def uuidGenerator():
 
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
+
+class Assets(View):
+
+    def get(self, _request, filename):
+        path = os.path.join(os.path.dirname(__file__), 'static', filename)
+
+        if os.path.isfile(path):
+            with open(path, 'rb') as file:
+                return HttpResponse(file.read(), content_type='application/javascript')
+        else:
+            return HttpResponseNotFound()
 
 #create a generalized object that allows for sorting based on date published
 class DjangoObj:
