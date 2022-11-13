@@ -34,7 +34,8 @@
     "migrate": "python backend/manage.py migrate",
     "run-model-tests": "python backend/manage.py test database.testModels",
     "run-api-tests": "python backend/manage.py test database.testAPI",
-    "run-backend-tests": "python backend/manage.py test database"
+    "run-backend-tests": "python backend/manage.py test database",
+    "heroku-postbuild": "cd src && npm install && npm run build"
   },
   "engines": {
     "node": "16.15.0",
