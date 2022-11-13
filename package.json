@@ -35,7 +35,7 @@
     "run-model-tests": "python backend/manage.py test database.testModels",
     "run-api-tests": "python backend/manage.py test database.testAPI",
     "run-backend-tests": "python backend/manage.py test database",
-    "build": "npm install && yarn build-react"
+    "postinstall": "npm run build"
   },
   "engines": {
     "node": "16.15.0",
