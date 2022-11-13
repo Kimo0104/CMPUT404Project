@@ -14,9 +14,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, UserAPIs, ImagesAPIs
 from rest_framework import permissions
+from django.views.generic import TemplateView
 
 # https://www.jasonmars.org/2020/04/22/add-swagger-to-django-rest-api-quickly-4-mins-without-hiccups/
 from drf_yasg.views import get_schema_view
@@ -104,5 +105,8 @@ urlpatterns = [
 
     #images
     #path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
-    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"}))
+    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"})),
+
+    #heroku
+    re_path('.*', TemplateView.as_view(template_name='index.html'))
 ]
