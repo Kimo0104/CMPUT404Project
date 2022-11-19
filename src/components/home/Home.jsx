@@ -7,7 +7,6 @@ import FriendRequestList from "../friendRequestList/FriendRequestList";
 import { userIdContext } from '../../App';
 export default function Home() {
   const userId = React.useContext(userIdContext);
-  let requestList = <FriendRequestList authorId={userId} />
   return (
     <div>
       <TopBar/>
@@ -23,7 +22,7 @@ export default function Home() {
               <Grid item xs={12}>
               </Grid>
                 <PublishButton/>
-                {requestList}
+                <FriendRequestList authorId={userId} />
               </Grid>
             </Grid>
           </Grid>
