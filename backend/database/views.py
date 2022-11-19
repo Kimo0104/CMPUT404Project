@@ -18,6 +18,8 @@ import ast
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import base64
+import datetime
+import jwt
 
 def uuidGenerator():
     result = uuid.uuid4()
@@ -88,15 +90,28 @@ class UserAPIs(viewsets.ViewSet):
         password = body['password']
         
         user = authenticate(username=username, password=password)
+
         if user is not None:
-            login(request, user)
-            if user.is_authenticated:
-                return Response(True, status=status.HTTP_200_OK)
-            else:
-                return Response(False, status=status.HTTP_200_OK)
-        else:
-            return Response(False, status=status.HTTP_200_OK)
-        
+            payload = {
+                'id': user.id,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                'iat': datetime.datetime.utcnow()
+            }
+            token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+            
+            response = Response()
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token
+            }
+            return response
+        #     login(request, user)
+        #     if user.is_authenticated:
+        #         return Response(True, status=status.HTTP_200_OK)
+        #     else:
+        #         return Response(False, status=status.HTTP_200_OK)
+        # else:
+        #     return Response(False, status=status.HTTP_200_OK)   
 
 class PostsAPIs(viewsets.ViewSet):
 
