@@ -23,7 +23,6 @@ class AuthorsSerializer(serializers.ModelSerializer):
             'github',
             'accepted',
             'profileImage',
-            'password'
         ]
 
 class PostsSerializer(serializers.ModelSerializer):
@@ -115,6 +114,7 @@ class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Images
         fields = [
-            'authorId',
-            'image'
+            'id',
+            'imageContent',
+            'referenceId'
         ]

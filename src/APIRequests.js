@@ -1,6 +1,18 @@
 import axios from 'axios';
+//import React from 'react';
+//import { usernameContext, passwordContext } from './App';
+
 export const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000"
 
+/*
+const GetAuthDetails = ()=> {
+    let auth = {
+            "username": React.use,
+            "password": passwordContext.Provider.value
+        }
+    return auth;
+}
+*/
 
 export const getPost  = async (authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
@@ -118,8 +130,8 @@ export const modifyAuthor = async (authorId, newGithub, newProfileImage) => {
         "github": newGithub,
         "profileImage": newProfileImage
     }
-
-    axios.post(path, data);
+    //console.log(GetAuthDetails());
+    axios.post(path, data);//, {auth: GetAuthDetails()});
 
 }
 
@@ -199,4 +211,29 @@ export const deletePost = async(authorId, postId) => {
 export const modifyPost = async (authorId, postId, data) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
     axios.post(path, data);
+}
+
+export const uploadImage = async (referenceId, imageFile) => {
+    const path = SERVER_URL + `/images/${referenceId}`;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        // https://stackoverflow.com/a/52311051
+        let imageContent = e.currentTarget.result.replace(/^data:(.*,)?/, '');
+        if ((imageContent.length % 4) > 0) {
+          imageContent += '='.repeat(4 - (imageContent.length % 4));
+        }
+
+        const data = {"imageContent": imageContent};
+
+        axios.post(path, data);
+    };
+
+    // https://stackoverflow.com/questions/10982712/convert-binary-data-to-base64-with-javascript
+    reader.readAsDataURL(imageFile);
+}
+
+export const getImage = async (imageUrl) => {
+    let response = await axios.get(imageUrl);
+    return response.data;
 }
