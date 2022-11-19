@@ -127,14 +127,14 @@ class UserAPIs(viewsets.ViewSet):
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def logout(self, request):
-        response = Response()
-        response.delete_cookie('jwt')
-        response.data = {
-            'message': 'success'
-        }
-        return response
+    # @action(detail=True, methods=['post'])
+    # def logout(self, request):
+    #     response = Response()
+    #     response.delete_cookie('jwt')
+    #     response.data = {
+    #         'message': 'success'
+    #     }
+    #     return response
 
 class PostsAPIs(viewsets.ViewSet):
 

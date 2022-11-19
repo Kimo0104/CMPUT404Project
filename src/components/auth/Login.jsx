@@ -26,12 +26,9 @@ export default function Login() {
                 //usernameContext.Provider.value = data.username;
                 //passwordContext.Provider.value = data.password;
                 navigate('/home')
-            }
-               
+            }    
         }
         login()
-        
-        
     }
 
     return (
@@ -48,7 +45,6 @@ export default function Login() {
                 <div className="link-btn">
                 <Link to="/register">Don't have an account? Register here.</Link>
                 </div>
-
             </div>
         </div>
     )
