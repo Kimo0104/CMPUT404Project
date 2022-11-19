@@ -123,8 +123,11 @@ class UserAPIs(viewsets.ViewSet):
         except jwt.ExpiredSignatureError:
             return Response(status=status.HTTP_403_Unauthorized)
 
-        user = User.objects.filter(id=payload['id']).first()
+        # user = User.objects.filter(id=payload['id']).first()
+        user = User.objects.get(id=payload['id'])
+        # print(user.id)
         serializer = UserSerializer(user)
+
         return Response(serializer.data)
 
     # @action(detail=True, methods=['post'])
