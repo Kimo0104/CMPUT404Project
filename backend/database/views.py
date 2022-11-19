@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
-from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer, UserSerializer
 import uuid
 import database
 import ast
@@ -60,15 +60,15 @@ class UserAPIs(viewsets.ViewSet):
         usernameFromFrontend = body['displayName']
         usernameExists = User.objects.filter(username = usernameFromFrontend).exists()
 
-        print(usernameExists)
         if usernameExists == True:
             return Response(False, status=status.HTTP_200_OK)
         else:
-            User.objects.create_user(
+            user = User.objects.create_user(
                         username=body['displayName'], 
                         email=body['email'],
                         password=body['password']
                     )
+            userID = user.id
             # AuthorsAPIs.createAuthor(request)
             return Response(True, status=status.HTTP_200_OK)
         # return HttpResponse(status=200)
@@ -90,7 +90,7 @@ class UserAPIs(viewsets.ViewSet):
         password = body['password']
         
         user = authenticate(username=username, password=password)
-
+        
         if user is not None:
             payload = {
                 'id': user.id,
@@ -111,7 +111,30 @@ class UserAPIs(viewsets.ViewSet):
         #     else:
         #         return Response(False, status=status.HTTP_200_OK)
         # else:
-        #     return Response(False, status=status.HTTP_200_OK)   
+        #     return Response(False, status=status.HTTP_200_OK) 
+ 
+    @action(detail=True, methods=['get'])
+    def authenticatedUser(self, request, format='json'): 
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response(status=status.HTTP_403_Unauthorized)
+        try:
+            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response(status=status.HTTP_403_Unauthorized)
+
+        user = User.objects.filter(id=payload['id']).first()
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def logout(self, request):
+        response = Response()
+        response.delete_cookie('jwt')
+        response.data = {
+            'message': 'success'
+        }
+        return response
 
 class PostsAPIs(viewsets.ViewSet):
 
