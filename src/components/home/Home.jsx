@@ -23,6 +23,7 @@ export default function Home() {
               <Grid item xs={12}>
               </Grid>
                 <PublishButton/>
+                {requestList}
               </Grid>
             </Grid>
           </Grid>
