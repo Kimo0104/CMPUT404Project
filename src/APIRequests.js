@@ -205,7 +205,7 @@ export const loginUser = async (data) => {
 }
 
 export const authUser = async (data) => {
-    const path = SERVER_URL + `/users`
+    const path = SERVER_URL + `/users/auth`
     const response = await axios.post(`${path}`, data);
     return response.data;
 }

@@ -32,7 +32,6 @@ export default function Login() {
                     console.log(userID)
                     navigate('/home');
                 }
-                // navigate('/home');
             }
         }
         login()

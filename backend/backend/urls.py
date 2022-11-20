@@ -42,8 +42,11 @@ urlpatterns = [
     path('users', UserAPIs.as_view({
         "post": "createUser",
         "put": "loginUser",
-        "post": "authenticatedUser",
     }), name = 'users'),
+
+    path('users/auth', UserAPIs.as_view({
+        "post": "authenticatedUser",
+    }), name = 'auth'),
 
     path('admin/', admin.site.urls, name = 'admin'),
 

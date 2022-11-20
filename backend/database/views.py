@@ -85,7 +85,7 @@ class UserAPIs(viewsets.ViewSet):
             "4XX": "Bad Request"
         }
     )  
-    @action(detail=True, methods=['PUT'])
+    @action(detail=True, methods=['put'])
     def loginUser(self, request, format='json'):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
         username = body['username'] 
@@ -120,13 +120,8 @@ class UserAPIs(viewsets.ViewSet):
         except jwt.ExpiredSignatureError:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        # user = User.objects.filter(id=payload['id']).first()
         user = User.objects.get(id=payload['id'])
-        
-        data = {
-            'id': str(user.id)
-        }
-
+        data = {'id': str(user.id)}
         return Response(data)
 
     # @action(detail=True, methods=['post'])
