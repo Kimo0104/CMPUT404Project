@@ -11,8 +11,6 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(name); 
-        console.log(pass);
 
         let data = {
             "username": name,
@@ -30,16 +28,16 @@ export default function Login() {
         // console.log(content)
 
         async function login() {
-            const isValid = await loginUser(data);
+            const token = await loginUser(data);
             
-            console.log(isValid);
-            if (isValid){
-                //usernameContext.Provider.value = data.username;
-                //passwordContext.Provider.value = data.password;
-                navigate('/home')
-            }    
+            if (token){
+                localStorage.setItem("token", JSON.stringify(token));
+                navigate('/home');
+            }
         }
         login()
+
+        console.log(localStorage.getItem("token"))
     }
 
     return (
