@@ -5,12 +5,14 @@ import Divider from '@mui/material/Divider';
 import Pagination from '@mui/material/Pagination';
 
 import GithubEvent from './GithubEvent'
-import { getPublicPosts, getGithubEvents } from '../../APIRequests'
+import { getAuthor, getGithubEvents } from '../../APIRequests'
 
 export default function BasicStack(props) {
   //props contains authorId
 
   var key = 1;
+
+  const [githubName, setGithubName] = React.useState("none");
 
   const size = 10;
   const [numPages, setNumPages] = React.useState(3);
@@ -21,21 +23,35 @@ export default function BasicStack(props) {
     updateGithubEvents(value, size);
   };
 
+  const [lastEventUpdate, setLastEventUpdate] = React.useState((new Date()).getTime());
+  const [allEvents, setAllEvents] = React.useState([]);
   const [events, setEvents] = React.useState([]);
 
   const updateGithubEvents = (page, size) => {
     // State change will cause component re-render
     async function fetchGithubActivity() {
-      const output = await getGithubEvents('Kimo0104', page, size);
-      if (output.length == 0) { return; }
-      setEvents(output);
-      setNumPages(3);
+    const nowTimeMilli = (new Date()).getTime()
+      if (allEvents.length == 0 || nowTimeMilli < (lastEventUpdate + 60000)) {
+        setLastEventUpdate(nowTimeMilli);
+        const output = await getGithubEvents('Kimo0104');
+        if (output.length == 0) { return; }
+        setAllEvents(output);
+        setNumPages(3);
+        setEvents(output.slice((page-1)*size, page*size));
+      } else {
+        setEvents(allEvents.slice((page-1)*size, page*size));
+      }
     }
     fetchGithubActivity();
   }
   
   React.useEffect(() => {
-    updateGithubEvents(page, size);
+    async function setupGithubActivity() {
+      const author = await getAuthor(props.authorId);
+      setGithubName(author.github);
+      updateGithubEvents(page, size);
+    }
+    setupGithubActivity();
     // disable this warning because updateGithubEvents has to be used outside of the useEffect as well
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

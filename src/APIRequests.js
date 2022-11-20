@@ -238,8 +238,8 @@ export const getImage = async (imageUrl) => {
     return response.data;
 }
 
-export const getGithubEvents = async (githubUsername, page, size) => {
-    const path = `https://api.github.com/users/${githubUsername}/events`
+export const getGithubEvents = async (githubUsername) => {
+    const path = `https://api.github.com/users/${githubUsername}/events`;
     let response = await axios.get(path);
-    return response.data.slice((page-1)*size, page*size);
+    return response.data;
 }
