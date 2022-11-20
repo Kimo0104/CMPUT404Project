@@ -1,7 +1,7 @@
 import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from '../../APIRequests';
+import { loginUser, authUser } from '../../APIRequests';
 import { usernameContext, passwordContext } from "../../App";
 
 export default function Login() {
@@ -17,27 +17,26 @@ export default function Login() {
             "password": pass
         };
 
-        // const response = await fetch('http://localhost:8000/users', {
-        //     method: 'PUT',
-        //     headers: {'Content-Type': 'application/json'},
-        //     credentials: 'include',
-        //     body: JSON.stringify(data)
-        // });
-        
-        // const content = await response.json();
-        // console.log(content)
-
         async function login() {
             const token = await loginUser(data);
-            
             if (token){
                 localStorage.setItem("token", JSON.stringify(token));
-                navigate('/home');
+                const tokenFromStorage = (JSON.parse(localStorage.getItem("token", JSON.stringify(token)))).jwt
+                console.log(tokenFromStorage)
+
+                const dataForAuthUser = {
+                    "userToken": tokenFromStorage
+                }
+                const userID = await authUser(dataForAuthUser);
+                if (userID){
+                    console.log(userID)
+                    navigate('/home');
+                }
+                // navigate('/home');
             }
         }
         login()
 
-        console.log(localStorage.getItem("token"))
     }
 
     return (

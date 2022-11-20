@@ -100,28 +100,18 @@ class UserAPIs(viewsets.ViewSet):
                 'iat': datetime.datetime.utcnow()
             }
             token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-            data = {
-                'jwt': token
-                }
-            responseHeader = {
-                'Access-Control-Allow-Origin':'http://localhost:3000',
-                'Access-Control-Allow-Credentials':'true'
-                }
-            response = Response()
-            # response.headers = {
-            #     'Access-Control-Allow-Origin':'http://localhost:3000',
-            #     'Access-Control-Allow-Credentials':'true'
-            #     }
+            response = Response()  
             response.set_cookie(key='jwt', value=token, httponly=True)
             response.data = {
                 'jwt': token
             }
             return response
  
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['post'])
     def authenticatedUser(self, request, format='json'): 
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
-        token = request.COOKIES.get('jwt')
+        token = body["userToken"]
 
         if not token:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -132,6 +122,7 @@ class UserAPIs(viewsets.ViewSet):
 
         # user = User.objects.filter(id=payload['id']).first()
         user = User.objects.get(id=payload['id'])
+        
         data = {
             'id': str(user.id)
         }

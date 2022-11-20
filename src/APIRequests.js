@@ -204,6 +204,12 @@ export const loginUser = async (data) => {
     return response.data;
 }
 
+export const authUser = async (data) => {
+    const path = SERVER_URL + `/users`
+    const response = await axios.post(`${path}`, data);
+    return response.data;
+}
+
 export const deletePost = async(authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
     const response = await axios.delete(path);
