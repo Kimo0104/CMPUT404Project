@@ -199,6 +199,7 @@ export const createUser = async (data) => {
 
 export const loginUser = async (data) => {
     const path = SERVER_URL + `/users`
+    data.withCredentials = true;
     const response = await axios.put(`${path}`, data);
     return response.data;
 }

@@ -100,37 +100,43 @@ class UserAPIs(viewsets.ViewSet):
                 'iat': datetime.datetime.utcnow()
             }
             token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-            
+            data = {
+                'jwt': token
+                }
+            responseHeader = {
+                'Access-Control-Allow-Origin':'http://localhost:3000',
+                'Access-Control-Allow-Credentials':'true'
+                }
             response = Response()
+            # response.headers = {
+            #     'Access-Control-Allow-Origin':'http://localhost:3000',
+            #     'Access-Control-Allow-Credentials':'true'
+            #     }
             response.set_cookie(key='jwt', value=token, httponly=True)
             response.data = {
                 'jwt': token
             }
             return response
-        #     login(request, user)
-        #     if user.is_authenticated:
-        #         return Response(True, status=status.HTTP_200_OK)
-        #     else:
-        #         return Response(False, status=status.HTTP_200_OK)
-        # else:
-        #     return Response(False, status=status.HTTP_200_OK) 
  
     @action(detail=True, methods=['get'])
     def authenticatedUser(self, request, format='json'): 
+
         token = request.COOKIES.get('jwt')
+
         if not token:
-            return Response(status=status.HTTP_403_Unauthorized)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         try:
             payload = jwt.decode(token, 'secret', algorithm=['HS256'])
         except jwt.ExpiredSignatureError:
-            return Response(status=status.HTTP_403_Unauthorized)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         # user = User.objects.filter(id=payload['id']).first()
         user = User.objects.get(id=payload['id'])
-        # print(user.id)
-        serializer = UserSerializer(user)
+        data = {
+            'id': str(user.id)
+        }
 
-        return Response(serializer.data)
+        return Response(data)
 
     # @action(detail=True, methods=['post'])
     # def logout(self, request):

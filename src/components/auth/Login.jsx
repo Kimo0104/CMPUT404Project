@@ -9,7 +9,7 @@ export default function Login() {
     const [name, setName] = useState(''); 
     const [pass, setPass] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(name); 
         console.log(pass);
@@ -19,8 +19,19 @@ export default function Login() {
             "password": pass
         };
 
+        // const response = await fetch('http://localhost:8000/users', {
+        //     method: 'PUT',
+        //     headers: {'Content-Type': 'application/json'},
+        //     credentials: 'include',
+        //     body: JSON.stringify(data)
+        // });
+        
+        // const content = await response.json();
+        // console.log(content)
+
         async function login() {
             const isValid = await loginUser(data);
+            
             console.log(isValid);
             if (isValid){
                 //usernameContext.Provider.value = data.username;

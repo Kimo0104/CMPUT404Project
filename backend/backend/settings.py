@@ -31,6 +31,10 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'http://localhost:8000'
+]
 
 INSTALLED_APPS = [
     "database",
