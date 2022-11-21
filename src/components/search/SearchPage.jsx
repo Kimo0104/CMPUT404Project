@@ -3,17 +3,20 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import TopBar from '../topbar/TopBar.jsx'
 import { searchForAuthors } from '../../APIRequests'
 import SearchList from './SearchList.jsx';
-import { Pagination } from '@mui/material';
+import { Pagination, Typography } from '@mui/material';
+import { QueryContext } from '../home/Home.jsx';
 
-export default function SearchPage() {
+export default function SearchPage(props) {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const [authors, setAuthors] = React.useState([]);
     const [numPages, setNumPages] = React.useState(0);
 
+    const { setQuery } = React.useContext(QueryContext);
+
     const navigate = useNavigate();
     
-    let query = searchParams.get("query");
+    let { query } = React.useContext(QueryContext);
     let page  = parseInt(searchParams.get("page"));
     let size  = parseInt(searchParams.get("size"));
 
@@ -37,7 +40,7 @@ export default function SearchPage() {
 
         setAuthors(data.authorsPage);
         setNumPages(parseInt(data.numPages));
-        setSearchParams(`query=${query}&page=${page}&size=${size}`);
+        //setSearchParams(`query=${query}&page=${page}&size=${size}`);
 
     }
 
@@ -49,24 +52,32 @@ export default function SearchPage() {
             searchPath += `&size=${size}`;
         }
 
-        navigate(searchPath);
-        navigate(0);
+        setQuery([query[0], pageNumber]);
+        localStorage.setItem("query", [query[0], pageNumber]);
+
+        //navigate(searchPath);
+        //navigate(0);
     }
 
     React.useEffect(() => {
-        fetchFilteredAuthors(query, page, size);
-    }, []);
+        fetchFilteredAuthors(query[0], query[1], size);
+        console.log(authors);
+        console.log(query[1]);
+    }, [query]);
 
     let pagination = "";
     if (numPages != 0 && authors.length > 0) {
-        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} page={page} 
+        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} page={query[1]} 
                                  style={{justifyContent: "center", display: "flex"}}/>;
     }
 
     return (
         <div>
-            <TopBar />
-            <SearchList filteredAuthors={authors}/>
+            {authors.length > 0 ?
+                <SearchList filteredAuthors={authors}/>
+            :
+                <Typography variant="h3">No search results were found</Typography>   
+            }
             {pagination}
         </div>
     );
