@@ -6,7 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
-
+import { userIdContext } from '../../App';
 
 const formats = [
     {
@@ -42,6 +42,8 @@ export default function PublishText(props) {
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
 
+    const authorId = React.useContext(userIdContext);
+
     const handleFormatChange = (event) => {
         setFormat(event.target.value);
     };
@@ -65,9 +67,8 @@ export default function PublishText(props) {
     };
 
     const handlePublish = () => {
-        props.handleCancel(false);
+        props.handleCancel();
         // Api calls here
-        const authorId = 1;
         const data = {
             type: "post",
             title: title,
