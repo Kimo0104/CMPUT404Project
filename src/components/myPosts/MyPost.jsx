@@ -150,19 +150,6 @@ export default function BasicCard(props) {
                     </TextField>
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
-                      id="outlined-select-visibility"
-                      select
-                      label="Select"
-                      value={visibility}
-                      onChange={handleVisibilityChange}
-                      helperText="Please select your post visibility">
-                      {visibilities.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
