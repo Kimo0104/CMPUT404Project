@@ -31,6 +31,10 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'http://localhost:8000'
+]
 
 INSTALLED_APPS = [
     "database",
@@ -45,6 +49,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'rest_framework_swagger',
     'drf_yasg',
+    
 ]
 
 MIDDLEWARE = [
@@ -147,5 +152,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    
+    
 }
