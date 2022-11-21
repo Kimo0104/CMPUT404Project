@@ -1,4 +1,3 @@
-import { getMenuItemUnstyledUtilityClass } from '@mui/base';
 import axios from 'axios';
 //import React from 'react';
 //import { usernameContext, passwordContext } from './App';
@@ -226,14 +225,11 @@ export const uploadImage = async (referenceId, imageFile) => {
 
     const reader = new FileReader();
     reader.onload = async (e) => {
-        console.log(e);
-
         // https://stackoverflow.com/a/52311051
         let imageContent = e.currentTarget.result.replace(/^data:(.*,)?/, '');
         if ((imageContent.length % 4) > 0) {
           imageContent += '='.repeat(4 - (imageContent.length % 4));
         }
-        //let imageContent = e.currentTarget.result
 
         const data = {"imageContent": imageContent};
 
@@ -241,7 +237,7 @@ export const uploadImage = async (referenceId, imageFile) => {
     };
 
     // https://stackoverflow.com/questions/10982712/convert-binary-data-to-base64-with-javascript
-    const imageContent = reader.readAsDataURL(imageFile);
+    reader.readAsDataURL(imageFile);
 }
 
 export const getImage = async (imageUrl) => {

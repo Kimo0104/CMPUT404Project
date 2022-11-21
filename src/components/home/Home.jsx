@@ -9,9 +9,27 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
-import HomeTab from '../homeTab/HomeTab'
+import HomeTab from '../homeTab/HomeTab';
+import Profile from "../profile/Profile.jsx";
+import { userIdContext } from "../../App.js";
 import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
+import SearchList from "../search/SearchList.jsx";
+import SearchPage from "../search/SearchPage.jsx";
+import FriendRequestList from "../friendRequestList/FriendRequestList";
 
+// https://stackoverflow.com/a/64517088
+export const AuthorIdContext = React.createContext({
+  authorId: "1",
+  setAuthorId: (value) => {}
+})
+export const ShowSearchContext = React.createContext({
+  showSearch: false,
+  setShowSearch: (value) => {}
+})
+export const QueryContext = React.createContext({
+  query: ["", 1],
+  setQuery: (value) => {}
+})
 
 const formats = [
   {
@@ -38,6 +56,13 @@ const visibilities = [
   }
 ];
 export default function Home() {
+
+  const userId = React.useContext(userIdContext);
+
+  const [authorId, setAuthorId] = useState(localStorage.getItem("authorId") ? localStorage.getItem("authorId") : "1");
+  const [showSearch, setShowSearch] = useState(localStorage.getItem("showSearch") ? localStorage.getItem("showSearch") : false);
+  const [query, setQuery] = useState(localStorage.getItem("query") ? localStorage.getItem("query") : "");
+
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState("text/plain");
   const [visibility, setVisibility] = useState("PUBLIC");
@@ -78,7 +103,6 @@ export default function Home() {
   const handlePublish = () => {
     setOpen(false);
     // Api calls here
-    const authorId = 1;
     console.log(visibility)
     const data = {
       type: "post",
@@ -100,129 +124,174 @@ export default function Home() {
     sendPostToInbox();
   }
 
+  // https://stackoverflow.com/a/53455443
+  const handleBack = () => {
+    if (showSearch) {
+      setAuthorId(userId);
+      setShowSearch(false);
+      localStorage.clear();
+    } else {
+      setShowSearch(true);
+    }
+  }
+
+  let leftPane = "";
+  if (showSearch) {
+    leftPane = <SearchPage />;
+  } else {
+    leftPane = <Profile authorId={authorId}/>;
+    console.log(localStorage.getItem("authorId"))
+  }
+
+  let requestList = <FriendRequestList authorId={userId} />
+
   return (
-    <div>
-      <TopBar/>
-        <div>
-          <Grid container spacing={2}>
-            <Grid item xs={2}>
-            </Grid>
-            <Grid item xs={8}>
-                <HomeTab authorId={1}/>
-            </Grid>
-            <Grid item xs={2}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-              </Grid>
-              <Grid item xs={12}>
-                <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
-                  Publish Post
-                </Button>
-                <Dialog open={open}>
-                      <DialogTitle>Publish Post</DialogTitle>
-                      <DialogContent>
-                        <Grid container spacing={2}>
-                          <Grid item xs={12}>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <TextField
-                              id="outlined-select-format"
-                              select
-                              label="Select"
-                              value={format}
-                              onChange={handleFormatChange}
-                              helperText="Please select your text format">
-                              {formats.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <TextField
-                              id="outlined-select-visibility"
-                              select
-                              label="Select"
-                              value={visibility}
-                              onChange={handleVisibilityChange}
-                              helperText="Please select your post visibility">
-                              {visibilities.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="Title"
-                              fullWidth
-                              onChange={handleTitleChange}
-                              variant="standard"
-                              />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="Source"
-                              onChange={handleSourceChange}
-                              fullWidth
-                              variant="standard"
-                              />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="Origin"
-                              onChange={handleOriginChange}
-                              fullWidth
-                              variant="standard"
-                              />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="Description"
-                              onChange={handleDescriptionChange}
-                              fullWidth
-                              variant="standard"
-                              />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              autoFocus
-                              margin="dense"
-                              id="name"
-                              label="Content"
-                              fullWidth
-                              onChange={handleContentChange}
-                              variant="standard"
-                              multiline
-                              rows={5}
-                              />
-                          </Grid>
+    <AuthorIdContext.Provider value={{authorId, setAuthorId}}>
+      <ShowSearchContext.Provider value={{showSearch, setShowSearch}}>
+        <QueryContext.Provider value={{query, setQuery}}>
+          <div>
+            <TopBar/>
+            <div>
+              <Grid container>
+                <Grid item xs={4}>
+                  <Grid container rowSpacing={2}>
+                    <Grid item xs={12}></Grid>
+                    <Grid item xs={12}></Grid>
+                    <Grid item xs={2}></Grid>
+                    <Grid item>
+                      {authorId !== userId &&
+                        <Button onClick={handleBack}>Back</Button>
+                      }
+                      {leftPane}
+                    </Grid>
+                    <Grid item xs={2}></Grid>
+                  </Grid>
+                </Grid>
+                <Grid item xs={8}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={8}>
+                        <HomeTab authorId={userId}/>
+                    </Grid>
+                    <Grid item xs={1}>
+                    </Grid>
+                    <Grid item xs={2}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}></Grid>
+                      <Grid item xs={12}>
+                        <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
+                          Publish Post
+                        </Button>
+                        {requestList}
+                        <Dialog open={open}>
+                              <DialogTitle>Publish Post</DialogTitle>
+                              <DialogContent>
+                                <Grid container spacing={2}>
+                                  <Grid item xs={12}>
+                                  </Grid>
+                                  <Grid item xs={6}>
+                                    <TextField
+                                      id="outlined-select-format"
+                                      select
+                                      label="Select"
+                                      value={format}
+                                      onChange={handleFormatChange}
+                                      helperText="Please select your text format">
+                                      {formats.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                          {option.label}
+                                        </MenuItem>
+                                      ))}
+                                    </TextField>
+                                  </Grid>
+                                  <Grid item xs={6}>
+                                    <TextField
+                                      id="outlined-select-visibility"
+                                      select
+                                      label="Select"
+                                      value={visibility}
+                                      onChange={handleVisibilityChange}
+                                      helperText="Please select your post visibility">
+                                      {visibilities.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                          {option.label}
+                                        </MenuItem>
+                                      ))}
+                                    </TextField>
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="Title"
+                                      fullWidth
+                                      onChange={handleTitleChange}
+                                      variant="standard"
+                                      />
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="Source"
+                                      onChange={handleSourceChange}
+                                      fullWidth
+                                      variant="standard"
+                                      />
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="Origin"
+                                      onChange={handleOriginChange}
+                                      fullWidth
+                                      variant="standard"
+                                      />
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="Description"
+                                      onChange={handleDescriptionChange}
+                                      fullWidth
+                                      variant="standard"
+                                      />
+                                  </Grid>
+                                  <Grid item xs={12}>
+                                    <TextField
+                                      autoFocus
+                                      margin="dense"
+                                      id="name"
+                                      label="Content"
+                                      fullWidth
+                                      onChange={handleContentChange}
+                                      variant="standard"
+                                      multiline
+                                      rows={5}
+                                      />
+                                  </Grid>
+                                </Grid>
+                              </DialogContent>
+                              <DialogActions>
+                                <Button onClick={handleCancel}>Cancel</Button>
+                                <Button onClick={handlePublish}>Publish</Button>
+                              </DialogActions>
+                            </Dialog>
                         </Grid>
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleCancel}>Cancel</Button>
-                        <Button onClick={handlePublish}>Publish</Button>
-                      </DialogActions>
-                    </Dialog>
+                      </Grid>
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-          </Grid>
-        </div>
-    </div>
+            </div>
+          </div>
+        </QueryContext.Provider>
+      </ShowSearchContext.Provider>
+    </AuthorIdContext.Provider>
   )
 }

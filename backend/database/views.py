@@ -1058,7 +1058,7 @@ class FollowsAPIs(viewsets.ViewSet):
 
 class AuthorsAPIs(viewsets.ViewSet):
 
-    #generic_profile_image_path = '/images/generic_profile_image.png'
+    # This image is licensed under Adobe Standard License
     generic_profile_image_path = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
 
     #TESTED
@@ -1170,7 +1170,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         operation_summary="Modifies either the github or profileImage attributes of an author with id authorId or both.",
         operation_id="authors_update",
         responses={
-            "202": "Modification Accepted",
+            "204": "No Content. Author was modified successfully.",
             "400": "Bad Request",
             "404": "Author with id authorId does not exist in database"
         },
@@ -1222,7 +1222,7 @@ class AuthorsAPIs(viewsets.ViewSet):
 
         author.save()
 
-        return Response("Modified Author successfully", status=status.HTTP_202_ACCEPTED)
+        return Response("Modified Author successfully", status=status.HTTP_204_NO_CONTENT)
         #else:
         #    return Response("Authentication Required", status=status.HTTP_401_UNAUTHORIZED)
     
@@ -1242,6 +1242,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             type = openapi.TYPE_OBJECT,
             required=["authorId", "displayName"],
             properties={
+                'authorId': openapi.Schema(type=openapi.TYPE_STRING, description='The ID of the author to be created.'),
                 'displayName': openapi.Schema(type=openapi.TYPE_STRING, description='The displayName of the author to be created.'),
             }
         )
@@ -1259,6 +1260,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
 
         host = request.build_absolute_uri().split('/authors/')[0]
+        
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
           and "authorId" in request_body and request_body["authorId"].strip() != "":
             authorId = request_body['authorId']
@@ -1285,52 +1287,40 @@ class AuthorsAPIs(viewsets.ViewSet):
         return Response("Created Author successfully", status=status.HTTP_201_CREATED)
 
 
-# Made by following this tutorial: https://medium.com/@cole_ruche/uploading-images-to-rest-api-backend-in-react-js-b931376b5833
 class ImagesAPIs(viewsets.ViewSet):
 
-    '''
-    parser_classes = (MultiPartParser, FormParser)
-
-    #PUT //service/images/{AUTHOR_ID}
-    @action(detail=True, methods=['put'])
-    def putImage(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        try:
-            image_record = Images.objects.get(authorId=authorId)
-            image_serializer = ImageSerializer(image_record, data=request.data)
-            update = True
-        except database.models.Images.DoesNotExist:
-            image_serializer = ImageSerializer(data=request.data)
-            update = False
-
-        if image_serializer.is_valid():
-            if update:
-                image_record.delete()
-                image_record.save()
-            image_serializer.save()
-            image_name = str(Images.objects.get(authorId=authorId).image)
-            print(image_name)
-            image_path = request.build_absolute_uri("/media/"+image_name)
-            Authors.objects.get(id=authorId).profileImage = image_path
-            return Response(image_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            print('error', image_serializer.errors)
-            return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    #GET //service/images/{AUTHOR_ID}
-    @action(detail=True, methods=['get'])
-    def getImage(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        imageObj = Images.objects.get(authorId=authorId)
-        serializer = ImageSerializer(imageObj, many=False)
-        return Response(serializer.data)
-    '''
-
+    @swagger_auto_schema(
+        operation_description="Uploads an image encoded as base64 to the database. The image will correspond to referenceId, which" \
+            "is either an authorId (so the image is a profileImage) or a postId (so the image is a post).",
+        operation_summary="Uploads an image encoded as base64 to the database.",
+        operation_id="image_upload",
+        responses={
+            "201": "New image was uploaded successfully. A new URI was created for this image.",
+            "204": "Image was modified successfully. The image data at an existing URI was updated.",
+            "400": "Bad Request."
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=["imageContent"],
+            properties={
+                'imageContent': openapi.Schema(type=openapi.TYPE_STRING, description='The string corresponding to the base64 encoded image.'),
+            }
+        )
+    )
     #POST //service/images/{REFERENCE_ID}
-    @action(detail=True, methods=['put'])
+    @action(detail=True, methods=['post'])
     def uploadImage(self, request, *args, **kwargs):
+        try:
+            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
+            # as the beginning and end of that string. This is a way to get around that. I then replace the 
+            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
+            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
+            # again.
+            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+        except json.decoder.JSONDecodeError:
+            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
+
         referenceId = kwargs["referenceId"]
-        request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
         image_base64 = request_body["imageContent"]
         try:
             image_record = Images.objects.get(referenceId=referenceId)
@@ -1345,8 +1335,20 @@ class ImagesAPIs(viewsets.ViewSet):
         
         image_record.save()
 
-        return Response("Image Uploaded")
-
+        if update:
+            return Response("Image Uploaded", status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("Image Uploaded", status=status.HTTP_201_CREATED)
+        
+    @swagger_auto_schema(
+        operation_description="Fetches the image (as binary data NOT base64) corresponding to referenceId. referenceId could either be an authorId or a postId. " \
+            "If referenceId is an authorId, the the image is a profileImage. If referenceId is a postId, then the image is a post.",
+        operation_summary="Fetches the image (as binary data NOT base64) corresponding to referenceId. ReferenceId could either be an authorId or a postId.",
+        responses= {
+            "200": "Success",
+            "404": "Image corresponding to imageId was not found."
+        }
+    )
     #GET //service/images/{REFERENCE_ID}
     @action(detail=True, method=['get'])
     def getImage(self, request, *args, **kwargs):
@@ -1356,6 +1358,8 @@ class ImagesAPIs(viewsets.ViewSet):
             return Response("Image not found!", status=status.HTTP_404_NOT_FOUND)
         else:
             image_record = image_record.get(referenceId=referenceId)
+
+            # The image is stored as base64 in the database. This converts it back into binary data before sending it back.
             image_content_b64 = image_record.imageContent
             image_content = bytes(base64.b64decode(image_content_b64))
 

@@ -10,8 +10,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
+import { QueryContext, ShowSearchContext } from '../home/Home';
 
 const SearchInput = () => {
+
+  const { setShowSearch } = React.useContext(ShowSearchContext);
+  const { setQuery } = React.useContext(QueryContext);
 
   const [searchValue, setSearchValue] = React.useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,10 +29,13 @@ const SearchInput = () => {
   const handleSubmit = (e) => {
     // Enter is pressed
     e.preventDefault();
-    console.log(searchValue);
-
-    navigate(`/search?query=${searchValue}`);
-    navigate(0);
+    
+    setShowSearch(true);
+    setQuery([searchValue, 1]);
+    localStorage.setItem("showSearch", true);
+    localStorage.setItem("query", [searchValue, 1]);
+    //navigate(`/search?query=${searchValue}`);
+    //navigate(0);
   }
 
   return (
