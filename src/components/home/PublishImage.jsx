@@ -5,6 +5,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import LinkIcon from '@mui/icons-material/Link';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 const visibilities = [
     {
         value: 'PUBLIC',
@@ -66,7 +68,8 @@ export default function PublishImage(props) {
                     alignItems: "center"
                 }}
                 item xs={12}>
-                <Button size='large' startIcon={<PhotoCameraIcon/>} onClick={props.handleCancel}>Upload Image</Button>
+                <Button size='large' startIcon={<AttachFileIcon/>} onClick={props.handleCancel}>Upload Image via File</Button>
+                <Button size='large' startIcon={<LinkIcon/>} onClick={props.handleCancel}>Upload Image via URL</Button>
             </Grid>
             <Grid item xs={12}>
                 <DialogActions>
