@@ -149,8 +149,6 @@ export default function BasicCard(props) {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid item xs={6}>
-                  </Grid>
                   <Grid item xs={12}>
                     <TextField
                       autoFocus
