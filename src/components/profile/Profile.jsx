@@ -1,10 +1,8 @@
 import * as React from 'react';
 import TopBar from '../topbar/TopBar.jsx';
 import { getAuthor } from '../../APIRequests';
-import { borderLeft } from '@mui/system';
 import { Button, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-import FriendRequestList from "../friendRequestList/FriendRequestList";
 import Follow from "../follow/Follow";
 import { userIdContext } from '../../App';
 import { AuthorIdContext } from '../home/Home.jsx';
@@ -28,11 +26,9 @@ export default function Profile(props)  {
     }, [authorId]);
 
     let button = "";
-    let requestList = "";
     let followButton = "";
     if (userId === authorId) {
         button = <Button variant="contained" href={`/profile/${userId}/manage`} userId={userId}>Manage Profile</Button>;
-        requestList = <FriendRequestList authorId={userId} />
     } else {
         followButton = <Follow authorId={userId} foreignAuthorId={authorId} />
     }
@@ -44,7 +40,6 @@ export default function Profile(props)  {
             <img alt="Profile" src={author.profileImage} style={{width:"40%"}}/>
             <Typography>Github URL: {author.github}</Typography>
             {button}
-            {requestList}
             {followButton}
         </div>
     );

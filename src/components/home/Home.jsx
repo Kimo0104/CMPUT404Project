@@ -15,6 +15,7 @@ import { userIdContext } from "../../App.js";
 import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
 import SearchList from "../search/SearchList.jsx";
 import SearchPage from "../search/SearchPage.jsx";
+import FriendRequestList from "../friendRequestList/FriendRequestList";
 
 // https://stackoverflow.com/a/64517088
 export const AuthorIdContext = React.createContext({
@@ -142,6 +143,8 @@ export default function Home() {
     console.log(localStorage.getItem("authorId"))
   }
 
+  let requestList = <FriendRequestList authorId={userId} />
+
   return (
     <AuthorIdContext.Provider value={{authorId, setAuthorId}}>
       <ShowSearchContext.Provider value={{showSearch, setShowSearch}}>
@@ -178,6 +181,7 @@ export default function Home() {
                         <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
                           Publish Post
                         </Button>
+                        {requestList}
                         <Dialog open={open}>
                               <DialogTitle>Publish Post</DialogTitle>
                               <DialogContent>
