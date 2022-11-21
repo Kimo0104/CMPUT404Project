@@ -1275,18 +1275,9 @@ class ImagesAPIs(viewsets.ViewSet):
     #POST //service/images/{REFERENCE_ID}
     @action(detail=True, methods=['post'])
     def uploadImage(self, request, *args, **kwargs):
-        try:
-            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
-            # as the beginning and end of that string. This is a way to get around that. I then replace the 
-            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
-            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
-            # again.
-            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
-        except json.decoder.JSONDecodeError:
-            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
 
         referenceId = kwargs["referenceId"]
-        image_base64 = request_body["imageContent"]
+        image_base64 = base64.b64encode(request.body)
         try:
             image_record = Images.objects.get(referenceId=referenceId)
             update = True

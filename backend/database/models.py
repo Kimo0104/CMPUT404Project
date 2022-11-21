@@ -111,7 +111,6 @@ class Images(models.Model):
         return os.path.join(upload_to, filename)
 
     id = models.CharField(max_length=255, primary_key=True)
-    #image = models.ImageField(upload_to=change_name, default='images/generic_profile_image.png')
     imageContent = models.TextField()
     referenceId = models.CharField(max_length=255, unique=True)
 
