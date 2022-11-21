@@ -44,27 +44,15 @@ const visibilities = [
 export default function BasicCard(props) {
   const [editOpen, setEditOpen] = useState(false);
   const [format, setFormat] = useState(props.item.contentType);
-  const [visibility, setVisibility] = useState(props.item.visibility);
   const [title, setTitle] = useState(props.item.title);
-  const [source, setSource] = useState(props.item.source);
-  const [origin, setOrigin] = useState(props.item.origin);
   const [description, setDescription] = useState(props.item.description);
   const [content, setContent] = useState(props.item.content);
 
   const handleFormatChange = (event) => {
     setFormat(event.target.value);
   };
-  const handleVisibilityChange = (event) => {
-    setVisibility(event.target.value);
-  };
   const handleTitleChange = (event) => {
     setTitle(event.target.value);
-  };
-  const handleSourceChange = (event) => {
-    setSource(event.target.value);
-  };
-  const handleOriginChange = (event) => {
-    setOrigin(event.target.value);
   };
   const handleDescriptionChange = (event) => {
     setDescription(event.target.value);
@@ -102,15 +90,10 @@ export default function BasicCard(props) {
   const handleEdit = () => {
     setEditOpen(false);
     const data = {
-      type: "post",
       title: title,
-      source: source,
-      origin: origin,
       description: description,
       contentType: format,
       content: content,
-      visibility: visibility,
-      originalAuthor: props.item.originalAuthor
     }
     async function callModifyPost(){
       await modifyPost(props.item.author, props.item.id, data)
@@ -158,30 +141,6 @@ export default function BasicCard(props) {
                       label="Title"
                       fullWidth
                       onChange={handleTitleChange}
-                      variant="standard"
-                      />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      id="name"
-                      label="Source"
-                      value={source}
-                      onChange={handleSourceChange}
-                      fullWidth
-                      variant="standard"
-                      />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      id="name"
-                      label="Origin"
-                      value={origin}
-                      onChange={handleOriginChange}
-                      fullWidth
                       variant="standard"
                       />
                   </Grid>
