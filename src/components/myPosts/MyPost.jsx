@@ -27,20 +27,6 @@ const formats = [
     label: 'Markdown',
   }
 ];
-const visibilities = [
-  {
-    value: 'PUBLIC',
-    label: 'Public',
-  },
-  {
-    value: 'FRIENDS',
-    label: 'Friends Only',
-  },
-  {
-    value: 'UNLISTED',
-    label: 'Unlisted',
-  }
-];
 export default function BasicCard(props) {
   const [editOpen, setEditOpen] = useState(false);
   const [format, setFormat] = useState(props.item.contentType);
