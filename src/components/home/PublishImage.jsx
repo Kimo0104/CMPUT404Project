@@ -30,6 +30,16 @@ export default function PublishImage(props) {
         setVisibility(event.target.value);
     };
     const handlePublish = () => {
+        if (imageURL != "") handleUploadURL();
+        if (selectedImage != null) handleUploadFile();
+    }
+
+    const handleUploadFile = () => {
+        
+    }
+
+    const handleUploadURL = () => {
+        
     }
 
     return (
