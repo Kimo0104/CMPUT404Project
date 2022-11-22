@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
@@ -23,12 +22,16 @@ const visibilities = [
 ];
 export default function PublishImage(props) {
     const [visibility, setVisibility] = useState("PUBLIC");
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [urlTextBox, setUrlTextBox] = useState(false);
+    const [imageURL, setImageURL] = useState("");
+
     const handleVisibilityChange = (event) => {
         setVisibility(event.target.value);
     };
     const handlePublish = () => {
-
     }
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -68,8 +71,25 @@ export default function PublishImage(props) {
                     alignItems: "center"
                 }}
                 item xs={12}>
-                <Button size='large' startIcon={<AttachFileIcon/>} onClick={props.handleCancel}>Upload Image via File</Button>
-                <Button size='large' startIcon={<LinkIcon/>} onClick={props.handleCancel}>Upload Image via URL</Button>
+                {!urlTextBox && <Button size='large' component="label" startIcon={<AttachFileIcon/>}>
+                    Upload Image via File
+                    <input
+                        type="file"
+                        name="myImage"
+                        hidden
+                        onChange={(event) => {
+                        setSelectedImage(event.target.files[0]);
+                        }}
+                    />
+                </Button>}
+                {selectedImage && <img alt="Uploaded Image" width={"250px"} src={URL.createObjectURL(selectedImage)} />}
+                {selectedImage === null && <Button size='large' startIcon={<LinkIcon/>} onClick={() => setUrlTextBox(true)}>Upload Image via URL</Button>}
+                {urlTextBox && <TextField
+                    id="outlined-name"
+                    label="Image URL"
+                    value={imageURL}
+                    onChange={(event) => setImageURL(event.target.value)}
+                />}
             </Grid>
             <Grid item xs={12}>
                 <DialogActions>
