@@ -33,6 +33,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    #heroku
+    re_path('.*', TemplateView.as_view(template_name='index.html')),
+
     #swagger docs. Go to /doc for swagger and /redoc for redoc view
     path('doc/', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger-ui'),
@@ -105,9 +108,6 @@ urlpatterns = [
 
     #images
     #path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
-    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"})),
-
-    #heroku
-    re_path('.*', TemplateView.as_view(template_name='index.html'))
+    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"}))
 ]
 
