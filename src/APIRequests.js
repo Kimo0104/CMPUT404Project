@@ -4,6 +4,7 @@ import axios from 'axios';
 
 export const SERVER_URL = process.env.SERVER_URL || "https://cmput404-team13.herokuapp.com"
 console.log(`process.env.SERVER_URL is: ${process.env.SERVER_URL}`)
+console.log(`process.env.DATABASE_URL is: ${process.env.DATABASE_URL}`)
 
 /*
 const GetAuthDetails = ()=> {
