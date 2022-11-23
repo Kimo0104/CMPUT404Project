@@ -35,7 +35,7 @@ class FrontendAppView(View):
     def get(self, request):
         try:
             with open(self.index_file_path) as f:
-                return HttpResponse(f.read(), content_type="application/javascript")
+                return HttpResponse(f.read())
         except FileNotFoundError:
             return HttpResponse(
                 """
