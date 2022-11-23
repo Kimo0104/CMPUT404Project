@@ -151,7 +151,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:8000',
-    'cmput404-team13.herokuapp.com'
+    'http://cmput404-team13.herokuapp.com',
+    'https://cmput404-team13.herokuapp.com'
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
