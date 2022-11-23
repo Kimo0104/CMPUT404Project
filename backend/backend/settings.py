@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9$v)m*k4m(t(ok8%txy21y^y=ok))$6cd78@!gj1r(*y0j+^b3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com', '127.0.0.1:8000', 'localhost']
+ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost']
 
 
 # Application definition
@@ -138,7 +138,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, '/app/build')
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, '/staticfiles/')
