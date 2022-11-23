@@ -26,6 +26,7 @@ import os
 from django.http import HttpResponse
 from pathlib import Path
 
+
 class FrontendAppView(View):
     """
     Serves the compiled frontend entry point (only works if you have run `yarn
