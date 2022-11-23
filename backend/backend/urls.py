@@ -62,7 +62,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     #heroku
     # re_path('.*', TemplateView.as_view(template_name='index.html')),
-    re_path(r'^', FrontendAppView.as_view()),
+    re_path('.*', FrontendAppView.as_view()),
 
     #swagger docs. Go to /doc for swagger and /redoc for redoc view
     path('doc/', schema_view.with_ui('swagger', cache_timeout=0),
