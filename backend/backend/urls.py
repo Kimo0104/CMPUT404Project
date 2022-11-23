@@ -18,6 +18,7 @@ from django.urls import path, re_path
 from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, UserAPIs, ImagesAPIs
 from rest_framework import permissions
 from django.views.generic import TemplateView
+from backend.database.views import FrontendAppView
 
 # https://www.jasonmars.org/2020/04/22/add-swagger-to-django-rest-api-quickly-4-mins-without-hiccups/
 from drf_yasg.views import get_schema_view
@@ -34,7 +35,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     #heroku
-    re_path('.*', TemplateView.as_view(template_name='index.html')),
+    # re_path('.*', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^', FrontendAppView.as_view()),
 
     #swagger docs. Go to /doc for swagger and /redoc for redoc view
     path('doc/', schema_view.with_ui('swagger', cache_timeout=0),
