@@ -168,3 +168,7 @@ django_heroku.settings(locals())
 
 options = DATABASES['default'].get('OPTIONS', {})
 options.pop('sslmode', None)
+
+# For Heroku's MIME type
+import mimetypes
+mimetypes.add_type("text/css", ".css", True)
