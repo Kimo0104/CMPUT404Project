@@ -18,7 +18,10 @@ from django.urls import path, re_path
 from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, UserAPIs, ImagesAPIs
 from rest_framework import permissions
 from django.views.generic import TemplateView
-from backend.database.views import FrontendAppView
+
+import sys
+sys.path.insert(1, 'backend/database/views')
+from views import FrontendAppView
 
 # https://www.jasonmars.org/2020/04/22/add-swagger-to-django-rest-api-quickly-4-mins-without-hiccups/
 from drf_yasg.views import get_schema_view
