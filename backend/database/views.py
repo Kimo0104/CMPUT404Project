@@ -34,7 +34,7 @@ class FrontendAppView(View):
     Serves the compiled frontend entry point (only works if you have run `yarn
     build`).
     """
-    index_file_path = os.path.join(os.path.dirname(__file__), 'build', 'index.html')
+    index_file_path = os.path.join(os.path.realpath(__file__), 'build', 'index.html')
     def get(self, request):
         try:
             with open(self.index_file_path) as f:
@@ -51,7 +51,7 @@ class FrontendAppView(View):
 class Assets(View):
 
     def get(self, _request, filename):
-        path = os.path.join(os.path.realpath(__file__), 'static', filename)
+        path = os.path.join(os.path.dirname(__file__), 'static', filename)
 
         if os.path.isfile(path):
             with open(path, 'rb') as file:
