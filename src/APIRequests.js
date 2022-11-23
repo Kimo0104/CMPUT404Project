@@ -2,8 +2,7 @@ import axios from 'axios';
 //import React from 'react';
 //import { usernameContext, passwordContext } from './App';
 
-export const SERVER_URL = process.env.REACT_APPSERVER_URL || "https://cmput404-team13.herokuapp.com"
-console.log(`process.env.REACT_APP_SERVER_URL is: ${process.env.REACT_APP_SERVER_URL}`)
+export const SERVER_URL = process.env.REACT_APPSERVER_URL || "http://localhost:8000"
 
 /*
 const GetAuthDetails = ()=> {
