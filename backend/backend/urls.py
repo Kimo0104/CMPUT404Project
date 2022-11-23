@@ -24,12 +24,14 @@ from django.views.generic import TemplateView
 from django.views import View
 import os
 from django.http import HttpResponse
+from pathlib import Path
+
 class FrontendAppView(View):
     """
     Serves the compiled frontend entry point (only works if you have run `yarn
     build`).
     """
-    index_file_path = os.path.join(os.path.dirname(__file__), 'build', 'index.html')
+    index_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, 'build', 'index.html')
     def get(self, request):
         try:
             with open(self.index_file_path) as f:
