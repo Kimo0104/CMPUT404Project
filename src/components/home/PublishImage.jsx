@@ -45,7 +45,7 @@ export default function PublishImage(props) {
             const image = e.currentTarget.result;
             const data = {
                 type: "post",
-                title: "image post test",
+                title: "",
                 source: "",
                 origin: "",
                 description: "",
