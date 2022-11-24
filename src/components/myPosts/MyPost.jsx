@@ -199,6 +199,9 @@ export default function BasicCard(props) {
         { props.item.contentType === "text/markdown" &&
           <ReactMarkdown children={content} remarkPlugins={[remarkGfm]}/>
         }
+        { props.item.contentType === "image" &&
+          <img src={content}/>
+        }
       </CardContent>
     </Card>
   );
