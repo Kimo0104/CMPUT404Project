@@ -6,6 +6,9 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import LinkIcon from '@mui/icons-material/Link';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import { userIdContext } from '../../App';
+import { createPost, sendFriendInbox, sendPublicInbox } from "../../APIRequests.js";
+
 const visibilities = [
     {
         value: 'PUBLIC',
@@ -26,6 +29,8 @@ export default function PublishImage(props) {
     const [urlTextBox, setUrlTextBox] = useState(false);
     const [imageURL, setImageURL] = useState("");
 
+    const authorId = React.useContext(userIdContext);
+
     const handleVisibilityChange = (event) => {
         setVisibility(event.target.value);
     };
@@ -35,7 +40,29 @@ export default function PublishImage(props) {
     }
 
     const handleUploadFile = () => {
-        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const image = e.currentTarget.result;
+            const data = {
+                type: "post",
+                title: "image post test",
+                source: "",
+                origin: "",
+                description: "",
+                contentType: 'image',
+                content: image,
+                visibility: visibility,
+                originalAuthor: authorId
+            }
+            async function sendPostToInbox(){
+                const response = await createPost(authorId, data);
+                const postId = response.id
+                if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
+                if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
+            }
+            sendPostToInbox();
+        };
+        reader.readAsDataURL(selectedImage);
     }
 
     const handleUploadURL = () => {
@@ -107,6 +134,7 @@ export default function PublishImage(props) {
                         <Button onClick={handlePublish}>Publish</Button>
                 </DialogActions>
             </Grid>
+            <img id="test" src=""/>
         </Grid>
   )
 }
