@@ -40,6 +40,7 @@ export default function PublishImage(props) {
     }
 
     const handleUploadFile = () => {
+        props.handleCancel();
         const reader = new FileReader();
         reader.onload = async (e) => {
             const image = e.currentTarget.result;
@@ -63,7 +64,6 @@ export default function PublishImage(props) {
             sendPostToInbox();
         };
         reader.readAsDataURL(selectedImage);
-        props.handleCancel();
     }
 
     const handleUploadURL = () => {
