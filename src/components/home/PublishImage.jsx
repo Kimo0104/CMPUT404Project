@@ -63,6 +63,7 @@ export default function PublishImage(props) {
             sendPostToInbox();
         };
         reader.readAsDataURL(selectedImage);
+        props.handleCancel();
     }
 
     const handleUploadURL = () => {
