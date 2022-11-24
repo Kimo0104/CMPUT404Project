@@ -134,7 +134,6 @@ export default function PublishImage(props) {
                         <Button onClick={handlePublish}>Publish</Button>
                 </DialogActions>
             </Grid>
-            <img id="test" src=""/>
         </Grid>
   )
 }
