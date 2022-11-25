@@ -6,7 +6,7 @@ import { userIdContext } from '../../App';
 
 
 export default function FriendRequestList(props) {
-  const userId = React.useContext(userIdContext);
+  const {userId} = React.useContext(userIdContext);
 
   const [friendRequests, setFriendRequests] = React.useState([]);
 

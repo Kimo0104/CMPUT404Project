@@ -24,9 +24,9 @@ export const QueryContext = React.createContext({
 })
 
 export default function Home() {
-  const userId = React.useContext(userIdContext);
+  const { userId } = React.useContext(userIdContext);
 
-  const [authorId, setAuthorId] = useState(localStorage.getItem("authorId") ? localStorage.getItem("authorId") : "1");
+  const [authorId, setAuthorId] = useState(localStorage.getItem("authorId") ? localStorage.getItem("authorId") : userId);
   const [showSearch, setShowSearch] = useState(localStorage.getItem("showSearch") ? localStorage.getItem("showSearch") : false);
   const [query, setQuery] = useState(localStorage.getItem("query") ? localStorage.getItem("query") : "");
 
@@ -35,7 +35,9 @@ export default function Home() {
     if (showSearch) {
       setAuthorId(userId);
       setShowSearch(false);
-      localStorage.clear();
+      localStorage.setItem("authorId", userId);
+      localStorage.setItem("showSearch", false);
+      localStorage.setItem("query", "");
     } else {
       setShowSearch(true);
     }
@@ -45,7 +47,6 @@ export default function Home() {
     leftPane = <SearchPage />;
   } else {
     leftPane = <Profile authorId={authorId}/>;
-    console.log(localStorage.getItem("authorId"))
   }
 
   return (

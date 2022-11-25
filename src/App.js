@@ -14,17 +14,17 @@ import axios from 'axios';
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
-export const userIdContext = React.createContext("1");
-//export const usernameContext = React.createContext("");
-//export const passwordContext = React.createContext("");
+export const userIdContext = React.createContext({
+  userId: localStorage.getItem("userId") ? localStorage.getItem("userId") : "1",
+  setUserId: (value) => {}
+  });
 
 function App() {
 
-  const userId = React.useContext(userIdContext);
-  //localStorage.clear();
+  const [userId, setUserId] = React.useState(localStorage.getItem("userId") ? localStorage.getItem("userId") : "1");
   
   return (
-    <userIdContext.Provider value={"1"}>
+    <userIdContext.Provider value={{userId, setUserId}}>
       <BrowserRouter>
         <div className="App">
           <div className = "content">

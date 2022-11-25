@@ -1,18 +1,12 @@
 import axios from 'axios';
 //import React from 'react';
-//import { usernameContext, passwordContext } from './App';
 
 export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000"
 
-/*
-const GetAuthDetails = ()=> {
-    let auth = {
-            "username": React.use,
-            "password": passwordContext.Provider.value
-        }
-    return auth;
+if (localStorage.getItem("token")) {
+    axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
+    console.log(localStorage.getItem("token"));
 }
-*/
 
 export const getPost  = async (authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
@@ -146,6 +140,7 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
     const followRequestResponse = await axios.get(`${followRequestPath}`);
 
     let followStatus = -1
+    console.log(followResponse.data)
     if (followResponse.data.id !== "") {
         followStatus = 2
     }
