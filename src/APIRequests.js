@@ -1,7 +1,16 @@
 import axios from 'axios';
 //import React from 'react';
 
-export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000"
+export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000";
+const TEAM12_URL = "https://true-friends-404.herokuapp.com";
+const TEAM12_CONFIG = {
+    headers: {
+        Authorization: "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc4MDUzMzc2LCJpYXQiOjE2Njk0MTMzNzYsImp0aSI6IjYzNmNkZmIzMDk2YzRlMzQ5OTJmMWJiOGY5YTRjNjBiIiwidXNlcl9lbWFpbCI6InRlYW0xM0BtYWlsLmNvbSJ9.DezZkiaFlLf6GrG-VzkYv_b8ESXOm-8fJ9zT4F42k0A",
+        "Content-Type": "application/json"
+    }
+}
+const TEAM19_URL = "https://social-distribution-404.herokuapp.com";
+const TEAM19_TOKEN = "";
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
@@ -105,6 +114,7 @@ export const createComment = async (authorId, postId, data) => {
 }
 
 export const searchForAuthors = async (query, page, size) => {
+
     let path = SERVER_URL + `/find?query=${query}`
     if (page !== null) {
         path += `&page=${page}`;
@@ -112,8 +122,12 @@ export const searchForAuthors = async (query, page, size) => {
     if (size !== null) {
         path += `&size=${size}`;
     }
-
     const response = await axios.get(path);
+
+    // TEAM 12
+    // path = TEAM12_URL + `/authors/`
+    // console.log("team12SearchAuthors", await axios.get(path, TEAM12_CONFIG));
+
     return response.data;
 }
 
@@ -155,8 +169,17 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 }
 
 export const requestToFollow = async (authorId, foreignAuthorId) => {
-    const path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
+
+    let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     const response = await axios.post(`${path}`);
+    
+
+    // TEAM 12
+    // let author = await getAuthor(1);
+    // path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/recipient/${foreignAuthorId}/`
+    // console.log(path);
+    // console.log("team12 requestToFollow", await axios.post(path, TEAM12_CONFIG));
+
     return response.status
 }
 
