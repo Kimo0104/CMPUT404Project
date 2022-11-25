@@ -32,6 +32,7 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost']
 
+AUTH_USER_MODEL = 'database.Users'
 
 # Application definition
 CORS_ORIGIN_WHITELIST = [
@@ -159,7 +160,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:8000',
     'http://cmput404-team13.herokuapp.com',
-    'https://cmput404-team13.herokuapp.com'
+    'https://cmput404-team13.herokuapp.com',
+    'https://true-friends-404.herokuapp.com',
+    'https://social-distribution-404.herokuapp.com'
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

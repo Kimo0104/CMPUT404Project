@@ -1,3 +1,4 @@
+
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -8,7 +9,7 @@ export default function BasicCard(props) {
   if (!props.item.type || !props.item.repo || !props.item.created_at) { return; }
 
   const date = new Date(props.item.created_at);
-  const dateString = `${date.getFullYear()}-${date.getMonth()}-${+date.getDate()<10 ? '0' : ''}${date.getDate()}`;
+  const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${+date.getDate()<10 ? '0' : ''}${date.getDate()}`;
   return (
     <Card sx={{ minWidth: 275 }}>
       <CardContent>

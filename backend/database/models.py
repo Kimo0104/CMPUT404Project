@@ -1,15 +1,20 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+import uuid
 import os
+
+class Users(AbstractUser):
+        id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 class Authors(models.Model):
     id = models.CharField(max_length = 255, primary_key = True)
     type = models.CharField(max_length = 255, default = "author")
     host = models.CharField(max_length = 255)
-    displayName = models.CharField(max_length = 32, unique=True)
+    displayName = models.CharField(max_length = 32)
     url = models.CharField(max_length = 255)
     github = models.CharField(max_length = 255, null=True)
     accepted = models.BooleanField(default = False)
-    profileImage = models.CharField(max_length = 255)
+    profileImage = models.TextField()
 
 class Posts(models.Model):
     PLAINTEXT = 'text/plain'
@@ -113,7 +118,6 @@ class Images(models.Model):
         return os.path.join(upload_to, filename)
 
     id = models.CharField(max_length=255, primary_key=True)
-    #image = models.ImageField(upload_to=change_name, default='images/generic_profile_image.png')
     imageContent = models.TextField()
     referenceId = models.CharField(max_length=255, unique=True)
 

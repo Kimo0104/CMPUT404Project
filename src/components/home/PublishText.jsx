@@ -42,7 +42,7 @@ export default function PublishText(props) {
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
 
-    const authorId = React.useContext(userIdContext);
+    const { userId } = React.useContext(userIdContext);
 
     const handleFormatChange = (event) => {
         setFormat(event.target.value);
@@ -78,13 +78,13 @@ export default function PublishText(props) {
             contentType: format,
             content: content,
             visibility: visibility,
-            originalAuthor: authorId
+            originalAuthor: userId
         }
         async function sendPostToInbox(){
-            const response = await createPost(authorId, data);
+            const response = await createPost(userId, data);
             const postId = response.id
-            if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
-            if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
+            if (visibility === "PUBLIC") sendPublicInbox(userId, postId)
+            if (visibility === "FRIENDS") sendFriendInbox(userId, postId)
         }
         sendPostToInbox();
     }
