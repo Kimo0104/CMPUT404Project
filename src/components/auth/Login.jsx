@@ -11,10 +11,8 @@ export default function Login() {
     const [name, setName] = useState(''); 
     const [pass, setPass] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(name); 
-        console.log(pass);
 
         let data = {
             "username": name,
@@ -26,7 +24,6 @@ export default function Login() {
             if (token){
                 localStorage.setItem("token", JSON.stringify(token));
                 const tokenFromStorage = (JSON.parse(localStorage.getItem("token", JSON.stringify(token)))).jwt
-
                 const dataForAuthUser = {
                     "userToken": tokenFromStorage
                 }
@@ -38,11 +35,9 @@ export default function Login() {
                     navigate('/home');
                 }
             }
-               
         }
         login()
-        
-        
+
     }
 
     return (
@@ -59,7 +54,6 @@ export default function Login() {
                 <div className="link-btn">
                 <Link to="/register">Don't have an account? Click here to register.</Link>
                 </div>
-
             </div>
         </div>
     )

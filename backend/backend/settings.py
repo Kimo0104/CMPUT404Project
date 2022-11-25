@@ -32,6 +32,10 @@ ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'database.Users'
 
 # Application definition
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'http://localhost:8000'
+]
 
 INSTALLED_APPS = [
     "database",
@@ -46,6 +50,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'rest_framework_swagger',
     'drf_yasg',
+    
 ]
 
 MIDDLEWARE = [
