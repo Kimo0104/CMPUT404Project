@@ -24,8 +24,6 @@ export default function Register() {
             async function register() {
                 const isValid = await createUser(data);
                 if (isValid){
-                    //usernameContext.Provider.value = data.username;
-                    //passwordContext.Provider.value = data.password;
                     navigate('/')
                 }
                 else{
