@@ -32,7 +32,7 @@ export default function Follow(props) {
             console.log("following", following)
         }
         loadAuthor();
-      }, [following]);
+      });
 
       const requestToFollowButton = <Button sx={{ mt: 3 }} variant="contained" size="large" onClick={handleRequestToFollow}>Request to follow</Button> 
       const followRequestHasBeenSentButton = <Button sx={{ mt: 3 }} variant="contained" size="large">Follow Request has been sent</Button> 

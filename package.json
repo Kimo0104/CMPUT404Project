@@ -38,7 +38,7 @@
     "postinstall": "npm run build-react"
   },
   "engines": {
-    "node": "16.15.0",
+    "node": "16.18.0",
     "npm": "8.8.0"
 },
   "eslintConfig": {
