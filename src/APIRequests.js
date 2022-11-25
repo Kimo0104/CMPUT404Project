@@ -141,7 +141,6 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 
     let followStatus = -1
     console.log(followResponse.data)
-    console.log(`followRequestResponse.data is: ${followRequestResponse.data}`)
 
     if (followResponse.data.id !== "") {
         followStatus = 2
