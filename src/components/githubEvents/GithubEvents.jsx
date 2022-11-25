@@ -20,20 +20,20 @@ export default function BasicStack(props) {
 
   const handleChange = (event, value) => {
     setPage(value);
-    updateGithubEvents(value, size);
+    updateGithubEvents(value, size, githubName);
   };
 
   const [lastEventUpdate, setLastEventUpdate] = React.useState((new Date()).getTime());
   const [allEvents, setAllEvents] = React.useState([]);
   const [events, setEvents] = React.useState([]);
 
-  const updateGithubEvents = (page, size) => {
+  const updateGithubEvents = (page, size, githubName) => {
     // State change will cause component re-render
     async function fetchGithubActivity() {
     const nowTimeMilli = (new Date()).getTime()
-      if (allEvents.length == 0 || nowTimeMilli < (lastEventUpdate + 60000)) {
+      if (allEvents.length == 0 || nowTimeMilli < (lastEventUpdate + 6)) {
         setLastEventUpdate(nowTimeMilli);
-        const output = await getGithubEvents('Kimo0104');
+        const output = await getGithubEvents(githubName);
         if (output.length == 0) { return; }
         setAllEvents(output);
         setNumPages(3);
@@ -48,8 +48,7 @@ export default function BasicStack(props) {
   React.useEffect(() => {
     async function setupGithubActivity() {
       const author = await getAuthor(props.authorId);
-      setGithubName(author.github);
-      updateGithubEvents(page, size);
+      updateGithubEvents(page, size, author.github);
     }
     setupGithubActivity();
     // disable this warning because updateGithubEvents has to be used outside of the useEffect as well
