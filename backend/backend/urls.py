@@ -14,10 +14,38 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from database.views import AuthorsAPIs, PostsAPIs, CommentsAPIs, LikesAPIs, LikedAPIs, InboxAPIs, FollowRequestsAPIs, FollowsAPIs, UserAPIs, ImagesAPIs
 from rest_framework import permissions
+from django.views.generic import TemplateView
 
+# from ..database.views import FrontendAppView
+# from views import FrontendAppView
+from django.views import View
+import os
+from django.http import HttpResponse
+from pathlib import Path
+
+class FrontendAppView(View):
+    """
+    Serves the compiled frontend entry point (only works if you have run `yarn
+    build`).
+    """
+    index_file_path = os.path.join(Path(__file__).resolve().parent.parent.parent, 'build', 'index.html')
+    def get(self, request):
+        try:
+            with open(self.index_file_path) as f:
+                return HttpResponse(f.read())
+        except FileNotFoundError:
+            return HttpResponse(
+                """
+                This URL is only used when you have built the production
+                version of the app. Visit http://localhost:3000/ instead after
+                running `yarn start` on the frontend/ directory
+                """,
+                status=501,
+            )
+        
 # https://www.jasonmars.org/2020/04/22/add-swagger-to-django-rest-api-quickly-4-mins-without-hiccups/
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -108,5 +136,10 @@ urlpatterns = [
 
     #images
     #path('images/<str:authorId>', ImagesAPIs.as_view({"put":"putImage", "get":"getImage"}), name = 'images')
-    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"}))
+    path('images/<str:referenceId>', ImagesAPIs.as_view({"post":"uploadImage", "get":"getImage"})),
+    
+    #heroku
+    re_path('.*', TemplateView.as_view(template_name='index.html')),
+    # re_path('.*', FrontendAppView.as_view()),
 ]
+
