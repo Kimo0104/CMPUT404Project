@@ -1,7 +1,7 @@
 import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from '../../APIRequests';
+import { loginUser, authUser } from '../../APIRequests';
 import { usernameContext, passwordContext } from "../../App";
 
 export default function Login() {
@@ -9,10 +9,8 @@ export default function Login() {
     const [name, setName] = useState(''); 
     const [pass, setPass] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(name); 
-        console.log(pass);
 
         let data = {
             "username": name,
@@ -20,18 +18,24 @@ export default function Login() {
         };
 
         async function login() {
-            const isValid = await loginUser(data);
-            console.log(isValid);
-            if (isValid){
-                //usernameContext.Provider.value = data.username;
-                //passwordContext.Provider.value = data.password;
-                navigate('/home')
+            const token = await loginUser(data);
+            if (token){
+                localStorage.setItem("token", JSON.stringify(token));
+                const tokenFromStorage = (JSON.parse(localStorage.getItem("token", JSON.stringify(token)))).jwt
+                console.log(tokenFromStorage)
+
+                const dataForAuthUser = {
+                    "userToken": tokenFromStorage
+                }
+                const userID = await authUser(dataForAuthUser);
+                if (userID){
+                    console.log(userID)
+                    navigate('/home');
+                }
             }
-               
         }
         login()
-        
-        
+
     }
 
     return (
@@ -48,7 +52,6 @@ export default function Login() {
                 <div className="link-btn">
                 <Link to="/register">Don't have an account? Register here.</Link>
                 </div>
-
             </div>
         </div>
     )

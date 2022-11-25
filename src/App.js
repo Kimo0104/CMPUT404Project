@@ -21,9 +21,10 @@ export const userIdContext = React.createContext("1");
 function App() {
 
   const userId = React.useContext(userIdContext);
+  //localStorage.clear();
   
   return (
-    <userIdContext.Provider value="1">
+    <userIdContext.Provider value={"1"}>
       <BrowserRouter>
         <div className="App">
           <div className = "content">

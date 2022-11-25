@@ -72,6 +72,10 @@ urlpatterns = [
         "put": "loginUser",
     }), name = 'users'),
 
+    path('users/auth', UserAPIs.as_view({
+        "post": "authenticatedUser",
+    }), name = 'auth'),
+
     path('admin/', admin.site.urls, name = 'admin'),
 
     #posts

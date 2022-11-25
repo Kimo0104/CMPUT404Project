@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 
 import Inbox from '../inbox/Inbox';
 import MyPosts from '../myPosts/MyPosts';
+import GithubEvents from '../githubEvents/GithubEvents';
 
 export default function TabsWrappedLabel(props) {
   // contains authorId
@@ -19,12 +20,16 @@ export default function TabsWrappedLabel(props) {
       <Tabs value={value} onChange={handleChange} centered>
         <Tab value="one" label="Inbox" />
         <Tab value="two" label="My Posts" />
+        <Tab value="three" label="Github Activity"/>
       </Tabs>
         {
-          value == "one" && <Inbox authorId={props.authorId}/>
+          value === "one" && <Inbox authorId={props.authorId}/>
         }
         {
-          value == "two" && <MyPosts authorId={props.authorId}/>
+          value === "two" && <MyPosts authorId={props.authorId}/>
+        }
+        {
+          value === "three" && <GithubEvents authorId={props.authorId}/>
         }
     </Box>
   );

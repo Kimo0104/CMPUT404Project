@@ -5,6 +5,7 @@ import { Button, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import Follow from "../follow/Follow";
 import { userIdContext } from '../../App';
+import { AuthorIdContext } from '../home/Home.jsx';
 
 export default function Profile(props)  {
 
@@ -12,7 +13,7 @@ export default function Profile(props)  {
     
     const userId = React.useContext(userIdContext);
 
-    let authorId = location.pathname.split("/").at(-1);
+    const { authorId } = React.useContext(AuthorIdContext);
     const [author, setAuthor] = React.useState({});
 
     const fetchAuthor = async () => {
@@ -22,7 +23,7 @@ export default function Profile(props)  {
 
     React.useEffect(() => {
         fetchAuthor();
-    }, []);
+    }, [authorId]);
 
     let button = "";
     let followButton = "";
@@ -34,7 +35,7 @@ export default function Profile(props)  {
    
     return (
         <div>
-            <TopBar />
+            {/*<TopBar />*/}
             <Typography variant="h3">{author.displayName}</Typography>
             <img alt="Profile" src={author.profileImage} style={{width:"40%"}}/>
             <Typography>Github URL: {author.github}</Typography>

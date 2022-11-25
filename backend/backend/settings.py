@@ -31,6 +31,10 @@ ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost'
 
 
 # Application definition
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'http://localhost:8000'
+]
 
 INSTALLED_APPS = [
     "database",
@@ -45,6 +49,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'rest_framework_swagger',
     'drf_yasg',
+    
 ]
 
 MIDDLEWARE = [
