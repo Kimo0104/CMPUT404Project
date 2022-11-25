@@ -1,18 +1,8 @@
 import axios from 'axios';
 //import React from 'react';
-//import { usernameContext, passwordContext } from './App';
 
 export const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000"
 
-/*
-const GetAuthDetails = ()=> {
-    let auth = {
-            "username": React.use,
-            "password": passwordContext.Provider.value
-        }
-    return auth;
-}
-*/
 
 export const getPost  = async (authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`

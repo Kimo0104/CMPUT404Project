@@ -8,10 +8,10 @@ from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
-from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer
+from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images, Users
+from .serializers import AuthorsSerializer, ImageSerializer, PostsSerializer, CommentsSerializer, LikesSerializer, LikesCommentsSerializer, InboxSerializer, FollowersSerializer, FollowRequestsSerializer, UserSerializer
 import uuid
 import database
 import ast
@@ -56,18 +56,21 @@ class UserAPIs(viewsets.ViewSet):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
 
         usernameFromFrontend = body['displayName']
-        usernameExists = User.objects.filter(username = usernameFromFrontend).exists()
+        usernameExists = Users.objects.filter(username = usernameFromFrontend).exists()
 
         print(usernameExists)
         if usernameExists == True:
             return Response(False, status=status.HTTP_200_OK)
         else:
-            User.objects.create_user(
+            user = Users.objects.create_user(
+                        id=uuidGenerator(),
                         username=body['displayName'], 
                         email=body['email'],
                         password=body['password']
                     )
-            # AuthorsAPIs.createAuthor(request)
+            userID = user.id
+            AuthorsAPIs().createDefaultAuthor(user.id, user.username, request.build_absolute_uri().split('/users')[0])
+            
             return Response(True, status=status.HTTP_200_OK)
         # return HttpResponse(status=200)
 
@@ -89,14 +92,45 @@ class UserAPIs(viewsets.ViewSet):
         
         user = authenticate(username=username, password=password)
         if user is not None:
-            login(request, user)
-            if user.is_authenticated:
-                return Response(True, status=status.HTTP_200_OK)
-            else:
-                return Response(False, status=status.HTTP_200_OK)
-        else:
-            return Response(False, status=status.HTTP_200_OK)
-        
+            payload = {
+                'id': str(user.id),
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                'iat': datetime.datetime.utcnow()
+            }
+            print(payload["id"])
+            token = jwt.encode(payload, 'secret', algorithm='HS256')
+            response = Response()  
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token
+            }
+            return response
+ 
+    @action(detail=True, methods=['post'])
+    def authenticatedUser(self, request, format='json'): 
+        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+
+        token = body["userToken"]
+
+        if not token:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        user = Users.objects.get(id=payload['id'])
+        data = {'id': str(user.id)}
+        return Response(data)
+
+    # @action(detail=True, methods=['post'])
+    # def logout(self, request):
+    #     response = Response()
+    #     response.delete_cookie('jwt')
+    #     response.data = {
+    #         'message': 'success'
+    #     }
+    #     return response
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -1238,18 +1272,17 @@ class AuthorsAPIs(viewsets.ViewSet):
                 return Response("Id already exists!", status=status.HTTP_409_CONFLICT) 
         else:
             return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
-        url = host + '/authors/' + authorId
-        if "profileImage" in request_body and request_body["profileImage"].strip() != "":
-            profileImage = request_body["profileImage"]
-        else:
-            profileImage = request.build_absolute_uri(self.generic_profile_image_path) 
-        github = request_body["github"] if "github" in request_body and request_body["github"].strip() != "" else None
-
-        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
-
-        author.save()
+        
+        self.createDefaultAuthor(authorId, displayName, host)
 
         return Response("Created Author successfully", status=status.HTTP_201_CREATED)
+
+    def createDefaultAuthor(self, authorId, displayName, host):
+        url = host + '/authors/' + authorId
+
+        author = Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=None, profileImage=self.generic_profile_image_path)
+
+        author.save()
 
 
 class ImagesAPIs(viewsets.ViewSet):

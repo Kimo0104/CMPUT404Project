@@ -5,7 +5,7 @@ import { checkFollowStatus, requestToFollow, removeFollower } from '../../APIReq
 import { userIdContext } from '../../App';
 
 export default function Follow(props) {
-    const userId = React.useContext(userIdContext);
+    const {userId} = React.useContext(userIdContext);
 
     const [following, setFollowing] = React.useState(-1);
     

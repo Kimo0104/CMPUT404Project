@@ -10,17 +10,19 @@ import SearchPage from './components/search/SearchPage';
 import Follow from './components/follow/Follow.jsx'
 import FriendRequestList from './components/friendRequestList/FriendRequestList.jsx'
 
-export const userIdContext = React.createContext("1");
-//export const usernameContext = React.createContext("");
-//export const passwordContext = React.createContext("");
+export const userIdContext = React.createContext({
+  userId: localStorage.getItem("userId") ? localStorage.getItem("userId") : "1",
+  setUserId: (value) => {}
+  });
 
 function App() {
 
-  const userId = React.useContext(userIdContext);
+  const [userId, setUserId] = React.useState(localStorage.getItem("userId") ? localStorage.getItem("userId") : "1");
+  
   //localStorage.clear();
   
   return (
-    <userIdContext.Provider value={"1"}>
+    <userIdContext.Provider value={{userId, setUserId}}>
       <BrowserRouter>
         <div className="App">
           <div className = "content">
