@@ -10,7 +10,7 @@ import { SERVER_URL } from '../../APIRequests';
 export default function ManageProfile(props)  {
 
     // Get the ID of the user
-    const userId = React.useContext(userIdContext);
+    const { userId } = React.useContext(userIdContext);
     
     // Get the author object corresponding to the user
     const [author, setAuthor] = React.useState({});
@@ -40,16 +40,19 @@ export default function ManageProfile(props)  {
     }
 
     const handleApplyButtonPress = async (e) => {
-        if (imageUploaded) {
-            uploadImage(userId, imageFile);
-        }
+        //if (imageUploaded) {
+        //    uploadImage(userId, imageFile);
+        //}
         await modifyAuthor(userId, githubValue, imageLink);
-        navigate(`/profile/${userId}`, {userId: userId});
+        navigate("/home");
     }
 
     const handleCancelButtonPress = async (e) => {
         navigate("/home");
+        let token = localStorage.getItem("token");
         localStorage.clear();
+        localStorage.setItem("userId", userId);
+        localStorage.setItem("token", token);
     }
 
     const handleImagePress = async (e) => {
@@ -99,7 +102,15 @@ export default function ManageProfile(props)  {
             if (file["type"].includes("image/")) {
                 setImageFile(file);
                 setImageUploaded(true);
-                setImageLink(SERVER_URL+`/images/${userId}`);
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    // https://stackoverflow.com/a/52311051
+                    setImageLink(e.target.result)
+                };
+                // https://stackoverflow.com/questions/10982712/convert-binary-data-to-base64-with-javascript
+                reader.readAsDataURL(file);
+
                 setImageSource(URL.createObjectURL(file));
             } else {
                 alert("Invalid file type! Please upload an image.");

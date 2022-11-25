@@ -3,6 +3,10 @@ import axios from 'axios';
 
 export const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000"
 
+if (localStorage.getItem("token")) {
+    axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
+    console.log(localStorage.getItem("token"));
+}
 
 export const getPost  = async (authorId, postId) => {
     const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`

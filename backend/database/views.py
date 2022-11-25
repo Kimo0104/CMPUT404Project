@@ -71,7 +71,6 @@ class UserAPIs(viewsets.ViewSet):
                         email=body['email'],
                         password=body['password']
                     )
-            userID = user.id
             AuthorsAPIs().createDefaultAuthor(user.id, user.username, request.build_absolute_uri().split('/users')[0])
             
             return Response(True, status=status.HTTP_200_OK)
@@ -96,11 +95,10 @@ class UserAPIs(viewsets.ViewSet):
         user = authenticate(username=username, password=password)
         if user is not None:
             payload = {
-                'id': str(user.id),
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+                'id': str(user.id).replace("-", ""),
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=365),
                 'iat': datetime.datetime.utcnow()
             }
-            print(payload["id"])
             token = jwt.encode(payload, 'secret', algorithm='HS256')
             response = Response()  
             response.set_cookie(key='jwt', value=token, httponly=True)
@@ -118,22 +116,24 @@ class UserAPIs(viewsets.ViewSet):
         if not token:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        user = User.objects.get(id=payload['id'])
+        user = Users.objects.get(id=payload['id'])
         data = {'id': str(user.id)}
         return Response(data)
 
-    # @action(detail=True, methods=['post'])
-    # def logout(self, request):
-    #     response = Response()
-    #     response.delete_cookie('jwt')
-    #     response.data = {
-    #         'message': 'success'
-    #     }
-    #     return response
+    def check_token(self, request, authorId):
+        try:
+            token = request.headers["Authorization"].split()[1]
+            payload = jwt.decode(token, "secret", algorithms=["HS256"])
+            userId = payload["id"]
+        except:
+            # To show that authorization is required
+            userId = -1     
+
+        return userId != -1 and (userId == authorId or Users.objects.get(id=userId).is_superuser)
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -150,6 +150,10 @@ class PostsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+
         postId = kwargs["postId"]
         try:
             post = Posts.objects.get(id = postId)
@@ -157,6 +161,7 @@ class PostsAPIs(viewsets.ViewSet):
             post = None
         serializer = PostsSerializer(post)
         return Response(serializer.data, status = status.HTTP_200_OK)
+            
 
     #GET authors/{AUTHOR_ID}/posts
     #get the public posts of this author
@@ -171,6 +176,10 @@ class PostsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'])
     def getPublicPosts(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication Required!", status=status.HTTP_401_UNAUTHORIZED)
+
         try:
             page = int(request.GET.get('page',1))
             size = int(request.GET.get('size',10))
@@ -218,6 +227,10 @@ class PostsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['post'],)
     def updatePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
         body = JSONParser().parse(io.BytesIO(request.body))
         post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
@@ -243,6 +256,10 @@ class PostsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'],)
     def deletePost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
         Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC).delete()
         return Response({"Success"}, status=status.HTTP_200_OK)
@@ -275,6 +292,10 @@ class PostsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['put'],)
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
         post = Posts.objects.create(
             id = uuidGenerator(),
@@ -320,6 +341,11 @@ class CommentsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+
         postId = kwargs["postId"]
         if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
@@ -348,6 +374,10 @@ class CommentsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['post'],)
     def createComment(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
@@ -397,6 +427,10 @@ class LikesAPIs(viewsets.ViewSet):
     )
     def createPostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
+        authenticated = UserAPIs().check_token(request, likerId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
         
         #check that authorId and postId exist
@@ -433,6 +467,10 @@ class LikesAPIs(viewsets.ViewSet):
     )
     def createCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
+        authenticated = UserAPIs().check_token(request, likerId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         commentId = kwargs["commentId"]
         
         #check that authorId and commentId exist
@@ -469,6 +507,10 @@ class LikesAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'])
     def deletePostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
+        authenticated = UserAPIs().check_token(request, likerId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
         
         #check that authorId and postId exist
@@ -498,6 +540,10 @@ class LikesAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'])
     def deleteCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
+        authenticated = UserAPIs().check_token(request, likerId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         commentId = kwargs["commentId"]
         
         #check that authorId and postId exist
@@ -525,7 +571,7 @@ class LikesAPIs(viewsets.ViewSet):
         }
     )
     @action(detail=True, methods=['get'],)
-    def getPostLikes(self, request, *args, **kwargs):
+    def getPostLikes(self, request, *args, **kwargs):    
         postId = kwargs["postId"]
         try:
             page = int(request.GET.get('page',1))
@@ -653,6 +699,10 @@ class LikedAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getAuthorLiked(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         try:
             page = int(request.GET.get('page',1))
             size = int(request.GET.get('size',10))
@@ -693,6 +743,10 @@ class InboxAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getInbox(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         try:
             page = int(request.GET.get('page',1))
             size = int(request.GET.get('size',10))
@@ -745,7 +799,6 @@ class InboxAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['post'])
     def sendPost(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
@@ -777,6 +830,10 @@ class InboxAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['post'])
     def sendPublicPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
@@ -816,6 +873,10 @@ class InboxAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['post'])
     def sendFriendPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
@@ -855,7 +916,11 @@ class InboxAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['delete'],)
     def deleteInbox(self, request, *args, **kwargs):
-        authorId = str(kwargs["authorId"])
+        authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         if not Authors.objects.filter(id=authorId).count() == 1:
             return Response({"Tried to delete inbox on non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -879,6 +944,10 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getFollowRequests(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         try:
             requestFollowers = FollowRequests.objects.filter(receiver=authorId)
         except FollowRequests.DoesNotExist:
@@ -899,6 +968,10 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'],)
     def removeRequest(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             requestFollowers = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
@@ -920,7 +993,11 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
+        authorId = kwargs["foreignAuthorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             followRequested = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
@@ -942,6 +1019,10 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         foreignAuthorId = kwargs["foreignAuthorId"]
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
             return Response({"Failed to send a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
@@ -958,8 +1039,8 @@ class FollowsAPIs(viewsets.ViewSet):
     #GET authors/{AUTHOR_ID}/followers
     #get all the followers of AUTHOR_ID
     @swagger_auto_schema(
-        operation_description="Fetches all the followers with a specific author_id",
-        operation_summary="Fetches all the followers with a specific author_id",
+        operation_description="Fetches all the followers of a specific author_id",
+        operation_summary="Fetches all the followers of a specific author_id",
         responses={
             "200": "Success",
             "4XX": "Bad Request"
@@ -968,6 +1049,10 @@ class FollowsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getFollowers(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         try:
             followers = Followers.objects.filter(followed=authorId)
         except Followers.DoesNotExist:
@@ -987,7 +1072,11 @@ class FollowsAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
+        authorId = kwargs["foreignAuthorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
@@ -1010,6 +1099,10 @@ class FollowsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['put'],)
     def addFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         foreignAuthorId = kwargs["foreignAuthorId"]
         if not FollowRequests.objects.filter(receiver=authorId, requester=foreignAuthorId).count() == 1:
             return Response({"Failed to add a follower. The other party hasn't requested to follow you"}, status=status.HTTP_400_BAD_REQUEST)
@@ -1035,6 +1128,10 @@ class FollowsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+            
         foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
@@ -1187,8 +1284,10 @@ class AuthorsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['post'])
     def modifyAuthor(self, request, *args, **kwargs):
-       # if request.user.is_authenticated and (request.user.id==kwargs["authorId"] or request.user.is_superuser):
         authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
 
         author = Authors.objects.filter(id=authorId)
         # Since id is the primary key of the Author table, there can only be 0 ot
@@ -1331,7 +1430,7 @@ class ImagesAPIs(viewsets.ViewSet):
             return Response("Image Uploaded", status=status.HTTP_204_NO_CONTENT)
         else:
             return Response("Image Uploaded", status=status.HTTP_201_CREATED)
-        
+    
     @swagger_auto_schema(
         operation_description="Fetches the image (as binary data NOT base64) corresponding to referenceId. referenceId could either be an authorId or a postId. " \
             "If referenceId is an authorId, the the image is a profileImage. If referenceId is a postId, then the image is a post.",
@@ -1357,6 +1456,7 @@ class ImagesAPIs(viewsets.ViewSet):
 
             # https://stackoverflow.com/a/53888054
             response = HttpResponse(image_content, content_type="image/*")
+            response['Content-Disposition'] = 'inline"'
             return response
         
 

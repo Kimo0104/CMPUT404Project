@@ -19,8 +19,6 @@ function App() {
 
   const [userId, setUserId] = React.useState(localStorage.getItem("userId") ? localStorage.getItem("userId") : "1");
   
-  //localStorage.clear();
-  
   return (
     <userIdContext.Provider value={{userId, setUserId}}>
       <BrowserRouter>

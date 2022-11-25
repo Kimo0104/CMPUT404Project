@@ -35,7 +35,9 @@ export default function Home() {
     if (showSearch) {
       setAuthorId(userId);
       setShowSearch(false);
-      localStorage.clear();
+      localStorage.setItem("authorId", userId);
+      localStorage.setItem("showSearch", false);
+      localStorage.setItem("query", "");
     } else {
       setShowSearch(true);
     }
