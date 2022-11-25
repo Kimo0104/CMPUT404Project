@@ -58,6 +58,86 @@ def expandComment(comment, serializedPost):
 
     return serializedComment
 
+def createFauxAuthor(request, author):
+    if "id" not in author:
+        return False
+    authorId = author["id"]
+
+    if "displayName" not in author:
+        return False
+    displayName = author["displayName"]
+        
+    if displayName and displayName.strip() != "" and authorId and authorId.strip() != "":
+        authorByDisplayName = Authors.objects.filter(displayName=displayName)
+        # UNIQUE ON DISPLAYNAME SHOULD BE REMOVED
+        if authorByDisplayName.count() == 1:
+            return False
+    else:
+        return Response("Can't create a profile with invalid authorId/displayName!", status=status.HTTP_400_BAD_REQUEST)
+
+    host = request.build_absolute_uri().split('/authors/')[0]
+    url = host + '/authors/' + authorId
+    profileImage = request.build_absolute_uri("https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg") 
+    github = None
+
+    Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
+    return True
+
+def createFauxPost(post):
+    if "postId" not in post:
+        return False
+    postId = post["postId"]
+
+    if "title" not in post:
+        return False
+    title = post["title"]
+
+    if "source" not in post:
+        return False
+    source = post["source"]
+
+    if "origin" not in post:
+        return False
+    origin = post["origin"]
+
+    if "contentType" not in post:
+        return False
+    contentType = post["contentType"]
+
+    if "content" not in post:
+        return False
+    content = post["content"]
+
+    if "originalAuthorId" not in post:
+        return False
+    originalAuthorId = post["originalAuthorId"]
+
+    if "authorId" not in post:
+        return False
+    authorId = post["authorId"]
+
+    if "visibility" not in post:
+        return False
+    visibility = post["visibility"]
+        
+    if not postId or not title or not source or not origin or not contentType or not content or not originalAuthorId or not authorId or not visibility:
+        return False
+
+    post = Posts.objects.create(
+        id = postId,
+        type = 'post',
+        title = title,
+        source = source,
+        origin = origin,
+        description = '',
+        contentType = contentType,
+        content = content,
+        originalAuthor = Authors.objects.get(id = originalAuthorId),
+        author = Authors.objects.get(id = authorId),
+        visibility = visibility
+    )
+    return True
+
 
 #create a generalized object that allows for sorting based on date published
 class DjangoObj:
@@ -296,6 +376,7 @@ class PostsAPIs(viewsets.ViewSet):
                 'visibility': openapi.Schema(type=openapi.TYPE_STRING, description='The visibility of the post, can only be PUBLIC or FRIENDS or UNLISTED'),
                 'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
                 'published': openapi.Schema(type=openapi.FORMAT_DATETIME, description='The publish date of the post'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='author object with members "id" and "displayName"'),
             }
         )
     )
@@ -359,16 +440,6 @@ class CommentsAPIs(viewsets.ViewSet):
 
         return Response(data)
 
-
-    def getCommentsOld(self, request, *args, **kwargs):
-        postId = kwargs["postId"]
-        if not Posts.objects.filter(id=postId).count() == 1:
-            return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
-
-        queryset = Comments.objects.filter(post_id=postId).order_by('-published')
-        serializer = CommentsSerializer(queryset, many=True)
-        return Response(serializer.data)
-
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #creates a comment for POST_ID
     @swagger_auto_schema(
@@ -382,7 +453,9 @@ class CommentsAPIs(viewsets.ViewSet):
             type = openapi.TYPE_OBJECT,
             required=['comment'],
             properties={
-                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='The text of the comment')
+                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='The text of the comment'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='author object with members "id" and "displayName"'),
+                'post': openapi.Schema(type=openapi.TYPE_STRING, description='author object with members "postId", "title", "source", "origin", "contentType", "content", "originalAuthorId", "authorId", and "visibility"')
             }
         )
     )
@@ -391,9 +464,15 @@ class CommentsAPIs(viewsets.ViewSet):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
 
-        #check that authorId and postId exist
+        # check that authorId and postId exist
+        # if we don't have the commenter, then try to make one
+        # if we don't have the post, then error
+        body = JSONParser().parse(io.BytesIO(request.body))
         if not Authors.objects.filter(id=authorId).count() ==1:
-            return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not 'author' in body:
+                return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
         if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to make comment on non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -401,7 +480,6 @@ class CommentsAPIs(viewsets.ViewSet):
         post = Posts.objects.get(id=postId)
 
         #check that contentType is a valid choice
-        body = JSONParser().parse(io.BytesIO(request.body))
         contentType = 'text/plain'
         if 'contentType' in body:
             if body['contentType'] == 'text/markdown':
