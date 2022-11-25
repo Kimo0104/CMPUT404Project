@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
@@ -23,12 +23,52 @@ import datetime
 #pip install PyJWT
 import jwt
 
+import datetime
+
+#pip install PyJWT
+import jwt
+
+from django.views import View
+import os
+from django.conf import settings
+
+
 def uuidGenerator():
     result = uuid.uuid4()
     return result.hex
 
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
+
+class FrontendAppView(View):
+    """
+    Serves the compiled frontend entry point (only works if you have run `yarn
+    build`).
+    """
+    index_file_path = os.path.join(os.path.realpath(__file__), 'build', 'index.html')
+    def get(self, request):
+        try:
+            with open(self.index_file_path) as f:
+                return HttpResponse(f.read())
+        except FileNotFoundError:
+            return HttpResponse(
+                """
+                This URL is only used when you have built the production
+                version of the app. Visit http://localhost:3000/ instead after
+                running `yarn start` on the frontend/ directory
+                """,
+                status=501,
+            )
+class Assets(View):
+
+    def get(self, _request, filename):
+        path = os.path.join(os.path.dirname(__file__), 'static', filename)
+
+        if os.path.isfile(path):
+            with open(path, 'rb') as file:
+                return HttpResponse(file.read())
+        else:
+            return HttpResponseNotFound()
 
 #create a generalized object that allows for sorting based on date published
 class DjangoObj:
