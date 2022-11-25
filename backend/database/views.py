@@ -78,12 +78,10 @@ def createFauxAuthor(request, author):
     displayName = author["displayName"]
         
     if displayName and displayName.strip() != "" and authorId and authorId.strip() != "":
-        authorByDisplayName = Authors.objects.filter(displayName=displayName)
-        # UNIQUE ON DISPLAYNAME SHOULD BE REMOVED
-        if authorByDisplayName.count() == 1:
+        if Authors.objects.filter(id=id).count() > 0:
             return False
     else:
-        return Response("Can't create a profile with invalid authorId/displayName!", status=status.HTTP_400_BAD_REQUEST)
+        return False
 
     host = request.build_absolute_uri().split('/authors/')[0]
     url = host + '/authors/' + authorId
