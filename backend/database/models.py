@@ -19,12 +19,14 @@ class Authors(models.Model):
 class Posts(models.Model):
     PLAINTEXT = 'text/plain'
     MARKDOWN = 'text/markdown'
+    IMAGE = 'image'
     PUBLIC = 'PUBLIC'
     FRIENDS = 'FRIENDS'
     UNLISTED = 'UNLISTED'
     content_type_choices = [
         (PLAINTEXT, 'PLAINTEXT'),
-        (MARKDOWN, 'COMMONMARK')
+        (MARKDOWN, 'COMMONMARK'),
+        (IMAGE, 'IMAGE')
     ]
     visibility_choices = [
         (PUBLIC, 'PUBLIC'),

@@ -1,7 +1,7 @@
 import axios from 'axios';
 //import React from 'react';
 
-export const SERVER_URL = process.env.SERVER_URL || "http://localhost:8000"
+export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000"
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
@@ -236,5 +236,11 @@ export const uploadImage = async (referenceId, imageFile) => {
 
 export const getImage = async (imageUrl) => {
     let response = await axios.get(imageUrl);
+    return response.data;
+}
+
+export const getGithubEvents = async (githubUsername) => {
+    const path = `https://api.github.com/users/${githubUsername}/events`;
+    let response = await axios.get(path);
     return response.data;
 }

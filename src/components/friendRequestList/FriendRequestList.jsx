@@ -51,7 +51,6 @@ export default function FriendRequestList(props) {
         <List>
           {friendRequests.map((listitem, index) => (
             <ListItem key={index} divider={true}>
-              {/* <ListItemText  sx={{ whiteSpace: 'normal' }} primaryTypographyProps={{ style: { "font-weight": "bold"}  }}>{listitem.displayName}</ListItemText> */}
               <Box sx={{ overflow: 'auto' }}>
                 {listitem.displayName}
                 <Box>

@@ -14,6 +14,9 @@ import environ
 from pathlib import Path
 import os
 
+env = environ.Env()
+environ.Env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9$v)m*k4m(t(ok8%txy21y^y=ok))$6cd78@!gj1r(*y0j+^b3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost']
 
 AUTH_USER_MODEL = 'database.Users'
 
@@ -55,6 +58,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -65,12 +70,14 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(Path(__file__).resolve().parent.parent.parent, 'build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -88,7 +95,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-env = environ.Env()
 environ.Env.read_env()
 SECRET_KEY = env("SECRET_KEY")
 DATABASES = {
@@ -137,7 +143,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(Path(__file__).resolve().parent.parent.parent, 'build/static')
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, '/staticfiles/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -146,7 +158,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://localhost:8000'
+    'http://localhost:8000',
+    'http://cmput404-team13.herokuapp.com',
+    'https://cmput404-team13.herokuapp.com'
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -155,3 +169,14 @@ MEDIA_URL = '/media/'
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
+
+# Configure Django App for Heroku.
+import django_heroku
+django_heroku.settings(locals())
+
+options = DATABASES['default'].get('OPTIONS', {})
+options.pop('sslmode', None)
+
+# For Heroku's MIME type
+import mimetypes
+mimetypes.add_type("text/css", ".css", True)

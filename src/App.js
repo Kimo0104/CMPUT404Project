@@ -9,6 +9,10 @@ import ManageProfile from './components/profile/ManageProfile.jsx';
 import SearchPage from './components/search/SearchPage';
 import Follow from './components/follow/Follow.jsx'
 import FriendRequestList from './components/friendRequestList/FriendRequestList.jsx'
+import axios from 'axios';
+
+axios.defaults.xsrfCookieName = 'csrftoken'
+axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
 export const userIdContext = React.createContext({
   userId: localStorage.getItem("userId") ? localStorage.getItem("userId") : "1",

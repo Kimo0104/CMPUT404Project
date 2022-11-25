@@ -85,8 +85,8 @@ class CommentsAPITest(APITestCase):
         assert(response.status_code == status.HTTP_200_OK)
         assert(len(response.data) == 1)
         assert(response.data[0]['id'] == "1")
-        assert(response.data[0]['author'] == "2")
-        assert(response.data[0]['post'] == "1")
+        assert(response.data[0]['author']['id'] == "2")
+        assert(response.data[0]['post']['id'] == "1")
         assert(response.data[0]['comment'] == "test comment")
 
     '''
