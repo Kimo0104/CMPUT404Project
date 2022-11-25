@@ -385,6 +385,7 @@ class PostsAPIs(viewsets.ViewSet):
             id = body['id']
         else:
             id = uuidGenerator()
+        print(body['visibility'], Posts.PUBLIC)
         if not body['type']: return Response({'type must be supplied'})
         if not body['title']: return Response({'title must be supplied'})
         if not body['source']: return Response({'source must be supplied'})
@@ -393,9 +394,9 @@ class PostsAPIs(viewsets.ViewSet):
         if not body['contentType']: return Response({'contentType must be supplied'})
         if not body['content']: return Response({'content must be supplied'})
         if not body['visibility']: return Response({'visibility must be supplied'})
-        if (body['visibility'] != Posts.PUBLIC or body['visibility'] != Posts.FRIENDS or body['visibility'] != Posts.UNLISTED):
+        if (body['visibility'] != Posts.PUBLIC and body['visibility'] != Posts.FRIENDS and body['visibility'] != Posts.UNLISTED):
             return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'})
-        if (body['contentType'] != Posts.PLAINTEXT or body['contentType'] != Posts.MARKDOWN or body['contentType'] != Posts.IMAGE):
+        if (body['contentType'] != Posts.PLAINTEXT and body['contentType'] != Posts.MARKDOWN and body['contentType'] != Posts.IMAGE):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
         if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
         try:
