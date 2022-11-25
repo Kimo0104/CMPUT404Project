@@ -1158,7 +1158,7 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
-        authorId = kwargs["foreignAuthorId"]
+        authorId = kwargs["authorId"]
         authenticated = UserAPIs().check_token(request, authorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
@@ -1168,6 +1168,10 @@ class FollowRequestsAPIs(viewsets.ViewSet):
             followRequested = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
         except FollowRequests.DoesNotExist:
             followRequested = None
+        print("authorId")
+        print(authorId)
+        print("foreignAuthorId")
+        print(foreignAuthorId)
         serializer = FollowRequestsSerializer(followRequested)
         return Response(serializer.data)
 
@@ -1261,7 +1265,7 @@ class FollowsAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
-        authorId = kwargs["foreignAuthorId"]
+        authorId = kwargs["authorId"]
         authenticated = UserAPIs().check_token(request, authorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
