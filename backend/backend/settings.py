@@ -14,6 +14,9 @@ import environ
 from pathlib import Path
 import os
 
+env = environ.Env()
+environ.Env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9$v)m*k4m(t(ok8%txy21y^y=ok))$6cd78@!gj1r(*y0j+^b3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost']
 
@@ -91,7 +94,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-env = environ.Env()
 environ.Env.read_env()
 SECRET_KEY = env("SECRET_KEY")
 DATABASES = {
