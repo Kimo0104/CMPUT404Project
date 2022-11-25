@@ -339,7 +339,7 @@ class PostsAPIs(viewsets.ViewSet):
         try:
             Posts.objects.get(id = postId, visibility = Posts.PUBLIC).delete()
         except Posts.DoesNotExist:
-            return Response({"No Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({"No Public Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
         return Response({"Success"}, status=status.HTTP_200_OK)
 
     #PUT authors/{AUTHOR_ID/posts
