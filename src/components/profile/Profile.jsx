@@ -1,6 +1,6 @@
 import * as React from 'react';
 import TopBar from '../topbar/TopBar.jsx';
-import { getAuthor } from '../../APIRequests';
+import { getAuthor, getImage } from '../../APIRequests';
 import { Button, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import Follow from "../follow/Follow";
@@ -11,7 +11,7 @@ export default function Profile(props)  {
 
     const location = useLocation();
     
-    const userId = React.useContext(userIdContext);
+    const { userId }  = React.useContext(userIdContext);
 
     const { authorId } = React.useContext(AuthorIdContext);
     const [author, setAuthor] = React.useState({});

@@ -1,10 +1,12 @@
-import { ConnectingAirportsOutlined } from "@mui/icons-material";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser, authUser } from '../../APIRequests';
-import { usernameContext, passwordContext } from "../../App";
+import { userIdContext } from '../../App'
 
 export default function Login() {
+
+    var { setUserId } = React.useContext(userIdContext);
+
     const navigate = useNavigate();
     const [name, setName] = useState(''); 
     const [pass, setPass] = useState('');
@@ -22,14 +24,14 @@ export default function Login() {
             if (token){
                 localStorage.setItem("token", JSON.stringify(token));
                 const tokenFromStorage = (JSON.parse(localStorage.getItem("token", JSON.stringify(token)))).jwt
-                console.log(tokenFromStorage)
-
                 const dataForAuthUser = {
                     "userToken": tokenFromStorage
                 }
                 const userID = await authUser(dataForAuthUser);
                 if (userID){
-                    console.log(userID)
+                    let id = String(userID.id).replace(/-/g,"");
+                    setUserId(id);
+                    localStorage.setItem("userId", id);
                     navigate('/home');
                 }
             }
@@ -50,7 +52,7 @@ export default function Login() {
                     <button type="submit">Log In</button>
                 </form>
                 <div className="link-btn">
-                <Link to="/register">Don't have an account? Register here.</Link>
+                <Link to="/register">Don't have an account? Click here to register.</Link>
                 </div>
             </div>
         </div>

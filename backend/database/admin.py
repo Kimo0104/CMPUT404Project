@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox, Images
+from django.contrib.auth.admin import UserAdmin
+from .models import Authors, Posts, Followers, FollowRequests, Comments, Likes, LikesComments, Inbox, Images, Users
 
 @admin.action(description='Mark selected users as accepted')
 def make_accepted(modeladmin, request, queryset):
@@ -20,3 +21,4 @@ admin.site.register(Likes)
 admin.site.register(LikesComments)
 admin.site.register(Inbox)
 admin.site.register(Images)
+admin.site.register(Users, UserAdmin)

@@ -32,6 +32,7 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost']
 
+AUTH_USER_MODEL = 'database.Users'
 
 # Application definition
 CORS_ORIGIN_WHITELIST = [
