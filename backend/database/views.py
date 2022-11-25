@@ -385,7 +385,6 @@ class PostsAPIs(viewsets.ViewSet):
             id = body['id']
         else:
             id = uuidGenerator()
-        print(body['visibility'], Posts.PUBLIC)
         if not body['type']: return Response({'type must be supplied'})
         if not body['title']: return Response({'title must be supplied'})
         if not body['source']: return Response({'source must be supplied'})
