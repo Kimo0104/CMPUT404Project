@@ -40,6 +40,59 @@ def uuidGenerator():
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
+def expandPost(post):
+    serializedPost = PostsSerializer(post).data
+    # get the author of the post
+    if not Authors.objects.filter(id=serializedPost["author"]).count() == 1:
+        return Response("Tried to get comments from a post with a non-existent author", status=status.HTTP_400_BAD_REQUEST)
+    # add the author object to the post object
+    serializedPost["author"] = AuthorsSerializer(Authors.objects.get(id=serializedPost["author"])).data
+
+    # get the original author of the post
+    if not Authors.objects.filter(id=serializedPost["originalAuthor"]).count() == 1:
+        return Response("Tried to get comments from a post with a non-existent original author", status=status.HTTP_400_BAD_REQUEST)
+    # add the original author object to the post object
+    serializedPost["originalAuthor"] = AuthorsSerializer(Authors.objects.get(id=serializedPost["originalAuthor"])).data
+
+    return serializedPost
+
+def expandComment(comment, serializedPost):
+    serializedComment = CommentsSerializer(comment).data
+    # add the post object to the comment objects
+    serializedComment["post"] = serializedPost
+    # get the author of the comment
+    if not Authors.objects.filter(id=serializedComment["author"]).count() == 1:
+        return Response("Tried to get a comment with an invalid author", status=status.HTTP_400_BAD_REQUEST)
+    # add the author of the comment to the comment objects
+    serializedComment["author"] = AuthorsSerializer(Authors.objects.get(id=serializedComment["author"])).data
+
+    return serializedComment
+
+def createFauxAuthor(request, author):
+    if "id" not in author:
+        return False
+    authorId = author["id"]
+
+    if "displayName" not in author:
+        return False
+    displayName = author["displayName"]
+        
+    if displayName and displayName.strip() != "" and authorId and authorId.strip() != "":
+        authorByDisplayName = Authors.objects.filter(displayName=displayName)
+        # UNIQUE ON DISPLAYNAME SHOULD BE REMOVED
+        if authorByDisplayName.count() == 1:
+            return False
+    else:
+        return Response("Can't create a profile with invalid authorId/displayName!", status=status.HTTP_400_BAD_REQUEST)
+
+    host = request.build_absolute_uri().split('/authors/')[0]
+    url = host + '/authors/' + authorId
+    profileImage = request.build_absolute_uri("https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg") 
+    github = None
+
+    Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
+    return True
+
 class FrontendAppView(View):
     """
     Serves the compiled frontend entry point (only works if you have run `yarn
@@ -255,10 +308,14 @@ class PostsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['post'],)
     def updatePost(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
+
+        #check that postId exist
+        if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
+            return Response({"Tried to update non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
+        post = Posts.objects.get(id=postId, visibility = Posts.PUBLIC)
+
         body = JSONParser().parse(io.BytesIO(request.body))
-        post = Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC)
         editableColumns = ["title", "description", "content"]
         edited = False
         for key, value in body.items():
@@ -280,9 +337,12 @@ class PostsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['delete'],)
     def deletePost(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
-        Posts.objects.get(author = authorId, id = postId, visibility = Posts.PUBLIC).delete()
+
+        #check that postId exist
+        if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
+            return Response({"Tried to delete non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
+        Posts.objects.get(id = postId, visibility = Posts.PUBLIC).delete()
         return Response({"Success"}, status=status.HTTP_200_OK)
 
     #PUT authors/{AUTHOR_ID/posts
@@ -307,6 +367,8 @@ class PostsAPIs(viewsets.ViewSet):
                 'visibility': openapi.Schema(type=openapi.TYPE_STRING, description='The visibility of the post, can only be PUBLIC or FRIENDS or UNLISTED'),
                 'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
                 'published': openapi.Schema(type=openapi.FORMAT_DATETIME, description='The publish date of the post'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"'),
+                'id': openapi.Schema(type=openapi.FORMAT_DATETIME, description='optional UUID for the post')
             }
         )
     )
@@ -314,8 +376,23 @@ class PostsAPIs(viewsets.ViewSet):
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+
+        # check that authorId exist
+        # if we don't have the poster, then try to make one
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            if not 'author' in body:
+                return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # use provided id if available
+        if 'id' in body:
+            id = body['id']
+        else:
+            id = uuidGenerator()
+
         post = Posts.objects.create(
-            id = uuidGenerator(),
+            id = id,
             type = body['type'],
             title = body['title'],
             source = body['source'],
@@ -359,12 +436,16 @@ class CommentsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
         postId = kwargs["postId"]
+        # get the post the comment is for
         if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+        serializedPost = expandPost(Posts.objects.get(id=postId))
+        
+        data = []
+        for comment in Comments.objects.filter(post_id=postId).order_by('-published'):
+            data.append(expandComment(comment, serializedPost))
 
-        queryset = Comments.objects.filter(post_id=postId).order_by('-published')
-        serializer = CommentsSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(data)
 
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #creates a comment for POST_ID
@@ -379,7 +460,9 @@ class CommentsAPIs(viewsets.ViewSet):
             type = openapi.TYPE_OBJECT,
             required=['comment'],
             properties={
-                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='The text of the comment')
+                'comment': openapi.Schema(type=openapi.TYPE_STRING, description='The text of the comment'),
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"'),
+                'id': openapi.Schema(type=openapi.TYPE_STRING, description='optional UUID for the comment'),                
             }
         )
     )
@@ -388,9 +471,15 @@ class CommentsAPIs(viewsets.ViewSet):
         authorId = kwargs["authorId"]
         postId = kwargs["postId"]
 
-        #check that authorId and postId exist
+        # check that authorId and postId exist
+        # if we don't have the commenter, then try to make one
+        # if we don't have the post, then error
+        body = JSONParser().parse(io.BytesIO(request.body))
         if not Authors.objects.filter(id=authorId).count() ==1:
-            return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not 'author' in body:
+                return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
         if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to make comment on non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -398,7 +487,6 @@ class CommentsAPIs(viewsets.ViewSet):
         post = Posts.objects.get(id=postId)
 
         #check that contentType is a valid choice
-        body = JSONParser().parse(io.BytesIO(request.body))
         contentType = 'text/plain'
         if 'contentType' in body:
             if body['contentType'] == 'text/markdown':
@@ -411,8 +499,14 @@ class CommentsAPIs(viewsets.ViewSet):
         else:
             return Response({"Failed comment creation. Missing 'comment' column."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # use provided id if available
+        if 'id' in body:
+            id = body['id']
+        else:
+            id = uuidGenerator()
+
         Comments.objects.create(
-            id = uuidGenerator(),
+            id = id,
             author = author,
             post = post,
             contentType = contentType,
@@ -431,15 +525,30 @@ class LikesAPIs(viewsets.ViewSet):
         responses={
             "200": "Success",
             "4XX": "Bad Request"
-        }
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            properties={
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"')              
+            }
+        )
     )
     def createPostLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
         postId = kwargs["postId"]
         
-        #check that authorId and postId exist
+        # check that authorId and postId exist
+        # if we don't have the liker, then try to make one
+        # if we don't have the post, then error
+        if request.body:
+            body = JSONParser().parse(io.BytesIO(request.body))
+        else:
+            body = {}
         if Authors.objects.filter(id=likerId).count() < 1:
-            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not 'author' in body:
+                return Response({"Tried to make like from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
         if Posts.objects.filter(id=postId).count() < 1:
             return Response({"Tried to check likes on a non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -467,15 +576,30 @@ class LikesAPIs(viewsets.ViewSet):
         responses={
             "200": "Success",
             "4XX": "Bad Request"
-        }
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            properties={
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"')              
+            }
+        )
     )
     def createCommentLike(self, request, *args, **kwargs):
         likerId = kwargs["likerId"]
         commentId = kwargs["commentId"]
         
-        #check that authorId and commentId exist
+        # check that authorId and commentId exist
+        # if we don't have the liker, then try to make one
+        # if we don't have the comment, then error
+        if request.body:
+            body = JSONParser().parse(io.BytesIO(request.body))
+        else:
+            body = {}
         if Authors.objects.filter(id=likerId).count() < 1:
-            return Response({"Tried to check likes of a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not 'author' in body:
+                return Response({"Tried to make like from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
         if Comments.objects.filter(id=commentId).count() < 1:
             return Response({"Tried to check likes on a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -975,12 +1099,36 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         responses={
             "200": "Success",
             "4XX": "Bad Request"
-        }
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            properties={
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"')              
+            }
+        )
     )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         foreignAuthorId = kwargs["foreignAuthorId"]
+        if request.body:
+            body = JSONParser().parse(io.BytesIO(request.body))
+        else:
+            body = {}
+
+        # check that authorId exist
+        # if we don't have the follower, then try to make one
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            if not 'author' in body:
+                return Response({"Tried to make follow as a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check that foreignAuthorId exist
+        if not Authors.objects.filter(id=foreignAuthorId).count() ==1:
+            return Response({"Tried to follow a a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check that follow request doesn't already exist
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
             return Response({"Failed to send a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -1090,7 +1238,13 @@ class FollowsAPIs(viewsets.ViewSet):
         responses={
             "200": "Success",
             "4XX": "Bad Request"
-        }
+        },
+        request_body=openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            properties={
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"')              
+            }
+        )
     )  
     @action(detail=True, methods=['post'],)
     def requestToFollow(self, request, *args, **kwargs):
