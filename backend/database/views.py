@@ -30,6 +30,35 @@ def uuidGenerator():
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
 
+def expandPost(post):
+    serializedPost = PostsSerializer(post).data
+    # get the author of the post
+    if not Authors.objects.filter(id=serializedPost["author"]).count() == 1:
+        return Response("Tried to get comments from a post with a non-existent author", status=status.HTTP_400_BAD_REQUEST)
+    # add the author object to the post object
+    serializedPost["author"] = AuthorsSerializer(Authors.objects.get(id=serializedPost["author"])).data
+
+    # get the original author of the post
+    if not Authors.objects.filter(id=serializedPost["originalAuthor"]).count() == 1:
+        return Response("Tried to get comments from a post with a non-existent original author", status=status.HTTP_400_BAD_REQUEST)
+    # add the original author object to the post object
+    serializedPost["originalAuthor"] = AuthorsSerializer(Authors.objects.get(id=serializedPost["originalAuthor"])).data
+
+    return serializedPost
+
+def expandComment(comment, serializedPost):
+    serializedComment = CommentsSerializer(comment).data
+    # add the post object to the comment objects
+    serializedComment["post"] = serializedPost
+    # get the author of the comment
+    if not Authors.objects.filter(id=serializedComment["author"]).count() == 1:
+        return Response("Tried to get a comment with an invalid author", status=status.HTTP_400_BAD_REQUEST)
+    # add the author of the comment to the comment objects
+    serializedComment["author"] = AuthorsSerializer(Authors.objects.get(id=serializedComment["author"])).data
+
+    return serializedComment
+
+
 #create a generalized object that allows for sorting based on date published
 class DjangoObj:
     def __init__(self, obj, data):
@@ -318,6 +347,20 @@ class CommentsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['get'],)
     def getComments(self, request, *args, **kwargs):
+        postId = kwargs["postId"]
+        # get the post the comment is for
+        if not Posts.objects.filter(id=postId).count() == 1:
+            return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
+        serializedPost = expandPost(Posts.objects.get(id=postId))
+        
+        data = []
+        for comment in Comments.objects.filter(post_id=postId).order_by('-published'):
+            data.append(expandComment(comment, serializedPost))
+
+        return Response(data)
+
+
+    def getCommentsOld(self, request, *args, **kwargs):
         postId = kwargs["postId"]
         if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to get comments from non-existent post"}, status=status.HTTP_400_BAD_REQUEST)
