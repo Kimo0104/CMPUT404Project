@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from collections import defaultdict
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .models import Authors, Posts, Comments, Likes, LikesComments, Inbox, Followers, FollowRequests, Images
@@ -22,6 +22,16 @@ import datetime
 
 #pip install PyJWT
 import jwt
+
+import datetime
+
+#pip install PyJWT
+import jwt
+
+from django.views import View
+import os
+from django.conf import settings
+
 
 def uuidGenerator():
     result = uuid.uuid4()
@@ -83,61 +93,35 @@ def createFauxAuthor(request, author):
     Authors.objects.create(id=authorId, host=host, displayName=displayName, url=url, accepted=False, github=github, profileImage=profileImage)
     return True
 
-def createFauxPost(post):
-    if "postId" not in post:
-        return False
-    postId = post["postId"]
+class FrontendAppView(View):
+    """
+    Serves the compiled frontend entry point (only works if you have run `yarn
+    build`).
+    """
+    index_file_path = os.path.join(os.path.realpath(__file__), 'build', 'index.html')
+    def get(self, request):
+        try:
+            with open(self.index_file_path) as f:
+                return HttpResponse(f.read())
+        except FileNotFoundError:
+            return HttpResponse(
+                """
+                This URL is only used when you have built the production
+                version of the app. Visit http://localhost:3000/ instead after
+                running `yarn start` on the frontend/ directory
+                """,
+                status=501,
+            )
+class Assets(View):
 
-    if "title" not in post:
-        return False
-    title = post["title"]
+    def get(self, _request, filename):
+        path = os.path.join(os.path.dirname(__file__), 'static', filename)
 
-    if "source" not in post:
-        return False
-    source = post["source"]
-
-    if "origin" not in post:
-        return False
-    origin = post["origin"]
-
-    if "contentType" not in post:
-        return False
-    contentType = post["contentType"]
-
-    if "content" not in post:
-        return False
-    content = post["content"]
-
-    if "originalAuthorId" not in post:
-        return False
-    originalAuthorId = post["originalAuthorId"]
-
-    if "authorId" not in post:
-        return False
-    authorId = post["authorId"]
-
-    if "visibility" not in post:
-        return False
-    visibility = post["visibility"]
-        
-    if not postId or not title or not source or not origin or not contentType or not content or not originalAuthorId or not authorId or not visibility:
-        return False
-
-    post = Posts.objects.create(
-        id = postId,
-        type = 'post',
-        title = title,
-        source = source,
-        origin = origin,
-        description = '',
-        contentType = contentType,
-        content = content,
-        originalAuthor = Authors.objects.get(id = originalAuthorId),
-        author = Authors.objects.get(id = authorId),
-        visibility = visibility
-    )
-    return True
-
+        if os.path.isfile(path):
+            with open(path, 'rb') as file:
+                return HttpResponse(file.read())
+        else:
+            return HttpResponseNotFound()
 
 #create a generalized object that allows for sorting based on date published
 class DjangoObj:
