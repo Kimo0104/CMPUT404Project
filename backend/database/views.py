@@ -393,6 +393,10 @@ class PostsAPIs(viewsets.ViewSet):
         if not body['contentType']: return Response({'contentType must be supplied'})
         if not body['content']: return Response({'content must be supplied'})
         if not body['visibility']: return Response({'visibility must be supplied'})
+        if (body['visibility'] != Posts.PUBLIC or body['visibility'] != Posts.FRIENDS or body['visibility'] != Posts.UNLISTED):
+            return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'})
+        if (body['contentType'] != Posts.PLAINTEXT or body['contentType'] != Posts.MARKDOWN or body['contentType'] != Posts.IMAGE):
+            return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
         if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
         try:
             Authors.objects.get(id = body['originalAuthor'])
