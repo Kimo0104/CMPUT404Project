@@ -251,7 +251,7 @@ class PostsAPIs(viewsets.ViewSet):
         try:
             post = Posts.objects.get(id = postId)
         except Posts.DoesNotExist:
-            post = None
+            return Response({"No Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
         serializer = PostsSerializer(post)
         return Response(serializer.data, status = status.HTTP_200_OK)
             
@@ -330,7 +330,6 @@ class PostsAPIs(viewsets.ViewSet):
         if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
             return Response({"Tried to update non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.get(id=postId, visibility = Posts.PUBLIC)
-
         body = JSONParser().parse(io.BytesIO(request.body))
         editableColumns = ["title", "description", "content"]
         edited = False
@@ -359,11 +358,10 @@ class PostsAPIs(viewsets.ViewSet):
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
         postId = kwargs["postId"]
-
-        #check that postId exist
-        if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
-            return Response({"Tried to delete non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
-        Posts.objects.get(id = postId, visibility = Posts.PUBLIC).delete()
+        try:
+            Posts.objects.get(id = postId, visibility = Posts.PUBLIC).delete()
+        except Posts.DoesNotExist:
+            return Response({"No Public Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
         return Response({"Success"}, status=status.HTTP_200_OK)
 
     #PUT authors/{AUTHOR_ID/posts
@@ -401,7 +399,6 @@ class PostsAPIs(viewsets.ViewSet):
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
-
         # check that authorId exist
         # if we don't have the poster, then try to make one
         if not Authors.objects.filter(id=authorId).count() ==1:
@@ -409,13 +406,28 @@ class PostsAPIs(viewsets.ViewSet):
                 return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
             if not createFauxAuthor(request, body["author"]):
                 return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
-
         # use provided id if available
         if 'id' in body:
             id = body['id']
         else:
             id = uuidGenerator()
-
+        if not body['type']: return Response({'type must be supplied'})
+        if not body['title']: return Response({'title must be supplied'})
+        if not body['source']: return Response({'source must be supplied'})
+        if not body['origin']: return Response({'origin must be supplied'})
+        if not body['description']: return Response({'description must be supplied'})
+        if not body['contentType']: return Response({'contentType must be supplied'})
+        if not body['content']: return Response({'content must be supplied'})
+        if not body['visibility']: return Response({'visibility must be supplied'})
+        if (body['visibility'] != Posts.PUBLIC and body['visibility'] != Posts.FRIENDS and body['visibility'] != Posts.UNLISTED):
+            return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'})
+        if (body['contentType'] != Posts.PLAINTEXT and body['contentType'] != Posts.MARKDOWN and body['contentType'] != Posts.IMAGE):
+            return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
+        if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
+        try:
+            Authors.objects.get(id = body['originalAuthor'])
+        except Authors.DoesNotExist:
+            return Response({"No originalAuthor Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.create(
             id = id,
             type = body['type'],
@@ -431,19 +443,6 @@ class PostsAPIs(viewsets.ViewSet):
             visibility = body['visibility']
         )
         serializer = PostsSerializer(post)
-        return Response(serializer.data)
-
-    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/image
-    #get the public post converted to binary as an image
-    @action(detail=True, methods=['get'],)
-    def getImagePost(self, request, *args, **kwargs):
-        authorId = kwargs["authorId"]
-        postId = kwargs["postId"]
-        queryset = Posts.objects.raw("""
-            YOUR SQL HERE
-        """)
-        
-        serializer = PostsSerializer(queryset, many=True)
         return Response(serializer.data)
 
 class CommentsAPIs(viewsets.ViewSet):
