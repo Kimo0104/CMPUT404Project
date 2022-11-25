@@ -48,7 +48,8 @@ export default function ManageProfile(props)  {
     }
 
     const handleCancelButtonPress = async (e) => {
-        navigate(`/profile/${userId}`, {userId: userId});
+        navigate("/home");
+        localStorage.clear();
     }
 
     const handleImagePress = async (e) => {
