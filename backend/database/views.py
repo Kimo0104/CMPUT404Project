@@ -363,6 +363,7 @@ class PostsAPIs(viewsets.ViewSet):
                 'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
                 'published': openapi.Schema(type=openapi.FORMAT_DATETIME, description='The publish date of the post'),
                 'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"'),
+                'originalAuthor': openapi.Schema(type=openapi.TYPE_STRING, description='optional original author object with members "id" and "displayName"'),
                 'id': openapi.Schema(type=openapi.FORMAT_DATETIME, description='optional UUID for the post')
             }
         )
@@ -371,13 +372,7 @@ class PostsAPIs(viewsets.ViewSet):
     def createPost(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]        
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
-        # check that authorId exist
-        # if we don't have the poster, then try to make one
-        if not Authors.objects.filter(id=authorId).count() ==1:
-            if not 'author' in body:
-                return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
-            if not createFauxAuthor(request, body["author"]):
-                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
+
         # use provided id if available
         if 'id' in body:
             id = body['id']
@@ -400,6 +395,23 @@ class PostsAPIs(viewsets.ViewSet):
             Authors.objects.get(id = body['originalAuthor'])
         except Authors.DoesNotExist:
             return Response({"No originalAuthor Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
+
+        # check that authorId exists
+        # if we don't have the poster, then try to make one
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            if not 'author' in body:
+                return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check that originalAuthorId exists
+        # if we don't have the original poster, then try to make one
+        if not Authors.objects.filter(id=body['originalAuthor']).count() ==1:
+            if not 'originalAuthor' in body:
+                return Response({"Tried to make post from non-existent original author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["originalAuthor"]):
+                return Response({"Invalid content provided in original author"}, status=status.HTTP_400_BAD_REQUEST)
+
         post = Posts.objects.create(
             id = id,
             type = body['type'],
