@@ -34,8 +34,7 @@ from django.conf import settings
 
 
 def uuidGenerator():
-    result = uuid.uuid4()
-    return result.hex
+    return str(uuid.uuid4())
 
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
