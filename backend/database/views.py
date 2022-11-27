@@ -426,7 +426,8 @@ class PostsAPIs(viewsets.ViewSet):
         try:
             Authors.objects.get(id = body['originalAuthor'])
         except Authors.DoesNotExist:
-            return Response({"No originalAuthor Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["originalAuthor"]):
+                return Response({"Invalid content provided in originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.create(
             id = id,
             type = body['type'],
