@@ -34,8 +34,7 @@ from django.conf import settings
 
 
 def uuidGenerator():
-    result = uuid.uuid4()
-    return result.hex
+    return str(uuid.uuid4())
 
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
@@ -398,7 +397,13 @@ class PostsAPIs(viewsets.ViewSet):
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
-
+        # check that authorId exist
+        # if we don't have the poster, then try to make one
+        if not Authors.objects.filter(id=authorId).count() ==1:
+            if not 'author' in body:
+                return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["author"]):
+                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
         # use provided id if available
         if 'id' in body:
             id = body['id']
@@ -420,24 +425,8 @@ class PostsAPIs(viewsets.ViewSet):
         try:
             Authors.objects.get(id = body['originalAuthor'])
         except Authors.DoesNotExist:
-            return Response({"No originalAuthor Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
-
-        # check that authorId exists
-        # if we don't have the poster, then try to make one
-        if not Authors.objects.filter(id=authorId).count() ==1:
-            if not 'author' in body:
-                return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
-            if not createFauxAuthor(request, body["author"]):
-                return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # check that originalAuthorId exists
-        # if we don't have the original poster, then try to make one
-        if not Authors.objects.filter(id=body['originalAuthor']).count() ==1:
-            if not 'originalAuthor' in body:
-                return Response({"Tried to make post from non-existent original author"}, status=status.HTTP_400_BAD_REQUEST)
             if not createFauxAuthor(request, body["originalAuthor"]):
-                return Response({"Invalid content provided in original author"}, status=status.HTTP_400_BAD_REQUEST)
-
+                return Response({"Invalid content provided in originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.create(
             id = id,
             type = body['type'],
@@ -1168,12 +1157,12 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
-        authorId = kwargs["foreignAuthorId"]
-        authenticated = UserAPIs().check_token(request, authorId)
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+
+        authenticated = UserAPIs().check_token(request, foreignAuthorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
-            
-        foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             followRequested = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
         except FollowRequests.DoesNotExist:
@@ -1271,12 +1260,12 @@ class FollowsAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
-        authorId = kwargs["foreignAuthorId"]
-        authenticated = UserAPIs().check_token(request, authorId)
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+
+        authenticated = UserAPIs().check_token(request, foreignAuthorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
-            
-        foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
         except Followers.DoesNotExist:
