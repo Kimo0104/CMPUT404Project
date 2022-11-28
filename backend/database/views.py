@@ -207,7 +207,10 @@ class UserAPIs(viewsets.ViewSet):
         except jwt.ExpiredSignatureError:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        user = Users.objects.get(id=payload['id'])
+        try:
+            user = Users.objects.get(id=payload['id'])
+        except:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         data = {'id': str(user.id)}
         return Response(data)
 
