@@ -34,8 +34,7 @@ from django.conf import settings
 
 
 def uuidGenerator():
-    result = uuid.uuid4()
-    return result.hex
+    return str(uuid.uuid4())
 
 def getCurrentDate():
     return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
@@ -77,13 +76,8 @@ def createFauxAuthor(request, author):
         return False
     displayName = author["displayName"]
         
-    if displayName and displayName.strip() != "" and authorId and authorId.strip() != "":
-        authorByDisplayName = Authors.objects.filter(displayName=displayName)
-        # UNIQUE ON DISPLAYNAME SHOULD BE REMOVED
-        if authorByDisplayName.count() == 1:
-            return False
-    else:
-        return Response("Can't create a profile with invalid authorId/displayName!", status=status.HTTP_400_BAD_REQUEST)
+    if (displayName and displayName.strip() == "") or (authorId and authorId.strip() == ""):
+        return False
 
     host = request.build_absolute_uri().split('/authors/')[0]
     url = host + '/authors/' + authorId
@@ -425,9 +419,10 @@ class PostsAPIs(viewsets.ViewSet):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
         if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
         try:
-            Authors.objects.get(id = body['originalAuthor'])
+            Authors.objects.get(id = body['originalAuthor']['id'])
         except Authors.DoesNotExist:
-            return Response({"No originalAuthor Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body['originalAuthor']):
+                return Response({"Invalid content provided in originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.create(
             id = id,
             type = body['type'],
@@ -437,7 +432,7 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
-            originalAuthor = Authors.objects.get(id = body['originalAuthor']),
+            originalAuthor = Authors.objects.get(id = body['originalAuthor']['id']),
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility']
@@ -1158,12 +1153,12 @@ class FollowRequestsAPIs(viewsets.ViewSet):
     )   
     @action(detail=True, methods=['get'],)
     def checkRequestedToFollow(self, request, *args, **kwargs):
-        authorId = kwargs["foreignAuthorId"]
-        authenticated = UserAPIs().check_token(request, authorId)
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+
+        authenticated = UserAPIs().check_token(request, foreignAuthorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
-            
-        foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             followRequested = FollowRequests.objects.get(receiver=authorId, requester=foreignAuthorId)
         except FollowRequests.DoesNotExist:
@@ -1261,12 +1256,12 @@ class FollowsAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['get'],)
     def checkFollower(self, request, *args, **kwargs):
-        authorId = kwargs["foreignAuthorId"]
-        authenticated = UserAPIs().check_token(request, authorId)
+        authorId = kwargs["authorId"]
+        foreignAuthorId = kwargs["foreignAuthorId"]
+
+        authenticated = UserAPIs().check_token(request, foreignAuthorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
-            
-        foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
         except Followers.DoesNotExist:

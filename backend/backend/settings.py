@@ -30,14 +30,24 @@ SECRET_KEY = 'django-insecure-9$v)m*k4m(t(ok8%txy21y^y=ok))$6cd78@!gj1r(*y0j+^b3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ['cmput404-team13.herokuapp.com/', '127.0.0.1:8000', 'localhost']
+ALLOWED_HOSTS = [
+    'cmput404-team13.herokuapp.com/', 
+    '127.0.0.1:8000', 
+    'localhost',
+    'https://true-friends-404.herokuapp.com',
+    'https://social-distribution-404.herokuapp.com'
+    ]
 
 AUTH_USER_MODEL = 'database.Users'
 
 # Application definition
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:3000',
-    'http://localhost:8000'
+    'http://localhost:8000',
+    'http://cmput404-team13.herokuapp.com',
+    'https://cmput404-team13.herokuapp.com',
+    'https://true-friends-404.herokuapp.com',
+    'https://social-distribution-404.herokuapp.com'
 ]
 
 INSTALLED_APPS = [
@@ -160,7 +170,18 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:8000',
     'http://cmput404-team13.herokuapp.com',
-    'https://cmput404-team13.herokuapp.com'
+    'https://cmput404-team13.herokuapp.com',
+    'https://true-friends-404.herokuapp.com',
+    'https://social-distribution-404.herokuapp.com'
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
