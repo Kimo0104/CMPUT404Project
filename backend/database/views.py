@@ -76,10 +76,7 @@ def createFauxAuthor(request, author):
         return False
     displayName = author["displayName"]
         
-    if displayName and displayName.strip() != "" and authorId and authorId.strip() != "":
-        if Authors.objects.filter(id=id).count() > 0:
-            return False
-    else:
+    if (displayName and displayName.strip() == "") or (authorId and authorId.strip() == ""):
         return False
 
     host = request.build_absolute_uri().split('/authors/')[0]
@@ -423,9 +420,9 @@ class PostsAPIs(viewsets.ViewSet):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
         if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
         try:
-            Authors.objects.get(id = body['originalAuthor'])
+            Authors.objects.get(id = body['originalAuthor']['id'])
         except Authors.DoesNotExist:
-            if not createFauxAuthor(request, body["originalAuthor"]):
+            if not createFauxAuthor(request, body['originalAuthor']):
                 return Response({"Invalid content provided in originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.create(
             id = id,
@@ -436,7 +433,7 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
-            originalAuthor = Authors.objects.get(id = body['originalAuthor']),
+            originalAuthor = Authors.objects.get(id = body['originalAuthor']['id']),
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility']
