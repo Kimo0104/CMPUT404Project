@@ -27,7 +27,7 @@ export default function Profile(props)  {
 
     let button = "";
     let followButton = "";
-    if (userId === authorId.replace(/-/g,"")) {
+    if (userId.replace(/-/g,"") === authorId.replace(/-/g,"")) {
         button = <Button variant="contained" href={`/profile/${userId}/manage`} userId={userId}>Manage Profile</Button>;
     } else {
         followButton = <Follow authorId={userId} foreignAuthorId={authorId} />
