@@ -32,7 +32,7 @@ from django.views import View
 import os
 from django.conf import settings
 
-
+import uuid
 def uuidGenerator():
     return str(uuid.uuid4())
 
@@ -249,8 +249,8 @@ class PostsAPIs(viewsets.ViewSet):
             post = Posts.objects.get(id = postId)
         except Posts.DoesNotExist:
             return Response({"No Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
-        serializer = PostsSerializer(post)
-        return Response(serializer.data, status = status.HTTP_200_OK)
+        serializedPost = expandPost(post)
+        return Response(serializedPost, status = status.HTTP_200_OK)
             
 
     #GET authors/{AUTHOR_ID}/posts
@@ -474,6 +474,31 @@ class CommentsAPIs(viewsets.ViewSet):
             data.append(expandComment(comment, serializedPost))
 
         return Response(data)
+
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}
+    #get the comment with given comment_id
+    @swagger_auto_schema(
+        operation_description="Gets a specific comment",
+        operation_summary="Gets a specific comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
+    @action(detail=True, methods=['get'],)
+    def getComment(self, request, *args, **kwargs):
+        commentId = kwargs["commentId"]
+
+        # get the comment
+        if not Comments.objects.filter(id=commentId).count() == 1:
+            return Response({"Tried to get a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
+        comment = Comments.objects.get(id=commentId)
+
+        # get the referred post
+        serializedPost = PostsSerializer(Posts.objects.get(id=comment.post)).data
+        serializedComment = expandComment(comment, serializedPost)
+
+        return Response(serializedComment)
 
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #creates a comment for POST_ID
@@ -1247,6 +1272,29 @@ class FollowsAPIs(viewsets.ViewSet):
             followers = None
         serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
+
+    #GET authors/{AUTHOR_ID}/friends
+    #get all the friends of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all the friends of a specific author_id",
+        operation_summary="Fetches all the friends of a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
+    @action(detail=True, methods=['get'],)
+    def getFriends(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+
+        friends = []
+        for follower in Followers.objects.filter(followed=authorId):
+            if Followers.objects.filter(followed=follower.id, follower=authorId):
+                friends.append(FollowersSerializer(follower, many=False).data)
+        return Response(friends)
     
     #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID

@@ -10,7 +10,10 @@ const TEAM12_CONFIG = {
     }
 }
 const TEAM19_URL = "https://social-distribution-404.herokuapp.com";
-const TEAM19_TOKEN = "";
+const TEAM19_CONFIG = {
+    auth: {username: 'Admin13', password: 'password'}, 
+    headers: {"Content-Type": "application/json",}
+};
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
@@ -48,26 +51,72 @@ export const sendFriendInbox = async(authorId, postId) => {
 };
 
 export const createPostLike = async(likerId, postId) => {
-    const path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
+    let liker = await getAuthor(likerId);
+    if (liker === "Author does not exist") { return liker; }
+
+    let path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
     const response = await axios.post(path);
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
+    axios.post(path, TEAM12_CONFIG);
+
+    // TEAM 19
+    let data19 = structuredClone(TEAM19_CONFIG);
+    data19.context = SERVER_URL;
+    data19.summary = `${liker.displayName} liked your post`;
+    data19.author = liker;
+    data19.object = SERVER_URL + `authors/1/posts/${postId}`;
+    let post = (await axios.get(SERVER_URL + `/authors/${authorId}/posts/${postId}`)).data;
+    path = TEAM19_URL + `/authors/${post.author.id}/inbox/likes`;
+    axios.post(path, data19);
+
     return response.data;
 };
 
 export const createCommentLike = async(likerId, commentId) => {
+    let liker = await getAuthor(likerId);
+    if (liker === "Author does not exist") { return liker; }
+
     const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
     const response = await axios.post(path);
+
+    // TEAM 12 NOT IMPLEMENTED
+
+    // TEAM 19
+    let data19 = structuredClone(TEAM19_CONFIG);
+    data19.context = SERVER_URL;
+    data19.summary = `${liker.displayName} liked your post`;
+    data19.author = liker;
+    data19.object = SERVER_URL + `authors/1/posts/${postId}`;
+    let comment = (await axios.get(SERVER_URL + `/authors/1/posts/1/comments/${commentId}`)).data;
+    path = TEAM19_URL + `/authors/${comment.author.id}/inbox/likes`;
+    axios.post(path, data19);
     return response.data;
 };
 
 export const deletePostLike = async(likerId, postId) => {
+    let liker = await getAuthor(likerId);
+    if (liker === "Author does not exist") { return liker; }
+
     const path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
     const response = await axios.delete(path);
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
+    axios.post(path, TEAM12_CONFIG);
+
     return response.data;
 };
 
 export const deleteCommentLike = async(likerId, commentId) => {
     const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
     const response = await axios.delete(path);
+
+    // TEAM 12 NOT IMPLEMENTED
+
+    // TEAM 19 not required
+
     return response.data;
 };
 
@@ -96,20 +145,124 @@ export const getCommentLikes = async(commentId) => {
 };
 
 export const getAuthor = async(authorId) => {
-    const path = SERVER_URL + `/authors/${authorId}`;
-    const response = await axios.get(path);
-    return response.data;
+    let path = SERVER_URL + `/authors/${authorId}`;
+    let response = await axios.get(path);
+    if (response.data !== "Author does not exist") { return response.data; }
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${authorId}/`;
+    response = await axios.get(path, TEAM12_CONFIG);
+    if (!response.data.detail) { 
+        response.data.type = "author";
+        response.data.url = `${response.data.host}/authors/${authorId}/`;
+        response.data.accepted = true;
+        response.data.profileImage = response.data.profile_image;
+        return response.data 
+    }
+
+    // TEAM 19
+    path = TEAM19_URL + `/authors/${authorId}`;
+    response = await axios.get(path, TEAM19_CONFIG);
+    if (response.data !== "Author matching query does not exist.") { 
+        response.data.accepted = true;
+        return response.data; 
+    }
+
+    return "Author does not exist";
 };
 
 export const createPost = async (authorId, data) => {
-    const path = SERVER_URL + `/authors/${authorId}/posts`;
+    let author = await getAuthor(authorId);
+    if (author === "Author does not exist") { return author; }
+
+    let path = SERVER_URL + `/authors/${authorId}/posts`;
     const response = await axios.put(`${path}`,data);
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${authorId}/${author.displayName}/posts/`;
+    let data12 = structuredClone(TEAM12_CONFIG);
+    data12.id = response.id;
+    data12.title = data.title;
+    data12.description = data.description;
+    data12.content = data.content;
+    data12.contentType = data.contentType;
+    if (data.visiblity == "UNLISTED") {
+        data12.visibility = "PUBLIC";
+        data12.unlisted = true;
+    } else {
+        data12.visibility = data.visibility;
+        data12.unlisted = false;
+    }
+    axios.post(path, data12);
+
+    // TEAM 19
+    let data19 = structuredClone(TEAM19_CONFIG);
+    data19.title = data.title;
+    data19.id = response.id;
+    data19.origin = data.origin;
+    data19.source = data.source;
+    data19.description = data.description;
+    data19.content = data.content;
+    data19.contentType = data.contentType
+    data19.categories = [];
+    if (data.visiblity == "UNLISTED") {
+        data19.visibility = "PUBLIC";
+        data19.unlisted = true;
+    } else {
+        data19.visibility = data.visibility;
+        data19.unlisted = false;
+    }
+    data19.author = {
+        id: authorId,
+        host: author.host,
+        url: author.url,
+        displayName: author.displayName,
+        github: author.github,
+        profileImage: author.profileImage
+    };
+
+    var inboxees = [];
+    if (data.visibility === "PUBLIC") {
+        inboxees = (await axios.get(SERVER_URL+`authors/${authorId}/friends`)).data;
+    } else if (data.visiblity == "FRIENDS") {
+        inboxees = (await axios.get(SERVER_URL+`authors/${authorId}/followers`)).data;
+    }
+    
+    for (let inboxee of inboxees) {
+        path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
+        axios.post(path, data19);
+    }
+
     return response.data;
 }
 
 export const createComment = async (authorId, postId, data) => {
-    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}/comments`;
+    let author = await getAuthor(authorId);
+    if (author === "Author does not exist") { return author; }
+
+    let path = SERVER_URL + `/authors/${authorId}/posts/${postId}/comments`;
     const response = await axios.post(`${path}`,data);
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${authorId}/${author.displayName}/posts/${postId}/comments/`
+    let data12 = structuredClone(TEAM12_CONFIG);
+    data12.comment = data.comment;
+    data12.contentType = data.contentType;
+    data12.author = authorId;
+    data12.post = postId;
+    axios.post(path, data12);
+
+    // TEAM 19
+    let data19 = structuredClone(TEAM19_CONFIG);
+    data19.author = author;
+    data19.comment = data.comment;
+    data19.post = data.postId;
+    data19.contentType = data.contentType;
+    data19.published = new Date();
+    let post = (await axios.get(SERVER_URL + `/authors/${authorId}/posts/${postId}`)).data;
+    path = TEAM19_URL + `/authors/${post.author.id}/inbox/comments`;
+    axios.post(path, data19);
+
     return response.data;
 }
 
@@ -125,8 +278,25 @@ export const searchForAuthors = async (query, page, size) => {
     const response = await axios.get(path);
 
     // TEAM 12
-    // path = TEAM12_URL + `/authors/`
-    // console.log("team12SearchAuthors", await axios.get(path, TEAM12_CONFIG));
+    path = TEAM12_URL + `/authors/`;
+    let team12 = await axios.get(path, TEAM12_CONFIG);
+    for (let author of team12) {
+        author.type = "author";
+        author.displayName = author.username;
+        author.github = null;
+        author.accepted = author.is_active;
+        author.profileImage = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg";
+        response.authorsPage.push(author);
+    }
+
+    // TEAM 19
+    path = TEAM19_URL + `/authors`;
+    let team19 = await axios.get(path, TEAM19_CONFIG);
+    for (let author of team19.items) {
+        author.accepted = true;
+        author.id = author.id.split('/authors/')[1];
+        response.authorsPage.push(author);
+    }
 
     return response.data;
 }
@@ -169,24 +339,54 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 }
 
 export const requestToFollow = async (authorId, foreignAuthorId) => {
+    let foreignAuthor = await getAuthor(authorId);
+    if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
+    let author = await getAuthor(authorId);
+    if (author === "Author does not exist") { return author; }
 
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
-    const response = await axios.post(`${path}`);
-    
+    let data = {
+        id: foreignAuthorId,
+        displayName: foreignAuthor.displayName
+    };
+    const response = await axios.post(`${path}`, data);
 
-    // TEAM 12
-    // let author = await getAuthor(1);
-    // path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/recipient/${foreignAuthorId}/`
-    // console.log(path);
-    // console.log("team12 requestToFollow", await axios.post(path, TEAM12_CONFIG));
+    if (foreignAuthor.host === TEAM12_URL) {
+        // TEAM 12
+        let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`
+        axios.post(path, TEAM12_CONFIG);
+    } else if (foreignAuthor.host === TEAM19_URL) {
+        // TEAM 19
+        let path = TEAM19_URL + `/authors/${authorId}/inbox/follows`;
+        let data = structuredClone(TEAM19_CONFIG);
+        data.summary = `${author.displayName} wants to follow you`;
+        data.actor = {
+            id: authorId,
+            host: SERVER_URL,
+            url: `${SERVER_URL}/authors/${authorId}`,
+            displayName: author.displayName,
+            github: author.github,
+            profileImage: author.profileImage
+        }
+        axios.post(path, data);
+    }
 
-    return response.status
+    return response.data;
 }
 
 export const removeFollower = async (authorId, foreignAuthorId) => {
-    const path = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
+    let foreignAuthor = await getAuthor(authorId);
+    if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
+
+    let path = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
     const response = await axios.delete(`${path}`);
-    return response.status
+
+    if (foreignAuthor.host === TEAM12_URL) {
+        // TEAM 12 NOT IMPLEMENTED
+    } else if (foreignAuthor.host === TEAM19_URL) {
+        // TEAM 19 has no logic required
+    }
+    return response.data;
 }
 
 export const getFollowRequests = async (authorId) => {
@@ -196,15 +396,40 @@ export const getFollowRequests = async (authorId) => {
 }
 
 export const addFollower = async (authorId, foreignAuthorId) => {
-    const path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
-    const response = await axios.put(`${path}`);
-    return response.status
+    let foreignAuthor = await getAuthor(authorId);
+    if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
+
+    let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
+    const response = axios.put(`${path}`);
+
+    if (foreignAuthor.host === TEAM12_URL) {
+        // TEAM 12
+        let path = TEAM12_URL + `/friendrequest/accept_external/sender/${authorId}/recipient/${foreignAuthorId}/`
+        axios.post(path, TEAM12_CONFIG);
+    } else if (foreignAuthor.host === TEAM19_URL) {
+        // TEAM 19 has no logic required
+    }
+
+    return response.data;
 }
 
-export const removeFollowRequest = async (authorId, foreignAuthorId) => {
+export const removeFollowRequest = async (authorId, foreignAuthorId) => {    
+    let foreignAuthor = await getAuthor(authorId);
+    if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
+
     const path = SERVER_URL + `/authors/${authorId}/followRequest/${foreignAuthorId}`
     const response = await axios.delete(`${path}`);
-    return response.status
+
+    if (foreignAuthor.host === TEAM12_URL) {
+        // TEAM 12
+        path = TEAM12_URL + `/friendrequest/reject_external/sender/${authorId}/recipient/${foreignAuthorId}/`
+        axios.post(path, TEAM12_CONFIG);
+    } else if (foreignAuthor.host === TEAM19_URL) {
+        // TEAM 19 has no logic required
+
+    }
+
+    return response.data;
 }
 
 export const createUser = async (data) => {
@@ -227,14 +452,31 @@ export const authUser = async (data) => {
 }
 
 export const deletePost = async(authorId, postId) => {
-    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
+    let path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
     const response = await axios.delete(path);
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${authorId}/posts/${postId}`;
+    axios.delete(path, TEAM12_CONFIG);
+
+    // TEAM 19 has no logic required for this
     return response.data;
 };
 
 export const modifyPost = async (authorId, postId, data) => {
-    const path = SERVER_URL + `/authors/${authorId}/posts/${postId}`
+    let path = SERVER_URL + `/authors/${authorId}/posts/${postId}`;
     axios.post(path, data);
+
+    // TEAM 12
+    path = TEAM12_URL + `/authors/${authorId}/posts/${postId}`;
+    let data12 = structuredClone(TEAM12_CONFIG);
+    data12.title = data.title;
+    data12.content = data.content;
+    data12.description = data.description;
+    data12.contentType = data.contentType;
+    axios.put(path, data);
+
+    // TEAM 19 has no logic required for this
 }
 
 export const uploadImage = async (referenceId, imageFile) => {
