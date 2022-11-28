@@ -144,7 +144,7 @@ class UserAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
 
         usernameFromFrontend = body['displayName']
         usernameExists = Users.objects.filter(username = usernameFromFrontend).exists()
@@ -175,7 +175,7 @@ class UserAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['put'])
     def loginUser(self, request, format='json'):
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
         username = body['username'] 
         password = body['password']
         
@@ -196,7 +196,7 @@ class UserAPIs(viewsets.ViewSet):
  
     @action(detail=True, methods=['post'])
     def authenticatedUser(self, request, format='json'): 
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
 
         token = body["userToken"]
 
