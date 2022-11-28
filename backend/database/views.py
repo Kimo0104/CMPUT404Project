@@ -182,7 +182,7 @@ class UserAPIs(viewsets.ViewSet):
         user = authenticate(username=username, password=password)
         if user is not None:
             payload = {
-                'id': str(user.id).replace("-", ""),
+                'id': str(user.id),
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=365),
                 'iat': datetime.datetime.utcnow()
             }
@@ -220,7 +220,7 @@ class UserAPIs(viewsets.ViewSet):
             # To show that authorization is required
             userId = -1     
 
-        return userId != -1 and (userId == authorId or Users.objects.get(id=userId).is_superuser)
+        return userId != -1 and (Users.objects.filter(id=userId).count() > 0)
 
 class PostsAPIs(viewsets.ViewSet):
 
