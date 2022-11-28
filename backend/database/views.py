@@ -154,8 +154,7 @@ class UserAPIs(viewsets.ViewSet):
         else:
             user = Users.objects.create_user(
                         id=uuidGenerator(),
-                        username=body['displayName'], 
-                        email=body['email'],
+                        username=body['displayName'],
                         password=body['password']
                     )
             AuthorsAPIs().createDefaultAuthor(user.id, user.username, request.build_absolute_uri().split('/users')[0])
@@ -1408,7 +1407,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         page_num = request.GET.get('page', 1)
         page_size = request.GET.get('size', 10)
 
-        authors = Authors.objects.filter(displayName__icontains=search_query)
+        authors = Authors.objects.filter(displayName__icontains=search_query, host=request.build_absolute_uri().split("/find")[0])
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
         serializer = AuthorsSerializer(page_obj, many=True)
@@ -1443,7 +1442,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         page_num = request.GET.get('page', 1)
         page_size = request.GET.get('size', 10)
 
-        authors = Authors.objects.all()
+        authors = Authors.objects.filter(host=request.build_absolute_uri().split("/authors")[0])
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
         serializer = AuthorsSerializer(page_obj, many=True)
