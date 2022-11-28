@@ -7,7 +7,7 @@ class Users(AbstractUser):
         id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 class Authors(models.Model):
-    id = models.CharField(max_length = 255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length = 255, default = "author")
     host = models.CharField(max_length = 255)
     displayName = models.CharField(max_length = 32)
@@ -33,7 +33,7 @@ class Posts(models.Model):
         (FRIENDS, 'FRIENDS'),
         (UNLISTED, 'UNLISTED')
     ]
-    id = models.CharField(max_length = 255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length = 255, default = "post")
     title = models.CharField(max_length = 255)
     source = models.CharField(max_length = 255)
@@ -49,13 +49,13 @@ class Posts(models.Model):
 
 
 class Followers(models.Model):
-    id = models.CharField(max_length = 255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     followed = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
     follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "followed")
 
 
 class FollowRequests(models.Model):
-    id = models.CharField(max_length = 255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     receiver = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "receiver")
     requester = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "requester")
 
@@ -67,7 +67,7 @@ class Comments(models.Model):
         (PLAINTEXT, 'PLAINTEXT'),
         (MARKDOWN, 'MARKDOWN')
     ]
-    id = models.CharField(max_length=255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     type = models.CharField(max_length=16, default = "comment")
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
@@ -80,7 +80,7 @@ class Comments(models.Model):
     published = models.DateTimeField(auto_now_add = True)
 
 class Likes(models.Model):
-    id = models.CharField(max_length=255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
     type = models.CharField(max_length=16, default = "like")
@@ -89,7 +89,7 @@ class Likes(models.Model):
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
 class LikesComments(models.Model):
-    id = models.CharField(max_length=255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
     type = models.CharField(max_length=16, default = "likescomment")
@@ -98,7 +98,7 @@ class LikesComments(models.Model):
     comment = models.ForeignKey(Comments, on_delete = models.CASCADE)
 
 class Inbox(models.Model):
-    id = models.CharField(max_length=255, primary_key = True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
@@ -117,7 +117,7 @@ class Images(models.Model):
         # return the whole path to the file
         return os.path.join(upload_to, filename)
 
-    id = models.CharField(max_length=255, primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     imageContent = models.TextField()
     referenceId = models.CharField(max_length=255, unique=True)
 
