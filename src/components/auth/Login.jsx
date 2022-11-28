@@ -29,7 +29,7 @@ export default function Login() {
                 }
                 const userID = await authUser(dataForAuthUser);
                 if (userID){
-                    let id = String(userID.id).replace(/-/g,"");
+                    let id = String(userID.id);//.replace(/-/g,"");
                     setUserId(id);
                     localStorage.setItem("userId", id);
                     navigate('/home');

@@ -19,6 +19,7 @@ export default function Profile(props)  {
     const fetchAuthor = async () => {
         const author = await getAuthor(authorId);
         setAuthor(author);
+        console.log(author);
     };
 
     React.useEffect(() => {
