@@ -5,7 +5,7 @@ export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:
 const TEAM12_URL = "https://true-friends-404.herokuapp.com";
 const TEAM12_CONFIG = {
     headers: {
-        Authorization: "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc4MDUzMzc2LCJpYXQiOjE2Njk0MTMzNzYsImp0aSI6IjYzNmNkZmIzMDk2YzRlMzQ5OTJmMWJiOGY5YTRjNjBiIiwidXNlcl9lbWFpbCI6InRlYW0xM0BtYWlsLmNvbSJ9.DezZkiaFlLf6GrG-VzkYv_b8ESXOm-8fJ9zT4F42k0A",
+        Authorization: "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc4MzkxNzEzLCJpYXQiOjE2Njk3NTE3MTMsImp0aSI6ImFiNWQ3YWFkZDkzMzQ0ZGFhMTU4YzA4OTA0YmRkOWI5IiwidXNlcl9lbWFpbCI6InRlYW0xM0BtYWlsLmNvbSJ9.-hrs2GQQ8N2e3dgEBUTmvDUoyx_5ZaRqbt6ArIT_bJk",
         "Content-Type": "application/json"
     }
 }
