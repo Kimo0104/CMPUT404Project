@@ -3,13 +3,9 @@ import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import { useNavigate } from 'react-router-dom';
-import { useSearchParams } from 'react-router-dom';
 import { QueryContext, ShowSearchContext } from '../home/Home';
 
 const SearchInput = () => {
@@ -18,9 +14,6 @@ const SearchInput = () => {
   const { setQuery } = React.useContext(QueryContext);
 
   const [searchValue, setSearchValue] = React.useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setSearchValue(e.target.value);
@@ -98,15 +91,6 @@ export default function SearchAppBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography
             variant="h6"
             noWrap

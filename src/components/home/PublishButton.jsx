@@ -17,7 +17,7 @@ export default function PublishButton(props) {
     
     return (
         <Grid item xs={12}>
-            <Button size="large" variant="outlined" onClick={handleClickOpen} endIcon={<PublishIcon />}>
+            <Button size="large" variant="contained" onClick={handleClickOpen} endIcon={<PublishIcon />}>
                 Publish Post
             </Button>
             <Dialog open={open}>
