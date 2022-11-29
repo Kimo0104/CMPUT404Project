@@ -34,7 +34,7 @@ from django.conf import settings
 
 remote_host = "https://cmput404-team13.herokuapp.com"
 
-
+import uuid
 def uuidGenerator():
     return str(uuid.uuid4())
 
@@ -250,8 +250,8 @@ class PostsAPIs(viewsets.ViewSet):
             post = Posts.objects.get(id = postId)
         except Posts.DoesNotExist:
             return Response({"No Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
-        serializer = PostsSerializer(post)
-        return Response(serializer.data, status = status.HTTP_200_OK)
+        serializedPost = expandPost(post)
+        return Response(serializedPost, status = status.HTTP_200_OK)
             
 
     #GET authors/{AUTHOR_ID}/posts
@@ -385,6 +385,7 @@ class PostsAPIs(viewsets.ViewSet):
                 'content': openapi.Schema(type=openapi.TYPE_STRING, description='The content of the post'),
                 'published': openapi.Schema(type=openapi.FORMAT_DATETIME, description='The publish date of the post'),
                 'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"'),
+                'originalAuthor': openapi.Schema(type=openapi.TYPE_STRING, description='optional original author object with members "id" and "displayName"'),
                 'id': openapi.Schema(type=openapi.FORMAT_DATETIME, description='optional UUID for the post')
             }
         )
@@ -423,10 +424,16 @@ class PostsAPIs(viewsets.ViewSet):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
         if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
         try:
-            Authors.objects.get(id = body['originalAuthor']['id'])
+            originalAuthorId = body['originalAuthor']['id']
+            Authors.objects.get(id = originalAuthorId)
         except Authors.DoesNotExist:
             if not createFauxAuthor(request, body['originalAuthor']):
                 return Response({"Invalid content provided in originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
+        except TypeError:
+            originalAuthorId = body['originalAuthor']
+            if Authors.objects.filter(id = originalAuthorId).count() == 0:
+                return Response({"Tried to make post from non-existent originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
+
         post = Posts.objects.create(
             id = id,
             type = body['type'],
@@ -436,7 +443,7 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
-            originalAuthor = Authors.objects.get(id = body['originalAuthor']['id']),
+            originalAuthor = Authors.objects.get(id = originalAuthorId),
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility']
@@ -474,6 +481,31 @@ class CommentsAPIs(viewsets.ViewSet):
             data.append(expandComment(comment, serializedPost))
 
         return Response(data)
+
+    #GET authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}
+    #get the comment with given comment_id
+    @swagger_auto_schema(
+        operation_description="Gets a specific comment",
+        operation_summary="Gets a specific comment",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )
+    @action(detail=True, methods=['get'],)
+    def getComment(self, request, *args, **kwargs):
+        commentId = kwargs["commentId"]
+
+        # get the comment
+        if not Comments.objects.filter(id=commentId).count() == 1:
+            return Response({"Tried to get a non-existent comment"}, status=status.HTTP_400_BAD_REQUEST)
+        comment = Comments.objects.get(id=commentId)
+
+        # get the referred post
+        serializedPost = PostsSerializer(Posts.objects.get(id=comment.post)).data
+        serializedComment = expandComment(comment, serializedPost)
+
+        return Response(serializedComment)
 
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     #creates a comment for POST_ID
@@ -963,6 +995,7 @@ class InboxAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['post'])
     def sendPost(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
@@ -1182,7 +1215,8 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         request_body=openapi.Schema(
             type = openapi.TYPE_OBJECT,
             properties={
-                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"')              
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"'),
+                'foreignAuthor': openapi.Schema(type=openapi.TYPE_STRING, description='optional foreignAuthor object with members "id" and "displayName"')        
             }
         )
     )  
@@ -1208,8 +1242,12 @@ class FollowRequestsAPIs(viewsets.ViewSet):
                 return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
 
         # check that foreignAuthorId exist
+        # if we don't have the followee, then try to make one
         if not Authors.objects.filter(id=foreignAuthorId).count() ==1:
-            return Response({"Tried to follow a a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not 'foreignAuthor' in body:
+                return Response({"Tried to follow a a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["foreignAuthor"]):
+                return Response({"Invalid content provided in foreignAuthor"}, status=status.HTTP_400_BAD_REQUEST)
 
         # check that follow request doesn't already exist
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
@@ -1247,6 +1285,29 @@ class FollowsAPIs(viewsets.ViewSet):
             followers = None
         serializer = FollowersSerializer(followers, many=True)
         return Response(serializer.data)
+
+    #GET authors/{AUTHOR_ID}/friends
+    #get all the friends of AUTHOR_ID
+    @swagger_auto_schema(
+        operation_description="Fetches all the friends of a specific author_id",
+        operation_summary="Fetches all the friends of a specific author_id",
+        responses={
+            "200": "Success",
+            "4XX": "Bad Request"
+        }
+    )  
+    @action(detail=True, methods=['get'],)
+    def getFriends(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
+        authenticated = UserAPIs().check_token(request, authorId)
+        if not authenticated:
+            return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
+
+        friends = []
+        for follower in Followers.objects.filter(followed=authorId):
+            if Followers.objects.filter(followed=follower.id, follower=authorId):
+                friends.append(FollowersSerializer(follower, many=False).data)
+        return Response(friends)
     
     #GET authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     #check if FOREIGN_AUTHOR_ID is following AUTHOR_ID
@@ -1372,7 +1433,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         # Since id is the primary key of the Author table, there can only be 0 ot
         # 1 authors with this id
         if author.count() == 0:
-            return Response("Author does not exist", status=status.HTTP_404_NOT_FOUND)
+            return Response("Author does not exist", status=status.HTTP_204_NO_CONTENT)
         
         author = author.get(id=authorId)
 

@@ -34,8 +34,8 @@ ALLOWED_HOSTS = [
     'cmput404-team13.herokuapp.com/', 
     '127.0.0.1:8000', 
     'localhost',
-    'https://true-friends-404.herokuapp.com',
-    'https://social-distribution-404.herokuapp.com'
+    'true-friends-404.herokuapp.com',
+    'social-distribution-404.herokuapp.com'
     ]
 
 AUTH_USER_MODEL = 'database.Users'

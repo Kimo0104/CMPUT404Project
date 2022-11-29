@@ -65,6 +65,7 @@ urlpatterns = [
         "get": "getComments",
         "post": "createComment"
     }), name = 'comments'),
+    path('authors/<str:authorId>/posts/<str:postId>/comments/<str:commentId>', CommentsAPIs.as_view({"get": "getComment"}), name = 'comment'),
 
 
     #likes
@@ -96,6 +97,7 @@ urlpatterns = [
 
     #follows
     path('authors/<str:authorId>/followers', FollowsAPIs.as_view({"get": "getFollowers"}), name = 'get-followers'),
+    path('authors/<str:authorId>/friends', FollowsAPIs.as_view({"get": "getFriends"}), name = 'get-friends'),
     path('authors/<str:authorId>/followers/<str:foreignAuthorId>', FollowsAPIs.as_view({
         "get": "checkFollower",
         "put": "addFollower",
