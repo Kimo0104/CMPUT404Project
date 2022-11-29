@@ -32,6 +32,8 @@ from django.views import View
 import os
 from django.conf import settings
 
+remote_host = "https://cmput404-team13.herokuapp.com"
+
 import uuid
 def uuidGenerator():
     return str(uuid.uuid4())
@@ -144,7 +146,7 @@ class UserAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
 
         usernameFromFrontend = body['displayName']
         usernameExists = Users.objects.filter(username = usernameFromFrontend).exists()
@@ -154,8 +156,7 @@ class UserAPIs(viewsets.ViewSet):
         else:
             user = Users.objects.create_user(
                         id=uuidGenerator(),
-                        username=body['displayName'], 
-                        email=body['email'],
+                        username=body['displayName'],
                         password=body['password']
                     )
             AuthorsAPIs().createDefaultAuthor(user.id, user.username, request.build_absolute_uri().split('/users')[0])
@@ -175,14 +176,14 @@ class UserAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['put'])
     def loginUser(self, request, format='json'):
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
         username = body['username'] 
         password = body['password']
         
         user = authenticate(username=username, password=password)
         if user is not None:
             payload = {
-                'id': str(user.id).replace("-", ""),
+                'id': str(user.id),
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=365),
                 'iat': datetime.datetime.utcnow()
             }
@@ -196,7 +197,7 @@ class UserAPIs(viewsets.ViewSet):
  
     @action(detail=True, methods=['post'])
     def authenticatedUser(self, request, format='json'): 
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
 
         token = body["userToken"]
 
@@ -207,7 +208,10 @@ class UserAPIs(viewsets.ViewSet):
         except jwt.ExpiredSignatureError:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        user = Users.objects.get(id=payload['id'])
+        try:
+            user = Users.objects.get(id=payload['id'])
+        except:
+            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
         data = {'id': str(user.id)}
         return Response(data)
 
@@ -220,7 +224,7 @@ class UserAPIs(viewsets.ViewSet):
             # To show that authorization is required
             userId = -1     
 
-        return userId != -1 and (userId == authorId or Users.objects.get(id=userId).is_superuser)
+        return userId != -1 and (Users.objects.filter(id=userId).count() > 0)
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -985,6 +989,7 @@ class InboxAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['post'])
     def sendPost(self, request, *args, **kwargs):
+        authorId = kwargs["authorId"]
         postId = kwargs["postId"]
 
         #check that authorId and postId exist
@@ -1454,7 +1459,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         page_num = request.GET.get('page', 1)
         page_size = request.GET.get('size', 10)
 
-        authors = Authors.objects.filter(displayName__icontains=search_query)
+        authors = Authors.objects.filter(displayName__icontains=search_query, host=remote_host)
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
         serializer = AuthorsSerializer(page_obj, many=True)
@@ -1489,7 +1494,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         page_num = request.GET.get('page', 1)
         page_size = request.GET.get('size', 10)
 
-        authors = Authors.objects.all()
+        authors = Authors.objects.filter(host=remote_host)
         paginator = Paginator(authors, page_size)
         page_obj = paginator.get_page(page_num)
         serializer = AuthorsSerializer(page_obj, many=True)

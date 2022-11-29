@@ -17,7 +17,6 @@ const TEAM19_CONFIG = {
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
-    console.log(localStorage.getItem("token"));
 }
 
 export const getPost  = async (authorId, postId) => {
@@ -528,8 +527,10 @@ export const getImage = async (imageUrl) => {
     return response.data;
 }
 
-export const getGithubEvents = async (githubUsername) => {
+export const getGithubEvents = async (github) => {
+    let githubUsername = github.split(".com/")[1];
+    if (!githubUsername) { githubUsername = github; }
     const path = `https://api.github.com/users/${githubUsername}/events`;
-    let response = await axios.get(path);
+    let response = await axios.get(path, {headers: {Authorization: ""}});
     return response.data;
 }
