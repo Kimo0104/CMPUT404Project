@@ -29,7 +29,6 @@ export default function Follow(props) {
         async function loadAuthor() {
             const following = await checkFollowStatus(userId, props.foreignAuthorId);
             setFollowing(following);
-            console.log("following", following)
         }
         loadAuthor();
       });
