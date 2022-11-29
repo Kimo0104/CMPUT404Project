@@ -410,19 +410,19 @@ class PostsAPIs(viewsets.ViewSet):
             id = body['id']
         else:
             id = uuidGenerator()
-        if not body['type']: return Response({'type must be supplied'})
-        if not body['title']: return Response({'title must be supplied'})
-        if not body['source']: return Response({'source must be supplied'})
-        if not body['origin']: return Response({'origin must be supplied'})
-        if not body['description']: return Response({'description must be supplied'})
-        if not body['contentType']: return Response({'contentType must be supplied'})
-        if not body['content']: return Response({'content must be supplied'})
-        if not body['visibility']: return Response({'visibility must be supplied'})
+        if not 'type' in body: return Response({'type must be supplied'})
+        if not 'title' in body: return Response({'title must be supplied'})
+        if not 'source' in body: return Response({'source must be supplied'})
+        if not 'origin' in body: return Response({'origin must be supplied'})
+        if not 'description' in body: return Response({'description must be supplied'})
+        if not 'contentType' in body: return Response({'contentType must be supplied'})
+        if not 'content' in body: return Response({'content must be supplied'})
+        if not 'visibility' in body: return Response({'visibility must be supplied'})
         if (body['visibility'] != Posts.PUBLIC and body['visibility'] != Posts.FRIENDS and body['visibility'] != Posts.UNLISTED):
             return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'})
         if (body['contentType'] != Posts.PLAINTEXT and body['contentType'] != Posts.MARKDOWN and body['contentType'] != Posts.IMAGE):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
-        if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
+        if not 'originalAuthor' in body: return Response({'originalAuthor must be supplied'})
         try:
             originalAuthorId = body['originalAuthor']['id']
             Authors.objects.get(id = originalAuthorId)
