@@ -5,7 +5,6 @@ export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
-    console.log(localStorage.getItem("token"));
 }
 
 export const getPost  = async (authorId, postId) => {
@@ -140,7 +139,6 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
     const followRequestResponse = await axios.get(`${followRequestPath}`);
 
     let followStatus = -1
-    console.log(followResponse.data)
 
     if (followResponse.data.id !== "") {
         followStatus = 2
@@ -245,7 +243,6 @@ export const getGithubEvents = async (github) => {
     let githubUsername = github.split(".com/")[1];
     if (!githubUsername) { githubUsername = github; }
     const path = `https://api.github.com/users/${githubUsername}/events`;
-    console.log(path);
     let response = await axios.get(path, {headers: {Authorization: ""}});
     return response.data;
 }
