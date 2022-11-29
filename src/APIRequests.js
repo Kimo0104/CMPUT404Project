@@ -17,6 +17,7 @@ const TEAM19_CONFIG = {
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
+    console.log(JSON.parse(localStorage.getItem("token")).jwt);
 }
 
 export const getPost  = async (authorId, postId) => {
@@ -39,6 +40,7 @@ export const getInbox = async(authorId, page, size) => {
 
 export const sendPublicInbox = async(authorId, postId) => {
     const path = SERVER_URL + `/inbox/public/${authorId}/${postId}`;
+    console.log(path);
     const response = await axios.post(path);
     return response.data;
 };
@@ -55,7 +57,7 @@ export const createPostLike = async(likerId, postId) => {
 
     let liker = await getAuthor(likerId);
     if (liker === "Author does not exist") { return liker; }
-    let post = (await axios.get(SERVER_URL + `/authors/${authorId}/posts/${postId}`)).data;
+    let post = (await axios.get(SERVER_URL + `/authors/1/posts/${postId}`)).data;
     let poster = await getAuthor(post.author.id);
 
     // TEAM 12
@@ -70,7 +72,7 @@ export const createPostLike = async(likerId, postId) => {
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
         data19.author = liker;
-        data19.object = SERVER_URL + `authors/${authorId}/posts/${postId}`;
+        data19.object = TEAM19_URL + `/authors/${post.author.id}/posts/${postId}`;
         path = TEAM19_URL + `/authors/${post.author.id}/inbox/likes`;
         axios.post(path, data19);
     }
@@ -86,6 +88,7 @@ export const createCommentLike = async(likerId, commentId) => {
     if (liker === "Author does not exist") { return liker; }
     let comment = (await axios.get(SERVER_URL + `/authors/1/posts/1/comments/${commentId}`)).data;
     let commenter = await getAuthor(comment.author.id);
+    let post = (await axios.get(SERVER_URL + `/authors/1/posts/${comment.post.id}`)).data;
 
     // TEAM 12 NOT IMPLEMENTED
 
@@ -96,7 +99,7 @@ export const createCommentLike = async(likerId, commentId) => {
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
         data19.author = liker;
-        data19.object = SERVER_URL + `authors/${authorId}/posts/${postId}`;
+        data19.object = TEAM19_URL + `/authors/${post.author.id}/posts/${post.id}/coments/${comment.id}`;
         path = TEAM19_URL + `/authors/${comment.author.id}/inbox/likes`;
         axios.post(path, data19);
         return response.data;
@@ -109,7 +112,7 @@ export const deletePostLike = async(likerId, postId) => {
 
     let liker = await getAuthor(likerId);
     if (liker === "Author does not exist") { return liker; }
-    let post = (await axios.get(SERVER_URL + `/authors/${authorId}/posts/${postId}`)).data;
+    let post = (await axios.get(SERVER_URL + `/authors/1/posts/${postId}`)).data;
     let poster = await getAuthor(post.author.id);
 
     // TEAM 12
@@ -198,7 +201,7 @@ export const createPost = async (authorId, data) => {
     let data12 = structuredClone(TEAM12_CONFIG);
     data12.author = author.id;
     data12.title = data.title;
-    data12.id = response.id;
+    data12.id = response.data.id;
     data12.description = data.description;
     data12.contentType = data.contentType;
     data12.content = data.content;
@@ -213,41 +216,42 @@ export const createPost = async (authorId, data) => {
     axios.post(path, data12);
 
     // TEAM 19
-    let data19 = structuredClone(TEAM19_CONFIG);
-    data19.title = data.title;
-    data19.id = response.id;
-    data19.source = data.source;
-    data19.origin = data.origin;
-    data19.description = data.description;
-    data19.contentType = data.contentType;
-    data19.content = data.content;
-    data19.author = {
-        id: authorId,
-        host: author.host,
-        url: author.url,
-        displayName: author.displayName,
-        github: author.github,
-        profileImage: author.profileImage
-    };
-    data19.categories = "[]";
-    if (data.visiblity == "UNLISTED") {
-        data19.visibility = "PUBLIC";
-        data19.unlisted = true;
-    } else {
-        data19.visibility = data.visibility;
-        data19.unlisted = false;
-    }
-
     var inboxees = [];
     if (data.visibility === "PUBLIC") {
-        inboxees = (await axios.get(SERVER_URL+`authors/${authorId}/friends`)).data;
+        inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/followers`)).data;
     } else if (data.visiblity == "FRIENDS") {
-        inboxees = (await axios.get(SERVER_URL+`authors/${authorId}/followers`)).data;
+        inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/friends`)).data;
     }
-    
-    for (let inboxee of inboxees) {
-        path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
-        axios.post(path, data19);
+    if (inboxees.length > 0) {
+        let data19 = structuredClone(TEAM19_CONFIG);
+        data19.title = data.title;
+        data19.id = response.data.id;
+        data19.source = data.source;
+        data19.origin = data.origin;
+        data19.description = data.description;
+        data19.contentType = data.contentType;
+        data19.content = data.content;
+        data19.author = {
+            id: authorId,
+            host: author.host,
+            url: author.url,
+            displayName: author.displayName,
+            github: author.github,
+            profileImage: author.profileImage
+        };
+        data19.categories = "[]";
+        if (data.visiblity == "UNLISTED") {
+            data19.visibility = "PUBLIC";
+            data19.unlisted = true;
+        } else {
+            data19.visibility = data.visibility;
+            data19.unlisted = false;
+        }
+        
+        for (let inboxee of inboxees) {
+            path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
+            axios.post(path, data19);
+        }
     }
 
     return response.data;
@@ -301,23 +305,23 @@ export const searchForAuthors = async (query, page, size) => {
 
     // TEAM 12
     path = TEAM12_URL + `/authors/`;
-    let team12 = await axios.get(path, TEAM12_CONFIG);
+    let team12 = (await axios.get(path, TEAM12_CONFIG)).data;
     for (let author of team12) {
         author.type = "author";
         author.displayName = author.username;
         author.github = null;
         author.accepted = author.is_active;
         author.profileImage = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg";
-        response.authorsPage.push(author);
+        response.data.authorsPage.push(author);
     }
 
     // TEAM 19
     path = TEAM19_URL + `/authors`;
-    let team19 = await axios.get(path, TEAM19_CONFIG);
+    let team19 = (await axios.get(path, TEAM19_CONFIG)).data;
     for (let author of team19.items) {
         author.accepted = true;
         author.id = author.id.split('/authors/')[1];
-        response.authorsPage.push(author);
+        response.data.authorsPage.push(author);
     }
 
     return response.data;
@@ -365,8 +369,10 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     let data = {
-        id: foreignAuthorId,
-        displayName: foreignAuthor.displayName
+        foreignAuthor: {
+            id: foreignAuthorId,
+            displayName: foreignAuthor.displayName
+        }
     };
     const response = await axios.post(`${path}`, data);
 

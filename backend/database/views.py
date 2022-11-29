@@ -424,10 +424,16 @@ class PostsAPIs(viewsets.ViewSet):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
         if not body['originalAuthor']: return Response({'originalAuthor must be supplied'})
         try:
-            Authors.objects.get(id = body['originalAuthor']['id'])
+            originalAuthorId = body['originalAuthor']['id']
+            Authors.objects.get(id = originalAuthorId)
         except Authors.DoesNotExist:
             if not createFauxAuthor(request, body['originalAuthor']):
                 return Response({"Invalid content provided in originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
+        except TypeError:
+            originalAuthorId = body['originalAuthor']
+            if Authors.objects.filter(id = originalAuthorId).count() == 0:
+                return Response({"Tried to make post from non-existent originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
+
         post = Posts.objects.create(
             id = id,
             type = body['type'],
@@ -437,7 +443,7 @@ class PostsAPIs(viewsets.ViewSet):
             description = body['description'],
             contentType = body['contentType'],
             content = body['content'],
-            originalAuthor = Authors.objects.get(id = body['originalAuthor']['id']),
+            originalAuthor = Authors.objects.get(id = originalAuthorId),
             author = Authors.objects.get(id = authorId),
             published = body['published'],
             visibility = body['visibility']
@@ -1209,7 +1215,8 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         request_body=openapi.Schema(
             type = openapi.TYPE_OBJECT,
             properties={
-                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"')              
+                'author': openapi.Schema(type=openapi.TYPE_STRING, description='optional author object with members "id" and "displayName"'),
+                'foreignAuthor': openapi.Schema(type=openapi.TYPE_STRING, description='optional foreignAuthor object with members "id" and "displayName"')        
             }
         )
     )  
@@ -1235,8 +1242,12 @@ class FollowRequestsAPIs(viewsets.ViewSet):
                 return Response({"Invalid content provided in author"}, status=status.HTTP_400_BAD_REQUEST)
 
         # check that foreignAuthorId exist
+        # if we don't have the followee, then try to make one
         if not Authors.objects.filter(id=foreignAuthorId).count() ==1:
-            return Response({"Tried to follow a a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not 'foreignAuthor' in body:
+                return Response({"Tried to follow a a non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
+            if not createFauxAuthor(request, body["foreignAuthor"]):
+                return Response({"Invalid content provided in foreignAuthor"}, status=status.HTTP_400_BAD_REQUEST)
 
         # check that follow request doesn't already exist
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
@@ -1422,7 +1433,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         # Since id is the primary key of the Author table, there can only be 0 ot
         # 1 authors with this id
         if author.count() == 0:
-            return Response("Author does not exist", status=status.HTTP_404_NOT_FOUND)
+            return Response("Author does not exist", status=status.HTTP_204_NO_CONTENT)
         
         author = author.get(id=authorId)
 
