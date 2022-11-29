@@ -63,10 +63,8 @@ export default function Home() {
                     <Grid item xs={12}></Grid>
                     <Grid item xs={2}></Grid>
                     <Grid item>
-                      {authorId !== userId &&
-                        <Button onClick={handleBack}>Back</Button>
-                      }
-                      {leftPane}
+                      <PublishButton/>
+                      <FriendRequestList authorId={userId} />
                     </Grid>
                     <Grid item xs={2}></Grid>
                   </Grid>
@@ -82,8 +80,10 @@ export default function Home() {
                     <Grid container spacing={2}>
                       <Grid item xs={12}></Grid>
                       <Grid item xs={12}>
-                        <FriendRequestList authorId={userId} />
-                        <PublishButton/>
+                        {authorId !== userId &&
+                          <Button onClick={handleBack}>Back</Button>
+                        }
+                        {leftPane}
                         </Grid>
                       </Grid>
                     </Grid>

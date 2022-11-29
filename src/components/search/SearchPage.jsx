@@ -61,8 +61,6 @@ export default function SearchPage(props) {
 
     React.useEffect(() => {
         fetchFilteredAuthors(query[0], query[1], size);
-        console.log(authors);
-        console.log(query[1]);
     }, [query]);
 
     let pagination = "";

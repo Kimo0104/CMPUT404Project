@@ -30,7 +30,7 @@ export default function PublishImage(props) {
     const [urlTextBox, setUrlTextBox] = useState(false);
     const [imageURL, setImageURL] = useState("");
 
-    const authorId = React.useContext(userIdContext);
+    const authorId = React.useContext(userIdContext).userId;
 
     const handleVisibilityChange = (event) => {
         setVisibility(event.target.value);

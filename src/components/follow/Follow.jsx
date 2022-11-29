@@ -10,11 +10,9 @@ export default function Follow(props) {
     const [following, setFollowing] = React.useState(-1);
     
     const handleRequestToFollow = async () => {
+        setFollowing(1)
         // Request to follow another user
         const reqToFollow = await requestToFollow(userId, props.foreignAuthorId);
-        if (reqToFollow === 200) {
-            setFollowing(1)
-        }
     };
     
     const unfollow = async () => {
@@ -29,13 +27,12 @@ export default function Follow(props) {
         async function loadAuthor() {
             const following = await checkFollowStatus(userId, props.foreignAuthorId);
             setFollowing(following);
-            console.log("following", following)
         }
         loadAuthor();
       });
 
       const requestToFollowButton = <Button sx={{ mt: 3 }} variant="contained" size="large" onClick={handleRequestToFollow}>Request to follow</Button> 
-      const followRequestHasBeenSentButton = <Button sx={{ mt: 3 }} variant="contained" size="large">Follow Request has been sent</Button> 
+      const followRequestHasBeenSentButton = <Button sx={{ mt: 3 }} variant="contained" size="large" disabled={true}>Follow Request has been sent</Button> 
       const unfollowButton = <Button sx={{ mt: 3 }} variant="contained" size="large" onClick={unfollow}>Unfollow</Button> 
       
     return (

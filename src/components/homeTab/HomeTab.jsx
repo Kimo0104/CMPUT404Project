@@ -8,20 +8,34 @@ import Inbox from '../inbox/Inbox';
 import MyPosts from '../myPosts/MyPosts';
 import GithubEvents from '../githubEvents/GithubEvents';
 
+import { getAuthor } from '../../APIRequests'
+
 export default function TabsWrappedLabel(props) {
   // contains authorId
   const [value, setValue] = React.useState('one');
 
+  const [author, setAuthor] = React.useState(null);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+  
+  React.useEffect(() => {
+    async function fetchAuthor() {
+      const fetchedAuthor = await getAuthor(props.authorId);
+      setAuthor(fetchedAuthor);
+    }
+    fetchAuthor();
+  }, []);
 
   return (
     <Box sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
       <Tabs value={value} onChange={handleChange} centered>
         <Tab value="one" label="Inbox" />
         <Tab value="two" label="My Posts" />
-        <Tab value="three" label="Github Activity"/>
+        {
+          author && author.github && author.github !== "" && <Tab value="three" label="Github Activity"/>
+        }
       </Tabs>
         {
           value === "one" && <Inbox authorId={props.authorId}/>
@@ -30,7 +44,7 @@ export default function TabsWrappedLabel(props) {
           value === "two" && <MyPosts authorId={props.authorId}/>
         }
         {
-          value === "three" && <GithubEvents authorId={props.authorId}/>
+          value === "three" && <GithubEvents github={author.github}/>
         }
     </Box>
   );

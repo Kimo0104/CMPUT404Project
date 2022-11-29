@@ -6,14 +6,12 @@ import Divider from '@mui/material/Divider';
 import Pagination from '@mui/material/Pagination';
 
 import GithubEvent from './GithubEvent'
-import { getAuthor, getGithubEvents } from '../../APIRequests'
+import { getGithubEvents } from '../../APIRequests'
 
 export default function BasicStack(props) {
-  //props contains authorId
+  //props contains github
 
   var key = 1;
-
-  const [githubName, setGithubName] = React.useState("none");
 
   const size = 10;
   const [numPages, setNumPages] = React.useState(3);
@@ -21,20 +19,20 @@ export default function BasicStack(props) {
 
   const handleChange = (event, value) => {
     setPage(value);
-    updateGithubEvents(value, size, githubName);
+    updateGithubEvents(value, size);
   };
 
   const [lastEventUpdate, setLastEventUpdate] = React.useState((new Date()).getTime());
   const [allEvents, setAllEvents] = React.useState([]);
   const [events, setEvents] = React.useState([]);
 
-  const updateGithubEvents = (page, size, githubName) => {
+  const updateGithubEvents = (page, size) => {
     // State change will cause component re-render
     async function fetchGithubActivity() {
     const nowTimeMilli = (new Date()).getTime()
       if (allEvents.length == 0 || nowTimeMilli < (lastEventUpdate + 6)) {
         setLastEventUpdate(nowTimeMilli);
-        const output = await getGithubEvents(githubName);
+        const output = await getGithubEvents(props.github);
         if (output.length == 0) { return; }
         setAllEvents(output);
         setNumPages(3);
@@ -48,8 +46,7 @@ export default function BasicStack(props) {
   
   React.useEffect(() => {
     async function setupGithubActivity() {
-      const author = await getAuthor(props.authorId);
-      updateGithubEvents(page, size, author.github);
+      updateGithubEvents(page, size);
     }
     setupGithubActivity();
     // disable this warning because updateGithubEvents has to be used outside of the useEffect as well
