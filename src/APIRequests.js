@@ -365,7 +365,7 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 }
 
 export const requestToFollow = async (authorId, foreignAuthorId) => {
-    let foreignAuthor = await getAuthor(authorId);
+    let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     let data = {
