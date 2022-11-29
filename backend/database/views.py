@@ -1377,11 +1377,11 @@ class FollowsAPIs(viewsets.ViewSet):
     @action(detail=True, methods=['delete'],)
     def removeFollower(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
-        authenticated = UserAPIs().check_token(request, authorId)
+        foreignAuthorId = kwargs["foreignAuthorId"]
+        authenticated = UserAPIs().check_token(request, foreignAuthorId)
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
-        foreignAuthorId = kwargs["foreignAuthorId"]
         try:
             follower = Followers.objects.get(followed=authorId, follower=foreignAuthorId)
             follower.delete()
