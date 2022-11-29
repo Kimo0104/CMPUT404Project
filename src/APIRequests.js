@@ -403,17 +403,19 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
 }
 
 export const removeFollower = async (authorId, foreignAuthorId) => {
-    let path = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
 
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
-
+    
+    let path = SERVER_URL + `/authors/${foreignAuthorId}/followers/${authorId}`;
     const response = await axios.delete(`${path}`);
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12 NOT IMPLEMENTED
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
+        path = TEAM19_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
+        axios.delete(path, TEAM19_CONFIG);
     }
     return response.data;
 }
