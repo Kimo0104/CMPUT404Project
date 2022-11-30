@@ -249,8 +249,10 @@ export const createPost = async (authorId, data) => {
         }
         
         for (let inboxee of inboxees) {
-            path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
-            axios.post(path, data19, TEAM19_CONFIG);
+            if (inboxee.host === TEAM19_URL) {
+                path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
+                axios.post(path, data19, TEAM19_CONFIG);
+            }
         }
     }
 
