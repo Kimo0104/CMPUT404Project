@@ -381,6 +381,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             host: foreignAuthor.host
         }
     };
+    console.log(data);
     const response = await axios.post(`${path}`, data);
 
     let author = await getAuthor(authorId);
