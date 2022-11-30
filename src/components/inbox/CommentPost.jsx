@@ -31,7 +31,7 @@ export default function BasicCard(props) {
         <Grid container spacing={0.5}>
           <Grid item xs = {12}>
             <Typography sx={{ fontSize: 20, fontWeight: 'bold', marginLeft: 3 }} color="text.primary" align='left'>
-            {commenterAuthor.displayName} commented on "{commentPost.title}":
+            {commenterAuthor.displayName} commented on "{commentPost.title}"
             </Typography>
           </Grid>
           <Grid item xs = {12}sx={{ frontSize: 16, fontWeight: 'bold', marginLeft: 3.5 }}>
