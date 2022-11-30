@@ -11,7 +11,6 @@ class AccountsTest(APITestCase):
         # We want to go ahead and originally create a user. 
         self.test_user = User.objects.create_user(
             username="testuser", 
-            email="testuser@gmail.com",
             password="12345"
         )
     

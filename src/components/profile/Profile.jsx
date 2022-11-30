@@ -1,15 +1,11 @@
 import * as React from 'react';
-import TopBar from '../topbar/TopBar.jsx';
 import { getAuthor, getImage } from '../../APIRequests';
 import { Button, Typography } from '@mui/material';
-import { useLocation } from 'react-router-dom';
 import Follow from "../follow/Follow";
 import { userIdContext } from '../../App';
 import { AuthorIdContext } from '../home/Home.jsx';
 
-export default function Profile(props)  {
-
-    const location = useLocation();
+export default function Profile()  {
     
     const { userId }  = React.useContext(userIdContext);
 
@@ -28,7 +24,7 @@ export default function Profile(props)  {
     let button = "";
     let followButton = "";
     if (userId === authorId) {
-        button = <Button variant="contained" href={`/profile/${userId}/manage`} userId={userId}>Manage Profile</Button>;
+        button = <Button variant="contained" href={`/profile/${userId}/manage`}>Manage Profile</Button>;
     } else {
         followButton = <Follow authorId={userId} foreignAuthorId={authorId} />
     }

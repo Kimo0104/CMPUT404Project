@@ -81,7 +81,11 @@ def createFauxAuthor(request, author):
     if (displayName and displayName.strip() == "") or (authorId and authorId.strip() == ""):
         return False
 
-    host = request.build_absolute_uri().split('/authors/')[0]
+    if "host" in author:
+        host = author["host"]
+    else:
+        host = request.build_absolute_uri().split('/authors/')[0]
+        
     url = host + '/authors/' + authorId
     profileImage = request.build_absolute_uri("https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg") 
     github = None
@@ -400,7 +404,7 @@ class PostsAPIs(viewsets.ViewSet):
         body = request.data
         # check that authorId exist
         # if we don't have the poster, then try to make one
-        if not Authors.objects.filter(id=authorId).count() ==1:
+        if not Authors.objects.filter(id=authorId).count() == 1:
             if not 'author' in body:
                 return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
             if not createFauxAuthor(request, body["author"]):
@@ -412,21 +416,21 @@ class PostsAPIs(viewsets.ViewSet):
             id = uuidGenerator()
         if not 'type' in body: body['type'] = "post"
         if not 'title' in body:
-            if body['contentType'] != Posts.IMAGE: return Response({'title must be supplied for non-image posts'})
+            if body['contentType'] != Posts.IMAGE: return Response({'title must be supplied for non-image posts'}, status=status.HTTP_400_BAD_REQUEST)
             else: body['title'] = ""
         if not 'source' in body: body['source'] = remote_host
         if not 'origin' in body: body['origin'] = remote_host
         if not 'description' in body:
-            if body['contentType'] != Posts.IMAGE: return Response({'description must be supplied for non-image posts'})
+            if body['contentType'] != Posts.IMAGE: return Response({'description must be supplied for non-image posts'}, status=status.HTTP_400_BAD_REQUEST)
             else: body['description'] = ""
-        if not 'contentType' in body: return Response({'contentType must be supplied'})
-        if not 'content' in body: return Response({'content must be supplied'})
-        if not 'visibility' in body: return Response({'visibility must be supplied'})
+        if not 'contentType' in body: return Response({'contentType must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if not 'content' in body: return Response({'content must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if not 'visibility' in body: return Response({'visibility must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
         if (body['visibility'] != Posts.PUBLIC and body['visibility'] != Posts.FRIENDS and body['visibility'] != Posts.UNLISTED):
-            return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'})
+            return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'}, status=status.HTTP_400_BAD_REQUEST)
         if (body['contentType'] != Posts.PLAINTEXT and body['contentType'] != Posts.MARKDOWN and body['contentType'] != Posts.IMAGE):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
-        if not 'originalAuthor' in body: return Response({'originalAuthor must be supplied'})
+        if not 'originalAuthor' in body: return Response({'originalAuthor must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             originalAuthorId = body['originalAuthor']['id']
             Authors.objects.get(id = originalAuthorId)
@@ -453,7 +457,7 @@ class PostsAPIs(viewsets.ViewSet):
             visibility = body['visibility']
         )
         serializer = PostsSerializer(post)
-        return Response(serializer.data)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
 class CommentsAPIs(viewsets.ViewSet):
 
@@ -1256,6 +1260,10 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         # check that follow request doesn't already exist
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
             return Response({"Failed to send a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check that follow relationship doesn't already exist
+        if not Followers.objects.filter(follower=authorId, followed=foreignAuthorId).count() == 0:
+            return Response({"Failed to send a request to follow as you are already following"}, status=status.HTTP_400_BAD_REQUEST)
         
         FollowRequests.objects.create(
             id = uuidGenerator(),

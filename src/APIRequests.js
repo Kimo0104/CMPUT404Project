@@ -17,7 +17,6 @@ const TEAM19_CONFIG = {
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
-    console.log(JSON.parse(localStorage.getItem("token")).jwt);
 }
 
 export const getPost  = async (authorId, postId) => {
@@ -40,7 +39,6 @@ export const getInbox = async(authorId, page, size) => {
 
 export const sendPublicInbox = async(authorId, postId) => {
     const path = SERVER_URL + `/inbox/public/${authorId}/${postId}`;
-    console.log(path);
     const response = await axios.post(path);
     return response.data;
 };
@@ -163,12 +161,13 @@ export const getCommentLikes = async(commentId) => {
 export const getAuthor = async(authorId) => {
     let path = SERVER_URL + `/authors/${authorId}`;
     let response = await axios.get(path);
-    if (response.data !== "Author does not exist") { return response.data; }
+    if (response.data !== "") { return response.data; }
 
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/`;
     response = await axios.get(path, TEAM12_CONFIG);
     if (!response.data.detail) { 
+        response.data.displayName = response.data.username;
         response.data.type = "author";
         response.data.url = `${response.data.host}/authors/${authorId}/`;
         response.data.accepted = true;
@@ -191,6 +190,7 @@ export const getAuthor = async(authorId) => {
 
 export const createPost = async (authorId, data) => {
     let path = SERVER_URL + `/authors/${authorId}/posts`;
+    console.log(data);
     const response = await axios.put(`${path}`,data);
 
     let author = await getAuthor(authorId);
@@ -259,7 +259,7 @@ export const createPost = async (authorId, data) => {
         }
     }
 
-    return response.data;
+    return response;
 }
 
 export const createComment = async (authorId, postId, data) => {
@@ -312,21 +312,25 @@ export const searchForAuthors = async (query, page, size) => {
     path = TEAM12_URL + `/authors/`;
     let team12 = (await axios.get(path, TEAM12_CONFIG)).data;
     for (let author of team12) {
-        author.type = "author";
-        author.displayName = author.username;
-        author.github = null;
-        author.accepted = author.is_active;
-        author.profileImage = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg";
-        response.data.authorsPage.push(author);
+        if (author.username.includes(query)) { 
+            author.type = "author";
+            author.displayName = author.username;
+            author.github = null;
+            author.accepted = author.is_active;
+            author.profileImage = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg";
+            response.data.authorsPage.push(author);
+        }
     }
 
     // TEAM 19
     path = TEAM19_URL + `/authors`;
     let team19 = (await axios.get(path, TEAM19_CONFIG)).data;
     for (let author of team19.items) {
-        author.accepted = true;
-        author.id = author.id.split('/authors/')[1];
-        response.data.authorsPage.push(author);
+        if (author.displayName.includes(query)) {
+            author.accepted = true;
+            author.id = author.id.split('/authors/')[1];
+            response.data.authorsPage.push(author);
+        }
     }
 
     return response.data;
@@ -370,15 +374,19 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 }
 
 export const requestToFollow = async (authorId, foreignAuthorId) => {
+    // authorId is the follower
+    // foreignAuthorId is the followed
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     let data = {
         foreignAuthor: {
             id: foreignAuthorId,
-            displayName: foreignAuthor.displayName
+            displayName: foreignAuthor.displayName,
+            host: foreignAuthor.host
         }
     };
+    console.log(data);
     const response = await axios.post(`${path}`, data);
 
     let author = await getAuthor(authorId);
@@ -386,7 +394,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
-        let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`
+        let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`;
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19
@@ -432,6 +440,8 @@ export const getFollowRequests = async (authorId) => {
 }
 
 export const addFollower = async (authorId, foreignAuthorId) => {
+    // authorid = followed
+    // foreignAuthorId = follower
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     const response = axios.put(`${path}`);
 
@@ -440,7 +450,7 @@ export const addFollower = async (authorId, foreignAuthorId) => {
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
-        let path = TEAM12_URL + `/friendrequest/accept_external/sender/${authorId}/recipient/${foreignAuthorId}/`
+        let path = TEAM12_URL + `/friendrequest/accept_external/sender/${foreignAuthorId}/recipient/${authorId}/`
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
@@ -453,12 +463,12 @@ export const removeFollowRequest = async (authorId, foreignAuthorId) => {
     const path = SERVER_URL + `/authors/${authorId}/followRequest/${foreignAuthorId}`
     const response = await axios.delete(`${path}`);
  
-    let foreignAuthor = await getAuthor(authorId);
+    let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
-        path = TEAM12_URL + `/friendrequest/reject_external/sender/${authorId}/recipient/${foreignAuthorId}/`
+        path = TEAM12_URL + `/friendrequest/reject_external/sender/${foreignAuthorId}/recipient/${authorId}/`
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
