@@ -373,12 +373,12 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 export const requestToFollow = async (authorId, foreignAuthorId) => {
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
-    console.log("jesus", foreignAuthor);
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     let data = {
         foreignAuthor: {
             id: foreignAuthorId,
-            displayName: foreignAuthor.displayName
+            displayName: foreignAuthor.displayName,
+            host: foreignAuthor.host
         }
     };
     const response = await axios.post(`${path}`, data);
@@ -456,12 +456,12 @@ export const removeFollowRequest = async (authorId, foreignAuthorId) => {
     const path = SERVER_URL + `/authors/${authorId}/followRequest/${foreignAuthorId}`
     const response = await axios.delete(`${path}`);
  
-    let foreignAuthor = await getAuthor(authorId);
+    let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
-        path = TEAM12_URL + `/friendrequest/reject_external/sender/${authorId}/recipient/${foreignAuthorId}/`
+        path = TEAM12_URL + `/friendrequest/reject_external/sender/${foreignAuthorId}/recipient/${authorId}/`
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required

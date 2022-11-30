@@ -81,7 +81,11 @@ def createFauxAuthor(request, author):
     if (displayName and displayName.strip() == "") or (authorId and authorId.strip() == ""):
         return False
 
-    host = request.build_absolute_uri().split('/authors/')[0]
+    if "host" in author:
+        host = author["host"]
+    else:
+        host = request.build_absolute_uri().split('/authors/')[0]
+        
     url = host + '/authors/' + authorId
     profileImage = request.build_absolute_uri("https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg") 
     github = None
