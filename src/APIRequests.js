@@ -390,6 +390,8 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
     let author = await getAuthor(authorId);
     if (author === "Author does not exist") { return author; }
 
+    console.log(foreignAuthor);
+
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
         let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`;
