@@ -374,6 +374,8 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 }
 
 export const requestToFollow = async (authorId, foreignAuthorId) => {
+    // authorId is the follower
+    // foreignAuthorId is the followed
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
@@ -391,7 +393,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
-        let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`
+        let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`;
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19
