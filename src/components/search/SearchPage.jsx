@@ -41,6 +41,9 @@ export default function SearchPage(props) {
 
         setAuthors(data.authorsPage);
         setNumPages(parseInt(data.numPages));
+        if (data.authorsPage.length == 0) {
+            document.getElementById("searchtext").innerText = "No search results were found";
+        }
         //setSearchParams(`query=${query}&page=${page}&size=${size}`);
 
     }
@@ -76,7 +79,7 @@ export default function SearchPage(props) {
             {authors.length > 0 ?
                 <SearchList filteredAuthors={authors}/>
             :
-                <Typography variant="h3">No search results were found</Typography>   
+                <Typography id="searchtext" variant="h3">Loading...</Typography>   
             }
             {pagination}
         </div>

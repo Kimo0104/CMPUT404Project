@@ -16,8 +16,8 @@ export default function ListItem ({author}) {
         //navigate(`/profile/${authorId}`, {authorId: authorId});
         setAuthorId(author.id);
         localStorage.setItem("authorId", author.id);
-        setShowSearch(false);
-        localStorage.setItem("showSearch", false);
+        setShowSearch("false");
+        localStorage.setItem("showSearch", "false");
     }
 
     return (
