@@ -40,7 +40,6 @@ export const getInbox = async(authorId, page, size) => {
 
 export const sendPublicInbox = async(authorId, postId) => {
     const path = SERVER_URL + `/inbox/public/${authorId}/${postId}`;
-    console.log(path);
     const response = await axios.post(path);
     return response.data;
 };
@@ -385,7 +384,6 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             host: foreignAuthor.host
         }
     };
-    console.log(data);
     const response = await axios.post(`${path}`, data);
 
     let author = await getAuthor(authorId);
