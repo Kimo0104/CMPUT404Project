@@ -6,7 +6,7 @@ const SearchList = ({ filteredAuthors }) => {
     const filteredListItems = filteredAuthors.map( author => <ListItem key={key++} author={author}/> );
   
     return (
-      <Stack spacing={3}>
+      <Stack spacing={3} sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
         {filteredListItems}
       </Stack>
     );
