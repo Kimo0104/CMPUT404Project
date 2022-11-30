@@ -146,7 +146,7 @@ class UserAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['post'])
     def createUser(self, request, format='json'):
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = defaultdict(lambda: None, JSONParser().parse(request.data))
 
         usernameFromFrontend = body['displayName']
         usernameExists = Users.objects.filter(username = usernameFromFrontend).exists()
@@ -176,7 +176,7 @@ class UserAPIs(viewsets.ViewSet):
     )  
     @action(detail=True, methods=['put'])
     def loginUser(self, request, format='json'):
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = defaultdict(lambda: None, JSONParser().parse(request.data))
         username = body['username'] 
         password = body['password']
         
@@ -197,7 +197,7 @@ class UserAPIs(viewsets.ViewSet):
  
     @action(detail=True, methods=['post'])
     def authenticatedUser(self, request, format='json'): 
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = defaultdict(lambda: None, JSONParser().parse(request.data))
 
         token = body["userToken"]
 
@@ -328,7 +328,7 @@ class PostsAPIs(viewsets.ViewSet):
         if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
             return Response({"Tried to update non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.get(id=postId, visibility = Posts.PUBLIC)
-        body = JSONParser().parse(io.BytesIO(request.body))
+        body = JSONParser().parse(request.data)
         editableColumns = ["title", "description", "content"]
         edited = False
         for key, value in body.items():
@@ -397,7 +397,7 @@ class PostsAPIs(viewsets.ViewSet):
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = defaultdict(lambda: None, JSONParser().parse(request.data))
         # check that authorId exist
         # if we don't have the poster, then try to make one
         if not Authors.objects.filter(id=authorId).count() ==1:
@@ -538,7 +538,7 @@ class CommentsAPIs(viewsets.ViewSet):
         # check that authorId and postId exist
         # if we don't have the commenter, then try to make one
         # if we don't have the post, then error
-        body = JSONParser().parse(io.BytesIO(request.body))
+        body = JSONParser().parse(request.data)
         if not Authors.objects.filter(id=authorId).count() ==1:
             if not 'author' in body:
                 return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
@@ -608,8 +608,8 @@ class LikesAPIs(viewsets.ViewSet):
         # check that authorId and postId exist
         # if we don't have the liker, then try to make one
         # if we don't have the post, then error
-        if request.body:
-            body = JSONParser().parse(io.BytesIO(request.body))
+        if request.data:
+            body = JSONParser().parse(request.data)
         else:
             body = {}
         if Authors.objects.filter(id=likerId).count() < 1:
@@ -663,8 +663,8 @@ class LikesAPIs(viewsets.ViewSet):
         # check that authorId and commentId exist
         # if we don't have the liker, then try to make one
         # if we don't have the comment, then error
-        if request.body:
-            body = JSONParser().parse(io.BytesIO(request.body))
+        if request.data:
+            body = JSONParser().parse(request.data)
         else:
             body = {}
         if Authors.objects.filter(id=likerId).count() < 1:
@@ -1228,8 +1228,8 @@ class FollowRequestsAPIs(viewsets.ViewSet):
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
         foreignAuthorId = kwargs["foreignAuthorId"]
-        if request.body:
-            body = JSONParser().parse(io.BytesIO(request.body))
+        if request.data:
+            body = JSONParser().parse(request.data)
         else:
             body = {}
 
@@ -1557,7 +1557,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
             # the double quotes to single quotes, so we must change them back to make it a valid JSON string
             # again.
-            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+            request_body = json.loads(str(ast.literal_eval(request.data)).replace("'", '"'))
         except json.decoder.JSONDecodeError:
             return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -1611,7 +1611,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
             # the double quotes to single quotes, so we must change them back to make it a valid JSON string
             # again.
-            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+            request_body = json.loads(str(ast.literal_eval(request.data)).replace("'", '"'))
         except json.decoder.JSONDecodeError:
             return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
 
