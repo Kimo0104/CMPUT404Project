@@ -16,7 +16,8 @@ export default function SearchPage(props) {
 
     const navigate = useNavigate();
     
-    let { query } = React.useContext(QueryContext);
+    let query = React.useContext(QueryContext).query;
+    if (typeof(query) === "string") { query = query.split(','); }
     let page  = parseInt(searchParams.get("page"));
     let size  = parseInt(searchParams.get("size"));
 
@@ -54,6 +55,7 @@ export default function SearchPage(props) {
 
         setQuery([query[0], pageNumber]);
         localStorage.setItem("query", [query[0], pageNumber]);
+        fetchFilteredAuthors(query[0], query[1], size);
 
         //navigate(searchPath);
         //navigate(0);
@@ -65,7 +67,7 @@ export default function SearchPage(props) {
 
     let pagination = "";
     if (numPages != 0 && authors.length > 0) {
-        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} 
+        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} page={+query[1]} 
                                  style={{justifyContent: "center", display: "flex"}}/>;
     }
 
