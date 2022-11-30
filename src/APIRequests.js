@@ -63,18 +63,18 @@ export const createPostLike = async(likerId, postId) => {
     // TEAM 12
     // ALWAYS send
     path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
-    axios.post(path, TEAM12_CONFIG);
+    axios.post(path, {}, TEAM12_CONFIG);
 
     // TEAM 19
     // Only send if poster is from team 19
     if (poster && poster.host === TEAM19_URL) {
-        let data19 = structuredClone(TEAM19_CONFIG);
+        let data19 = {};
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
         data19.author = liker;
         data19.object = TEAM19_URL + `/authors/${post.author.id}/posts/${postId}`;
         path = TEAM19_URL + `/authors/${post.author.id}/inbox/likes`;
-        axios.post(path, data19);
+        axios.post(path, data19, TEAM19_CONFIG);
     }
 
     return response.data;
@@ -95,13 +95,13 @@ export const createCommentLike = async(likerId, commentId) => {
     // TEAM 19
     // ONLY send if author of comment is from TEAM 19
     if (commenter && commenter.host == TEAM19_URL) {
-        let data19 = structuredClone(TEAM19_CONFIG);
+        let data19 = {};
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
         data19.author = liker;
         data19.object = TEAM19_URL + `/authors/${post.author.id}/posts/${post.id}/coments/${comment.id}`;
         path = TEAM19_URL + `/authors/${comment.author.id}/inbox/likes`;
-        axios.post(path, data19);
+        axios.post(path, data19, TEAM19_CONFIG);
         return response.data;
     }
 };
@@ -119,7 +119,7 @@ export const deletePostLike = async(likerId, postId) => {
     // only delete if poster is from team 12 or team 13
     if (poster && (poster.host === TEAM12_URL || poster.host === SERVER_URL)) {
         path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
-        axios.post(path, TEAM12_CONFIG);
+        axios.post(path, {}, TEAM12_CONFIG);
     }
 
     return response.data;
@@ -198,7 +198,7 @@ export const createPost = async (authorId, data) => {
 
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/${author.displayName}/posts/`;
-    let data12 = structuredClone(TEAM12_CONFIG);
+    let data12 = {};
     data12.author = author.id;
     data12.title = data.title;
     data12.id = response.data.id;
@@ -213,7 +213,7 @@ export const createPost = async (authorId, data) => {
         data12.unlisted = false;
     }
     data12.image_url = "";
-    axios.post(path, data12);
+    axios.post(path, data12, TEAM12_CONFIG);
 
     // TEAM 19
     var inboxees = [];
@@ -223,7 +223,7 @@ export const createPost = async (authorId, data) => {
         inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/friends`)).data;
     }
     if (inboxees.length > 0) {
-        let data19 = structuredClone(TEAM19_CONFIG);
+        let data19 = {};
         data19.title = data.title;
         data19.id = response.data.id;
         data19.source = data.source;
@@ -250,7 +250,7 @@ export const createPost = async (authorId, data) => {
         
         for (let inboxee of inboxees) {
             path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
-            axios.post(path, data19);
+            axios.post(path, data19, TEAM19_CONFIG);
         }
     }
 
@@ -269,25 +269,25 @@ export const createComment = async (authorId, postId, data) => {
     // TEAM 12
     // always send
     path = TEAM12_URL + `/authors/${authorId}/${author.displayName}/posts/${postId}/comments/`
-    let data12 = structuredClone(TEAM12_CONFIG);
+    let data12 = {};
     data12.id = response.data.id;
     data12.comment = data.comment;
     data12.contentType = data.contentType;
     data12.author = authorId;
     data12.post = postId;
-    axios.post(path, data12);
+    axios.post(path, data12, TEAM12_CONFIG);
 
     // TEAM 19
     // Only send comment if author of post is a team 19 author
     if (poster && poster.host === TEAM19_URL) {
-        let data19 = structuredClone(TEAM19_CONFIG);
+        let data19 = {};
         data19.author = author;
         data19.comment = data.comment;
         data19.post = data.postId;
         data19.contentType = data.contentType;
         data19.published = new Date();
         path = TEAM19_URL + `/authors/${post.author.id}/inbox/comments`;
-        axios.post(path, data19);
+        axios.post(path, data19, TAM19_CONFIG);
     }
 
     return response.data;
@@ -382,13 +382,13 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
         let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`
-        axios.post(path, TEAM12_CONFIG);
+        axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19
         let path = TEAM19_URL + `/authors/${authorId}/inbox/follows`;
-        let data = structuredClone(TEAM19_CONFIG);
-        data.summary = `${author.displayName} wants to follow you`;
-        data.actor = {
+        let data19 = {};
+        data19.summary = `${author.displayName} wants to follow you`;
+        data19.actor = {
             id: authorId,
             host: SERVER_URL,
             url: `${SERVER_URL}/authors/${authorId}`,
@@ -396,7 +396,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             github: author.github,
             profileImage: author.profileImage
         }
-        axios.post(path, data);
+        axios.post(path, data19, TEAM19_CONFIG);
     }
 
     return response.data;
@@ -436,7 +436,7 @@ export const addFollower = async (authorId, foreignAuthorId) => {
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
         let path = TEAM12_URL + `/friendrequest/accept_external/sender/${authorId}/recipient/${foreignAuthorId}/`
-        axios.post(path, TEAM12_CONFIG);
+        axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
     }
@@ -454,7 +454,7 @@ export const removeFollowRequest = async (authorId, foreignAuthorId) => {
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
         path = TEAM12_URL + `/friendrequest/reject_external/sender/${authorId}/recipient/${foreignAuthorId}/`
-        axios.post(path, TEAM12_CONFIG);
+        axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
 
@@ -500,12 +500,12 @@ export const modifyPost = async (authorId, postId, data) => {
 
     // TEAM 12
     path = TEAM12_URL + `/posts/${postId}/`;
-    let data12 = structuredClone(TEAM12_CONFIG);
+    let data12 = {};
     data12.title = data.title;
     data12.content = data.content;
     data12.description = data.description;
     data12.contentType = data.contentType;
-    axios.put(path, data);
+    axios.put(path, data12, TEAM12_CONFIG);
 
     // TEAM 19 has no logic required for this
 }
