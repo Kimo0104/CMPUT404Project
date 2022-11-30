@@ -7,7 +7,8 @@ import FriendRequestList from "../friendRequestList/FriendRequestList";
 import { userIdContext } from '../../App';
 import Profile from "../profile/Profile.jsx";
 import SearchPage from "../search/SearchPage.jsx";
-import Button from '@mui/material/Button';
+import IconButton from '@mui/material/Button';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Divider from '@mui/material/Divider';
 
 // https://stackoverflow.com/a/64517088
@@ -16,7 +17,7 @@ export const AuthorIdContext = React.createContext({
   setAuthorId: (value) => {}
 })
 export const ShowSearchContext = React.createContext({
-  showSearch: false,
+  showSearch: "false",
   setShowSearch: (value) => {}
 })
 export const QueryContext = React.createContext({
@@ -28,23 +29,23 @@ export default function Home() {
   const { userId } = React.useContext(userIdContext);
 
   const [authorId, setAuthorId] = useState(localStorage.getItem("authorId") ? localStorage.getItem("authorId") : userId);
-  const [showSearch, setShowSearch] = useState(localStorage.getItem("showSearch") ? localStorage.getItem("showSearch") : false);
+  const [showSearch, setShowSearch] = useState(localStorage.getItem("showSearch") ? localStorage.getItem("showSearch") : "false");
   const [query, setQuery] = useState(localStorage.getItem("query") ? localStorage.getItem("query") : "");
 
   // https://stackoverflow.com/a/53455443
   const handleBack = () => {
-    if (showSearch) {
+    if (showSearch == "true") {
       setAuthorId(userId);
-      setShowSearch(false);
+      setShowSearch("false");
       localStorage.setItem("authorId", userId);
-      localStorage.setItem("showSearch", false);
+      localStorage.setItem("showSearch", "false");
       localStorage.setItem("query", "");
     } else {
-      setShowSearch(true);
+      setShowSearch("true");
     }
   }
   let rightPane = "";
-  if (showSearch) {
+  if (showSearch == "true") {
     rightPane = <SearchPage />;
   } else {
     rightPane = <Profile authorId={authorId}/>;
@@ -71,16 +72,22 @@ export default function Home() {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
+                <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700}} />
                 <Grid item xs={5.5}>
                   <HomeTab authorId={userId}/>
                 </Grid>
-                <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
+                <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700 }} />
                 <Grid item xs={3.5}>
-                  {(authorId !== userId || showSearch) &&
-                    <Button onClick={handleBack}>Back</Button>
-                  }
-                  {rightPane}
+                {(authorId !== userId || showSearch == "true") &&
+                        <Grid container>
+                          <Grid item xs={2}>
+                            <IconButton onClick={handleBack} size="medium">
+                              <ArrowBackIcon/>
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                        }
+                {rightPane}
                 </Grid>
               </Grid>
             </div>

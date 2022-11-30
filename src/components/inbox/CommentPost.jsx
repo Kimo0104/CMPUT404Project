@@ -27,21 +27,23 @@ export default function BasicCard(props) {
 
   return (
     <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#FAF9F6"}}>
-      <CardContent>
-        <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
-          {commenterAuthor.displayName} commented on "{commentPost.title}":
-        </Typography>
-        { props.contentType === "text/plain" &&
-          <Typography sx={{ mb: 1.5, frontSize: 16 }} color="text.secondary">
-            {props.comment}
-          </Typography>
-        }
-        { props.contentType === "text/markdown" &&
-          <ReactMarkdown children={props.comment} remarkPlugins={[remarkGfm]} />
-        }
-      </CardContent>
       <Grid>
-        <Grid container spacing={2}>
+        <Grid container spacing={0.5}>
+          <Grid item xs = {12}>
+            <Typography sx={{ fontSize: 20, fontWeight: 'bold', marginLeft: 3 }} color="text.primary" align='left'>
+            {commenterAuthor.displayName} commented on "{commentPost.title}"
+            </Typography>
+          </Grid>
+          <Grid item xs = {12}sx={{ frontSize: 16, fontWeight: 'bold', marginLeft: 3.5 }}>
+            { props.contentType === "text/plain" &&
+              <Typography sx={{ frontSize: 16, fontWeight: 'bold'}} color="text.secondary" align='left'>
+                {props.comment}
+              </Typography>
+            }
+            { props.contentType === "text/markdown" &&
+              <ReactMarkdown children={props.comment} remarkPlugins={[remarkGfm]}/>
+            }
+          </Grid>
           <Grid item xs align="center">
             <CommentLike authorId={props.commenterAuthorId} commentId={props.commentId} showCount={false}/>
           </Grid>

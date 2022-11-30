@@ -90,7 +90,7 @@ export default function BasicCard(props) {
                   </DialogActions>
                 </Dialog>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{ marginLeft: 3.5 }}>
             { props.item.contentType === "text/plain" &&
               <Typography sx={{ mb: 0, frontSize: 24, alignItems: 'flex-start', marginLeft: 3.5 }} color="text.secondary" align='left'>
                 {props.item.content}

@@ -43,7 +43,7 @@ export default function ManageProfile(props)  {
         //if (imageUploaded) {
         //    uploadImage(userId, imageFile);
         //}
-        await modifyAuthor(userId, githubValue, imageLink);
+        modifyAuthor(userId, githubValue, imageLink).then();
         navigate("/home");
     }
 
@@ -133,7 +133,7 @@ export default function ManageProfile(props)  {
             <img id="profileImage" alt="Profile" src={imageLink} style={{width:"40%"}} onClick={handleImagePress} />
             <Grid container spacing={1} style={{justifyContent: "center", display: "flex"}}>
                 <Grid item xs={2} style={{paddingTop:"20px"}}>
-                    <Typography>Github URL: </Typography>
+                    <Typography>Github URL/Username: </Typography>
                 </Grid>
                 <Grid item xs={2}>
                     <TextField value={githubValue} onChange={handleGithubChange}/>
