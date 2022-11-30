@@ -11,6 +11,7 @@ export default function SearchPage(props) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [authors, setAuthors] = React.useState([]);
     const [numPages, setNumPages] = React.useState(0);
+    const [lastQuery, setLastQuery] = React.useState('');
 
     const { setQuery } = React.useContext(QueryContext);
 
@@ -58,7 +59,10 @@ export default function SearchPage(props) {
 
         setQuery([query[0], pageNumber]);
         localStorage.setItem("query", [query[0], pageNumber]);
-        fetchFilteredAuthors(query[0], query[1], size);
+        if (query !== lastQuery) {
+            setLastQuery(query);
+            fetchFilteredAuthors(query[0], query[1], size);
+        }
 
         //navigate(searchPath);
         //navigate(0);
@@ -66,7 +70,7 @@ export default function SearchPage(props) {
 
     React.useEffect(() => {
         fetchFilteredAuthors(query[0], query[1], size);
-    }, [query]);
+    }, [lastQuery]);
 
     let pagination = "";
     if (numPages != 0 && authors.length > 0) {

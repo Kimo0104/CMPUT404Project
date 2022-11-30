@@ -29,7 +29,7 @@ export default function Follow(props) {
             setFollowing(following);
         }
         loadAuthor();
-      });
+      }, []);
 
       const requestToFollowButton = <Button sx={{ mt: 3 }} variant="contained" size="large" onClick={handleRequestToFollow}>Follow</Button> 
       const followRequestHasBeenSentButton = <Button sx={{ mt: 3 }} variant="contained" size="large" disabled={true}>Pending</Button> 
