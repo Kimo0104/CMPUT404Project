@@ -1260,6 +1260,10 @@ class FollowRequestsAPIs(viewsets.ViewSet):
         # check that follow request doesn't already exist
         if not FollowRequests.objects.filter(requester=authorId, receiver=foreignAuthorId).count() == 0:
             return Response({"Failed to send a request to follow as a request to follow already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check that follow relationship doesn't already exist
+        if not Followers.objects.filter(follower=authorId, followed=foreignAuthorId).count() == 0:
+            return Response({"Failed to send a request to follow as you are already following"}, status=status.HTTP_400_BAD_REQUEST)
         
         FollowRequests.objects.create(
             id = uuidGenerator(),
