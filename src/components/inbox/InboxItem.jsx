@@ -23,6 +23,7 @@ export default function InboxItem(props) {
             <CommentPost 
                 commenterAuthorId={props.item.author} 
                 commentPostId={props.item.post} 
+                commentId={props.item.id}
                 comment={props.item.comment}
                 contentType={props.item.contentType}
             />
