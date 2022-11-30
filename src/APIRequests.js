@@ -201,6 +201,7 @@ export const createPost = async (authorId, data) => {
     let data12 = {};
     data12.author = author.id;
     data12.title = data.title;
+    if (!data12.title || data12.title === "") { data12.title = "image post"; }
     data12.id = response.data.id;
     data12.description = data.description;
     if (data.contentType === 'image') {
