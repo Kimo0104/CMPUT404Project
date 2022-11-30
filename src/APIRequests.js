@@ -17,7 +17,6 @@ const TEAM19_CONFIG = {
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
-    console.log(JSON.parse(localStorage.getItem("token")).jwt);
 }
 
 export const getPost  = async (authorId, postId) => {
@@ -191,6 +190,7 @@ export const getAuthor = async(authorId) => {
 
 export const createPost = async (authorId, data) => {
     let path = SERVER_URL + `/authors/${authorId}/posts`;
+    console.log(data);
     const response = await axios.put(`${path}`,data);
 
     let author = await getAuthor(authorId);

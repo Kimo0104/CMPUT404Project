@@ -201,3 +201,5 @@ options.pop('sslmode', None)
 # For Heroku's MIME type
 import mimetypes
 mimetypes.add_type("text/css", ".css", True)
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = pow(10, 9)

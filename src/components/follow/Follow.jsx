@@ -10,9 +10,9 @@ export default function Follow(props) {
     const [following, setFollowing] = React.useState(-1);
     
     const handleRequestToFollow = async () => {
-        setFollowing(1)
         // Request to follow another user
         const reqToFollow = await requestToFollow(userId, props.foreignAuthorId);
+        setFollowing(1);
     };
     
     const unfollow = async () => {
