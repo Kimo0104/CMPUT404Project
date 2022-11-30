@@ -410,11 +410,15 @@ class PostsAPIs(viewsets.ViewSet):
             id = body['id']
         else:
             id = uuidGenerator()
-        if not 'type' in body: return Response({'type must be supplied'})
-        if not 'title' in body: return Response({'title must be supplied'})
-        if not 'source' in body: return Response({'source must be supplied'})
-        if not 'origin' in body: return Response({'origin must be supplied'})
-        if not 'description' in body: return Response({'description must be supplied'})
+        if not 'type' in body: body['type'] = "post"
+        if not 'title' in body:
+            if body['contentType'] != Posts.IMAGE: return Response({'title must be supplied for non-image posts'})
+            else: body['title'] = ""
+        if not 'source' in body: body['source'] = remote_host
+        if not 'origin' in body: body['origin'] = remote_host
+        if not 'description' in body:
+            if body['contentType'] != Posts.IMAGE: return Response({'description must be supplied for non-image posts'})
+            else: body['description'] = ""
         if not 'contentType' in body: return Response({'contentType must be supplied'})
         if not 'content' in body: return Response({'content must be supplied'})
         if not 'visibility' in body: return Response({'visibility must be supplied'})

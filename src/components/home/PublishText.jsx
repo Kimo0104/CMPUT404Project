@@ -37,8 +37,6 @@ export default function PublishText(props) {
     const [format, setFormat] = useState("text/plain");
     const [visibility, setVisibility] = useState("PUBLIC");
     const [title, setTitle] = useState("");
-    const [source, setSource] = useState("");
-    const [origin, setOrigin] = useState("");
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
 
@@ -53,12 +51,6 @@ export default function PublishText(props) {
     const handleTitleChange = (event) => {
         setTitle(event.target.value);
     };
-    const handleSourceChange = (event) => {
-        setSource(event.target.value);
-    };
-    const handleOriginChange = (event) => {
-        setOrigin(event.target.value);
-    };
     const handleDescriptionChange = (event) => {
         setDescription(event.target.value);
     };
@@ -72,8 +64,6 @@ export default function PublishText(props) {
         const data = {
             type: "post",
             title: title,
-            source: source,
-            origin: origin,
             description: description,
             contentType: format,
             content: content,
@@ -144,28 +134,6 @@ export default function PublishText(props) {
                     label="Title"
                     fullWidth
                     onChange={handleTitleChange}
-                    variant="standard"
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <TextField
-                    autoFocus
-                    margin="dense"
-                    id="name"
-                    label="Source"
-                    onChange={handleSourceChange}
-                    fullWidth
-                    variant="standard"
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <TextField
-                    autoFocus
-                    margin="dense"
-                    id="name"
-                    label="Origin"
-                    onChange={handleOriginChange}
-                    fullWidth
                     variant="standard"
                     />
                 </Grid>

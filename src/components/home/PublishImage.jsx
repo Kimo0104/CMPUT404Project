@@ -46,11 +46,6 @@ export default function PublishImage(props) {
         reader.onload = async (e) => {
             const image = e.currentTarget.result;
             const data = {
-                type: "post",
-                title: "",
-                source: "",
-                origin: "",
-                description: "",
                 contentType: 'image',
                 content: image,
                 visibility: visibility,
