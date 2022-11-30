@@ -526,7 +526,7 @@ class CommentsAPIs(viewsets.ViewSet):
         comment = Comments.objects.get(id=commentId)
 
         # get the referred post
-        serializedPost = PostsSerializer(Posts.objects.get(id=comment.post)).data
+        serializedPost = PostsSerializer(Posts.objects.get(id=comment.post.id)).data
         serializedComment = expandComment(comment, serializedPost)
 
         return Response(serializedComment)
