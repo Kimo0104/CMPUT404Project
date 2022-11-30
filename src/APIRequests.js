@@ -287,7 +287,7 @@ export const createComment = async (authorId, postId, data) => {
         data19.contentType = data.contentType;
         data19.published = new Date();
         path = TEAM19_URL + `/authors/${post.author.id}/inbox/comments`;
-        axios.post(path, data19, TAM19_CONFIG);
+        axios.post(path, data19, TEAM19_CONFIG);
     }
 
     return response.data;
