@@ -80,7 +80,7 @@ export default function Home() {
                     <Grid container spacing={2}>
                       <Grid item xs={12}></Grid>
                       <Grid item xs={12}>
-                        {authorId !== userId &&
+                        {(authorId !== userId || showSearch) &&
                           <Button onClick={handleBack}>Back</Button>
                         }
                         {leftPane}

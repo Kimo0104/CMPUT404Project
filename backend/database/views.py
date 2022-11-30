@@ -163,7 +163,7 @@ class UserAPIs(viewsets.ViewSet):
                         username=body['displayName'],
                         password=body['password']
                     )
-            AuthorsAPIs().createDefaultAuthor(user.id, user.username, request.build_absolute_uri().split('/users')[0])
+            AuthorsAPIs().createDefaultAuthor(user.id, user.username, remote_host)
             
             return Response(True, status=status.HTTP_200_OK)
         # return HttpResponse(status=200)
@@ -332,7 +332,7 @@ class PostsAPIs(viewsets.ViewSet):
         if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
             return Response({"Tried to update non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
         post = Posts.objects.get(id=postId, visibility = Posts.PUBLIC)
-        body = JSONParser().parse(io.BytesIO(request.body))
+        body = request.data
         editableColumns = ["title", "description", "content"]
         edited = False
         for key, value in body.items():
@@ -401,7 +401,7 @@ class PostsAPIs(viewsets.ViewSet):
         if not authenticated:
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
-        body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
+        body = request.data
         # check that authorId exist
         # if we don't have the poster, then try to make one
         if not Authors.objects.filter(id=authorId).count() == 1:
@@ -546,7 +546,7 @@ class CommentsAPIs(viewsets.ViewSet):
         # check that authorId and postId exist
         # if we don't have the commenter, then try to make one
         # if we don't have the post, then error
-        body = JSONParser().parse(io.BytesIO(request.body))
+        body = request.data
         if not Authors.objects.filter(id=authorId).count() ==1:
             if not 'author' in body:
                 return Response({"Tried to make comment from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
@@ -616,8 +616,8 @@ class LikesAPIs(viewsets.ViewSet):
         # check that authorId and postId exist
         # if we don't have the liker, then try to make one
         # if we don't have the post, then error
-        if request.body:
-            body = JSONParser().parse(io.BytesIO(request.body))
+        if request.data:
+            body = request.data
         else:
             body = {}
         if Authors.objects.filter(id=likerId).count() < 1:
@@ -671,8 +671,8 @@ class LikesAPIs(viewsets.ViewSet):
         # check that authorId and commentId exist
         # if we don't have the liker, then try to make one
         # if we don't have the comment, then error
-        if request.body:
-            body = JSONParser().parse(io.BytesIO(request.body))
+        if request.data:
+            body = request.data
         else:
             body = {}
         if Authors.objects.filter(id=likerId).count() < 1:
@@ -1236,8 +1236,8 @@ class FollowRequestsAPIs(viewsets.ViewSet):
             return Response("Authentication required!", status=status.HTTP_401_UNAUTHORIZED)
             
         foreignAuthorId = kwargs["foreignAuthorId"]
-        if request.body:
-            body = JSONParser().parse(io.BytesIO(request.body))
+        if request.data:
+            body = request.data
         else:
             body = {}
 
@@ -1563,17 +1563,7 @@ class AuthorsAPIs(viewsets.ViewSet):
             return Response("Author does not exist!", status=status.HTTP_404_NOT_FOUND)
         author = author.get(id=authorId)
 
-        try:
-            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
-            # as the beginning and end of that string. This is a way to get around that. I then replace the 
-            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
-            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
-            # again.
-            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
-        except json.decoder.JSONDecodeError:
-            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        request_body = request.data
 
         editable_fields = ["github", "profileImage"]
         for field in request_body.keys():
@@ -1623,11 +1613,9 @@ class AuthorsAPIs(viewsets.ViewSet):
             # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
             # the double quotes to single quotes, so we must change them back to make it a valid JSON string
             # again.
-            request_body = json.loads(str(ast.literal_eval(request.body.decode("utf-8"))).replace("'", '"'))
+            request_body = json.loads(str(ast.literal_eval(request.data)).replace("'", '"'))
         except json.decoder.JSONDecodeError:
             return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
-
-        host = request.build_absolute_uri().split('/authors/')[0]
         
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
           and "authorId" in request_body and request_body["authorId"].strip() != "":
@@ -1642,7 +1630,7 @@ class AuthorsAPIs(viewsets.ViewSet):
         else:
             return Response("Can't create a profile with no display name!", status=status.HTTP_400_BAD_REQUEST)
         
-        self.createDefaultAuthor(authorId, displayName, host)
+        self.createDefaultAuthor(authorId, displayName, remote_host)
 
         return Response("Created Author successfully", status=status.HTTP_201_CREATED)
 

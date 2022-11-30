@@ -7,11 +7,14 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { QueryContext, ShowSearchContext } from '../home/Home';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const SearchInput = () => {
 
   const { setShowSearch } = React.useContext(ShowSearchContext);
   const { setQuery } = React.useContext(QueryContext);
+
+  const navigate = useNavigate();
 
   const [searchValue, setSearchValue] = React.useState("");
 
@@ -23,12 +26,13 @@ const SearchInput = () => {
     // Enter is pressed
     e.preventDefault();
     
+
     setShowSearch(true);
     setQuery([searchValue, 1]);
     localStorage.setItem("showSearch", true);
     localStorage.setItem("query", [searchValue, 1]);
     //navigate(`/search?query=${searchValue}`);
-    //navigate(0);
+    navigate("/home");
   }
 
   return (

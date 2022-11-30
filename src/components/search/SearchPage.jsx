@@ -36,7 +36,7 @@ export default function SearchPage(props) {
         const data = await searchForAuthors(query, page, size);
 
         if (page > data.numPages) {
-            page = data.numPages
+            page = data.numPages;
         }
 
         setAuthors(data.authorsPage);
