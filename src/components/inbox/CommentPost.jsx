@@ -26,7 +26,7 @@ export default function BasicCard(props) {
   }, [props]);
 
   return (
-    <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#F8B195"}}>
+    <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#FAF9F6"}}>
       <CardContent>
         <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
           {commenterAuthor.displayName} commented on "{commentPost.title}":
