@@ -17,7 +17,7 @@ export default function FriendRequestList(props) {
     if (addFollowerResponse === 200) {
         console.log("Follow request has been approved")
     }
-    navigate(0);
+    //navigate(0);
   };
 
   const handleDeny = async (foreignAuthorId) => {
