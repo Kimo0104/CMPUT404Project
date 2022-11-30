@@ -12,6 +12,7 @@ export default function Login() {
     const [pass, setPass] = useState('');
 
     const handleSubmit = async (e) => {
+        localStorage.clear();
         e.preventDefault();
 
         let data = {
@@ -29,7 +30,7 @@ export default function Login() {
                 }
                 const userID = await authUser(dataForAuthUser);
                 if (userID){
-                    let id = String(userID.id);//.replace(/-/g,"");
+                    let id = String(userID.id);
                     setUserId(id);
                     localStorage.setItem("userId", id);
                     navigate('/home');
