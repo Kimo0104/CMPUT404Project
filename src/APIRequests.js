@@ -313,21 +313,25 @@ export const searchForAuthors = async (query, page, size) => {
     path = TEAM12_URL + `/authors/`;
     let team12 = (await axios.get(path, TEAM12_CONFIG)).data;
     for (let author of team12) {
-        author.type = "author";
-        author.displayName = author.username;
-        author.github = null;
-        author.accepted = author.is_active;
-        author.profileImage = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg";
-        response.data.authorsPage.push(author);
+        if (author.username.includes(query)) { 
+            author.type = "author";
+            author.displayName = author.username;
+            author.github = null;
+            author.accepted = author.is_active;
+            author.profileImage = "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg";
+            response.data.authorsPage.push(author);
+        }
     }
 
     // TEAM 19
     path = TEAM19_URL + `/authors`;
     let team19 = (await axios.get(path, TEAM19_CONFIG)).data;
     for (let author of team19.items) {
-        author.accepted = true;
-        author.id = author.id.split('/authors/')[1];
-        response.data.authorsPage.push(author);
+        if (author.displayName.includes(query)) {
+            author.accepted = true;
+            author.id = author.id.split('/authors/')[1];
+            response.data.authorsPage.push(author);
+        }
     }
 
     return response.data;
@@ -381,6 +385,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             host: foreignAuthor.host
         }
     };
+    console.log(data);
     const response = await axios.post(`${path}`, data);
 
     let author = await getAuthor(authorId);
