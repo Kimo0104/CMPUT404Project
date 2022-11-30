@@ -12,7 +12,7 @@ export default function BasicStack(props) {
 
   var key = 1;
 
-  const size = 5;
+  const size = 10;
   const [numPages, setNumPages] = React.useState(0);
   const [page, setPage] = React.useState(1);
 
