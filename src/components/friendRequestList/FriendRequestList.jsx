@@ -45,8 +45,8 @@ export default function FriendRequestList(props) {
 
     return (
       <>
-        <Typography sx={{ mt: 5 }} variant="h6" component="div">
-          Friend Request:
+        <Typography variant="h5" component="div" sx={{fontWeight: 'bold'}}>
+          Follow Requests
         </Typography>
         <List>
           {friendRequests.map((listitem, index) => (

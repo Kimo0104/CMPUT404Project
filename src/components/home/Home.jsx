@@ -58,20 +58,21 @@ export default function Home() {
             <TopBar/>
             <div>
               <Grid container>
-                <Grid item xs={3.5}>
-                  <Grid container rowSpacing={2}>
-                    <Grid item xs={12}></Grid>
-                    <Grid item xs={12}></Grid>
-                    <Grid item xs={2}></Grid>
-                    <Grid item>
+                <Grid item xs={3}>
+                  <Grid container rowSpacing={3} sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
+                    <Grid item xs={12} align="center" justify="top">
                       <PublishButton/>
+                    </Grid>
+                    <Grid item xs={12} align="center" justify="center">
+                      <Divider orientation="horizontal" flexItem sx={{ mr: "-1px" }} />
+                    </Grid>
+                    <Grid item xs={12} align="center" justify="center">
                       <FriendRequestList authorId={userId} />
                     </Grid>
-                    <Grid item xs={2}></Grid>
                   </Grid>
                 </Grid>
                 <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
-                <Grid item xs={5}>
+                <Grid item xs={5.5}>
                   <HomeTab authorId={userId}/>
                 </Grid>
                 <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />

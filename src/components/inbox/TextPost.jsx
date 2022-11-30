@@ -32,7 +32,7 @@ export default function BasicCard(props) {
   return (
     <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#FAF9F6"}}>
       <Typography sx={{ fontSize: 16, marginLeft: 1}} color="text.secondary" align='left'>
-        From: {postAuthor.displayName}
+        Post by {postAuthor.displayName}
       </Typography>
       <CardContent>
         <Typography sx={{ fontSize: 32 }} color="text.primary" gutterBottom>

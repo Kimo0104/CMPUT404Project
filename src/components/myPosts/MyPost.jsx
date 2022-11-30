@@ -92,118 +92,121 @@ export default function BasicCard(props) {
   return (
     <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#FAF9F6"}}>
       <Grid>
-        <Grid container spacing={1}>
+        <Grid container spacing={0.5}>
           <Grid item xs={10.8}>
+            </Grid>
+              <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+                <Typography sx={{ fontSize: 26, fontWeight: 'bold', marginLeft: 3 }} color="text.primary" align='left'>
+                  {props.item.title}
+                </Typography>
+              </Grid>
+            <Grid item xs={3.7} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
+              <EditIcon variant="outlined" onClick={handleClickEditOpen}/>
+              <DeleteIcon variant="outlined" onClick={handleClickDeleteOpen}/>
+                <Dialog open={editOpen}>
+                  <DialogTitle>Edit Post</DialogTitle>
+                  <DialogContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          id="outlined-select-format"
+                          select
+                          label="Select"
+                          value={format}
+                          onChange={handleFormatChange}
+                          helperText="Please select your text format">
+                          {formats.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          autoFocus
+                          margin="dense"
+                          id="name"
+                          value={title}
+                          label="Title"
+                          fullWidth
+                          onChange={handleTitleChange}
+                          variant="standard"
+                          />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          autoFocus
+                          margin="dense"
+                          id="name"
+                          label="Description"
+                          value={description}
+                          onChange={handleDescriptionChange}
+                          fullWidth
+                          variant="standard"
+                          />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          autoFocus
+                          margin="dense"
+                          id="name"
+                          label="Content"
+                          value={content}
+                          fullWidth
+                          onChange={handleContentChange}
+                          variant="standard"
+                          multiline
+                          rows={5}
+                          />
+                      </Grid>
+                    </Grid>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleEditCancel}>Cancel</Button>
+                    <Button onClick={handleEdit}>Publish</Button>
+                  </DialogActions>
+                </Dialog>
+                <Dialog
+                  open={deleteOpen}
+                  onClose={handleCancelDelete}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                >
+                  <DialogTitle id="alert-dialog-title">
+                    {"Delete Post?"}
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                      This action cannot be undone.
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCancelDelete}>Cancel</Button>
+                    <Button onClick={handleDelete}>
+                      Delete
+                    </Button>
+                  </DialogActions>
+                </Dialog>
           </Grid>
-          <Grid item xs>
-          <EditIcon variant="outlined" onClick={handleClickEditOpen}/>
-          <DeleteIcon variant="outlined" onClick={handleClickDeleteOpen}/>
-            <Dialog open={editOpen}>
-              <DialogTitle>Edit Post</DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      id="outlined-select-format"
-                      select
-                      label="Select"
-                      value={format}
-                      onChange={handleFormatChange}
-                      helperText="Please select your text format">
-                      {formats.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      id="name"
-                      value={title}
-                      label="Title"
-                      fullWidth
-                      onChange={handleTitleChange}
-                      variant="standard"
-                      />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      id="name"
-                      label="Description"
-                      value={description}
-                      onChange={handleDescriptionChange}
-                      fullWidth
-                      variant="standard"
-                      />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      id="name"
-                      label="Content"
-                      value={content}
-                      fullWidth
-                      onChange={handleContentChange}
-                      variant="standard"
-                      multiline
-                      rows={5}
-                      />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleEditCancel}>Cancel</Button>
-                <Button onClick={handleEdit}>Publish</Button>
-              </DialogActions>
-            </Dialog>
-            <Dialog
-              open={deleteOpen}
-              onClose={handleCancelDelete}
-              aria-labelledby="alert-dialog-title"
-              aria-describedby="alert-dialog-description"
-            >
-              <DialogTitle id="alert-dialog-title">
-                {"Delete Post?"}
-              </DialogTitle>
-              <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                  This action cannot be undone.
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCancelDelete}>Cancel</Button>
-                <Button onClick={handleDelete}>
-                  Delete
-                </Button>
-              </DialogActions>
-            </Dialog>
+          <Grid item xs={12}>
+            { props.item.contentType === "text/plain" &&
+              <Typography sx={{ mb: 0, frontSize: 24, alignItems: 'flex-start', marginLeft: 3.5 }} color="text.secondary" align='left'>
+                {content}
+              </Typography>
+            }
+            { props.item.contentType === "text/markdown" &&
+              <ReactMarkdown children={content} remarkPlugins={[remarkGfm]} align='left'/>
+            }
+            { props.item.contentType === "image" &&
+              <img src={content}/>
+            }
           </Grid>
+          <Grid item xs = {12}/>
         </Grid>
       </Grid>
-      <CardContent>
-        <Typography sx={{ fontSize: 32 }} color="text.primary" gutterBottom>
-          {props.item.title}
-        </Typography>
-        { props.item.contentType === "text/plain" &&
-          <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
-            {content}
-          </Typography>
-        }
-        { props.item.contentType === "text/markdown" &&
-          <ReactMarkdown children={content} remarkPlugins={[remarkGfm]}/>
-        }
-        { props.item.contentType === "image" &&
-          <img src={content}/>
-        }
-      </CardContent>
     </Card>
   );
 }

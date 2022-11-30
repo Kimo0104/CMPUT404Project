@@ -76,7 +76,7 @@ export default function SearchPage(props) {
             {authors.length > 0 ?
                 <SearchList filteredAuthors={authors}/>
             :
-                <Typography variant="h3">No search results were found</Typography>   
+                <Typography variant="h6">No search results were found</Typography>   
             }
             {pagination}
         </div>
