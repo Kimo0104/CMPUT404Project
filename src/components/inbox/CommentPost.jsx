@@ -10,7 +10,7 @@ import { getPost, getAuthor } from '../../APIRequests';
 import CommentLike from '../like/CommentLike'
 
 export default function BasicCard(props) {
-  //props has commenterAuthorId, commentPostId, comment, contentType
+  //props has commenterAuthorId, commentPostId, commentId, comment, contentType
   //likes show the title of the post with a desc "User liked this post!"
   const [commenterAuthor, setCommenterAuthor] = React.useState({});
   const [commentPost, setCommentPost] = React.useState({});
@@ -43,7 +43,7 @@ export default function BasicCard(props) {
       <Grid>
         <Grid container spacing={2}>
           <Grid item xs align="center">
-            <CommentLike authorId={props.commenterAuthorId} commentId={props.commentPostId} showCount={false}/>
+            <CommentLike authorId={props.commenterAuthorId} commentId={props.commentId} showCount={false}/>
           </Grid>
         </Grid>
       </Grid>
