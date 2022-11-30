@@ -9,7 +9,7 @@ export default function BasicCard(props) {
 
   return (
     <Card sx={{ minWidth: 275 }}>
-      <CardContent style={{backgroundColor: "#D6F8B8"}}>
+      <CardContent style={{backgroundColor: "#FAF9F6"}}>
         <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
           {props.summary}
         </Typography>

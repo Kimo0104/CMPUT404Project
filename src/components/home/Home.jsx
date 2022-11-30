@@ -8,6 +8,7 @@ import { userIdContext } from '../../App';
 import Profile from "../profile/Profile.jsx";
 import SearchPage from "../search/SearchPage.jsx";
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 
 // https://stackoverflow.com/a/64517088
 export const AuthorIdContext = React.createContext({
@@ -42,11 +43,11 @@ export default function Home() {
       setShowSearch(true);
     }
   }
-  let leftPane = "";
+  let rightPane = "";
   if (showSearch) {
-    leftPane = <SearchPage />;
+    rightPane = <SearchPage />;
   } else {
-    leftPane = <Profile authorId={authorId}/>;
+    rightPane = <Profile authorId={authorId}/>;
   }
 
   return (
@@ -57,7 +58,7 @@ export default function Home() {
             <TopBar/>
             <div>
               <Grid container>
-                <Grid item xs={4}>
+                <Grid item xs={3.5}>
                   <Grid container rowSpacing={2}>
                     <Grid item xs={12}></Grid>
                     <Grid item xs={12}></Grid>
@@ -69,25 +70,16 @@ export default function Home() {
                     <Grid item xs={2}></Grid>
                   </Grid>
                 </Grid>
-                <Grid item xs={8}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={8}>
-                        <HomeTab authorId={userId}/>
-                    </Grid>
-                    <Grid item xs={1}>
-                    </Grid>
-                    <Grid item xs={2}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}></Grid>
-                      <Grid item xs={12}>
-                        {(authorId !== userId || showSearch) &&
-                          <Button onClick={handleBack}>Back</Button>
-                        }
-                        {leftPane}
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                  </Grid>
+                <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
+                <Grid item xs={5}>
+                  <HomeTab authorId={userId}/>
+                </Grid>
+                <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
+                <Grid item xs={3.5}>
+                  {(authorId !== userId || showSearch) &&
+                    <Button onClick={handleBack}>Back</Button>
+                  }
+                  {rightPane}
                 </Grid>
               </Grid>
             </div>

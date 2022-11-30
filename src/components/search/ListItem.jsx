@@ -22,7 +22,7 @@ export default function ListItem ({author}) {
 
     return (
         <div style={{justifyContent:"center", display: "flex", width:"100%"}}>
-            <Card sx={{display:"block", width:"100%"}}>
+            <Card sx={{display:"block", width:"100%"}} style={{backgroundColor: "#FAF9F6"}}>
                 <CardActionArea onClick={handleClick} style={{width:"100%"}}>
                     <div style={{justifyContent:"center", display: "flex", paddingTop:"10px"}}>
                         <Avatar style={{width:"4em", height:"4em"}} src={author.profileImage} alt="Profile"/>

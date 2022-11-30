@@ -11,7 +11,7 @@ export default function BasicCard(props) {
   const date = new Date(props.item.created_at);
   const dateString = `${date.getFullYear()}-${date.getMonth()+1}-${+date.getDate()<10 ? '0' : ''}${date.getDate()}`;
   return (
-    <Card sx={{ minWidth: 275 }}>
+    <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#FAF9F6"}}>
       <CardContent>
         <Typography sx={{ fontSize: 12 }} color="text.primary">
           {`You made a ${props.item.type} on repo "${props.item.repo.name}" on ${dateString}`}

@@ -90,7 +90,7 @@ export default function BasicCard(props) {
 
   //props contains title, content
   return (
-    <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#F9F0C1"}}>
+    <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#FAF9F6"}}>
       <Grid>
         <Grid container spacing={1}>
           <Grid item xs={10.8}>
