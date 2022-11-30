@@ -191,6 +191,7 @@ export const getAuthor = async(authorId) => {
 
 export const createPost = async (authorId, data) => {
     let path = SERVER_URL + `/authors/${authorId}/posts`;
+    console.log(data);
     const response = await axios.put(`${path}`,data);
 
     let author = await getAuthor(authorId);

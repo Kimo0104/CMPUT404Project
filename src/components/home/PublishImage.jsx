@@ -52,13 +52,14 @@ export default function PublishImage(props) {
                 originalAuthor: authorId
             }
             async function sendPostToInbox(){
-                await createPost(userId, data)
+                await createPost(authorId, data)
                     .then((response) => {
                         const postId = response.data.id
-                        if (visibility === "PUBLIC") sendPublicInbox(userId, postId)
-                        if (visibility === "FRIENDS") sendFriendInbox(userId, postId)
+                        if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
+                        if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
                     })
                     .catch((reason) => {
+                        
                         props.handleError();
                     });
             }

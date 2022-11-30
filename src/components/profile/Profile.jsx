@@ -1,15 +1,11 @@
 import * as React from 'react';
-import TopBar from '../topbar/TopBar.jsx';
 import { getAuthor, getImage } from '../../APIRequests';
 import { Button, Typography } from '@mui/material';
-import { useLocation } from 'react-router-dom';
 import Follow from "../follow/Follow";
 import { userIdContext } from '../../App';
 import { AuthorIdContext } from '../home/Home.jsx';
 
-export default function Profile(props)  {
-
-    const location = useLocation();
+export default function Profile()  {
     
     const { userId }  = React.useContext(userIdContext);
 
@@ -35,7 +31,6 @@ export default function Profile(props)  {
    
     return (
         <div>
-            {/*<TopBar />*/}
             <Typography variant="h3">{author.displayName}</Typography>
             <img alt="Profile" src={author.profileImage} style={{width:"40%"}}/>
             <Typography>Github URL: {author.github}</Typography>

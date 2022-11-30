@@ -404,7 +404,7 @@ class PostsAPIs(viewsets.ViewSet):
         body = defaultdict(lambda: None, JSONParser().parse(io.BytesIO(request.body)))
         # check that authorId exist
         # if we don't have the poster, then try to make one
-        if not Authors.objects.filter(id=authorId).count() ==1:
+        if not Authors.objects.filter(id=authorId).count() == 1:
             if not 'author' in body:
                 return Response({"Tried to make post from non-existent author"}, status=status.HTTP_400_BAD_REQUEST)
             if not createFauxAuthor(request, body["author"]):
