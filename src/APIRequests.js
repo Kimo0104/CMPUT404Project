@@ -17,7 +17,6 @@ const TEAM19_CONFIG = {
 
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
-    console.log(JSON.parse(localStorage.getItem("token")).jwt);
 }
 
 export const getPost  = async (authorId, postId) => {
