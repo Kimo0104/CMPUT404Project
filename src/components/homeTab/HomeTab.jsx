@@ -29,7 +29,7 @@ export default function TabsWrappedLabel(props) {
   }, []);
 
   return (
-    <Box sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
+    <Box sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3, marginBottom: 3}}>
       <Tabs value={value} onChange={handleChange} centered>
         <Tab value="one" label="Inbox" />
         <Tab value="two" label="My Posts" />
