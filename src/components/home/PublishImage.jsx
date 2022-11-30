@@ -103,6 +103,7 @@ export default function PublishImage(props) {
             <Grid item xs={12}>
             </Grid>
             <Grid 
+                container
                 direction="column" 
                 alignItems="center" 
                 style={{
