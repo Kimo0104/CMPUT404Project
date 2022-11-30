@@ -19,10 +19,18 @@ export default function PublishTab(props) {
         <Tab value="two" label="Image Post" />
       </Tabs>
         {
-            value === "one" && <PublishText handleClickOpen={props.handleClickOpen} handleCancel={props.handleCancel}/>
+            value === "one" && <PublishText 
+              handleClickOpen={props.handleClickOpen} 
+              handleCancel={props.handleCancel}
+              handleError = {props.handleError}
+              />
         }
         {
-            value === "two" && <PublishImage handleClickOpen={props.handleClickOpen} handleCancel={props.handleCancel}/>
+            value === "two" && <PublishImage 
+              handleClickOpen={props.handleClickOpen} 
+              handleCancel={props.handleCancel}
+              handleError = {props.handleError}
+              />
         }
     </Box>
   );

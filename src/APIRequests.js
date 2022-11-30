@@ -259,7 +259,7 @@ export const createPost = async (authorId, data) => {
         }
     }
 
-    return response.data;
+    return response;
 }
 
 export const createComment = async (authorId, postId, data) => {
@@ -386,6 +386,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             host: foreignAuthor.host
         }
     };
+    console.log(data);
     const response = await axios.post(`${path}`, data);
 
     let author = await getAuthor(authorId);
