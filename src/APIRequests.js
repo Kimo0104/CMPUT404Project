@@ -190,7 +190,6 @@ export const getAuthor = async(authorId) => {
 
 export const createPost = async (authorId, data) => {
     let path = SERVER_URL + `/authors/${authorId}/posts`;
-    console.log(data);
     const response = await axios.put(`${path}`,data);
 
     let author = await getAuthor(authorId);
@@ -386,7 +385,6 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             host: foreignAuthor.host
         }
     };
-    console.log(data);
     const response = await axios.post(`${path}`, data);
 
     let author = await getAuthor(authorId);
