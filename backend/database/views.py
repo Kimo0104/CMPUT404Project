@@ -442,20 +442,36 @@ class PostsAPIs(viewsets.ViewSet):
             if Authors.objects.filter(id = originalAuthorId).count() == 0:
                 return Response({"Tried to make post from non-existent originalAuthor"}, status=status.HTTP_400_BAD_REQUEST)
 
-        post = Posts.objects.create(
-            id = id,
-            type = body['type'],
-            title = body['title'],
-            source = body['source'],
-            origin = body['origin'],
-            description = body['description'],
-            contentType = body['contentType'],
-            content = body['content'],
-            originalAuthor = Authors.objects.get(id = originalAuthorId),
-            author = Authors.objects.get(id = authorId),
-            published = body['published'],
-            visibility = body['visibility']
-        )
+        if not 'published' in body:
+            post = Posts.objects.create(
+                id = id,
+                type = body['type'],
+                title = body['title'],
+                source = body['source'],
+                origin = body['origin'],
+                description = body['description'],
+                contentType = body['contentType'],
+                content = body['content'],
+                originalAuthor = Authors.objects.get(id = originalAuthorId),
+                author = Authors.objects.get(id = authorId),
+                visibility = body['visibility']
+            )
+        else:
+            post = Posts.objects.create(
+                id = id,
+                type = body['type'],
+                title = body['title'],
+                source = body['source'],
+                origin = body['origin'],
+                description = body['description'],
+                contentType = body['contentType'],
+                content = body['content'],
+                originalAuthor = Authors.objects.get(id = originalAuthorId),
+                author = Authors.objects.get(id = authorId),
+                published = body['published'],
+                visibility = body['visibility']
+            )
+
         serializer = PostsSerializer(post)
         return Response(serializer.data, status = status.HTTP_200_OK)
 
