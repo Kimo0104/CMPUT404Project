@@ -48,12 +48,10 @@ export default function FormDialog(props) {
   const sharePost = () => {
     if (!open) { return; }
 
-    //creates post
+    //creates post    
     const data = {
       type: "post",
       title: props.title,
-      source: props.source,
-      origin: props.origin,
       description: props.description,
       contentType: props.contentType,
       content: props.content,
@@ -61,11 +59,12 @@ export default function FormDialog(props) {
       originalAuthor: props.originalAuthor
     }
     async function sendPostToInbox(){
-      const response = await createPost(props.authorId, data);
-      const postId = response.id
-      //places post in necessary inbox
-      if (data.visibility === "PUBLIC") { sendPublicInbox(props.authorId, postId) }
-      if (data.visibility === "FRIENDS") { sendFriendInbox(props.authorId, postId) }
+        await createPost(props.authorId, data)
+            .then((response) => {
+                const postId = response.data.id
+                if (visibility === "PUBLIC") sendPublicInbox(props.authorId, postId)
+                if (visibility === "FRIENDS") sendFriendInbox(props.authorId, postId)
+            })
     }
     sendPostToInbox();
 
