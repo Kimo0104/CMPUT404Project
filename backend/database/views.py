@@ -198,6 +198,8 @@ class UserAPIs(viewsets.ViewSet):
                 'jwt': token
             }
             return response
+        else:
+            return Response("The username or password are incorrect.", status=status.HTTP_401_UNAUTHORIZED)
  
     @action(detail=True, methods=['post'])
     def authenticatedUser(self, request, format='json'): 

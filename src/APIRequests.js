@@ -485,8 +485,18 @@ export const createUser = async (data) => {
 export const loginUser = async (data) => {
     const path = SERVER_URL + `/users`
     data.withCredentials = true;
-    const response = await axios.put(`${path}`, data);
-    return response.data;
+    const response = await axios.put(`${path}`, data).catch((error) => {
+        alert("The username or password you entered are incorrect.")
+        return {
+            status: error.response.status
+        }
+    });
+
+    if (response.status < 400) {
+        return response.data;
+    } else {
+        return false;
+    }
 }
 
 export const authUser = async (data) => {

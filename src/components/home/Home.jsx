@@ -45,7 +45,7 @@ export default function Home() {
     }
   }
   let rightPane = "";
-  if (showSearch) {
+  if (showSearch == "true") {
     rightPane = <SearchPage />;
   } else {
     rightPane = <Profile authorId={authorId}/>;
