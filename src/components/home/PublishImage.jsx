@@ -59,7 +59,6 @@ export default function PublishImage(props) {
                         if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
                     })
                     .catch((reason) => {
-                        
                         props.handleError();
                     });
             }
