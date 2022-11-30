@@ -652,7 +652,7 @@ class LikesAPIs(viewsets.ViewSet):
         Likes.objects.create(
             id = uuidGenerator(),
             context = post.title,
-            summary = f'{liker.displayName} likes your post',
+            summary = f'{liker.displayName} liked your post',
             author = liker,
             post = post
         )
@@ -707,7 +707,7 @@ class LikesAPIs(viewsets.ViewSet):
         LikesComments.objects.create(
             id = uuidGenerator(),
             context = comment.comment,
-            summary = f'{liker.displayName} likes your comment',
+            summary = f'{liker.displayName} liked your comment',
             author = liker,
             comment = comment
         )

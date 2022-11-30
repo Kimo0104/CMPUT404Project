@@ -31,27 +31,38 @@ export default function BasicCard(props) {
 
   return (
     <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#FAF9F6"}}>
-      <Typography sx={{ fontSize: 16, marginLeft: 1}} color="text.secondary" align='left'>
-        Post by {postAuthor.displayName}
-      </Typography>
-      <CardContent>
-        <Typography sx={{ fontSize: 32 }} color="text.primary" gutterBottom>
-          {props.title}
-        </Typography>
-        { props.contentType === "text/plain" &&
-          <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
-            {props.content}
-          </Typography>
-        }
-        { props.contentType === "text/markdown" &&
-          <ReactMarkdown children={props.content} remarkPlugins={[remarkGfm]} />
-        }
-        { props.contentType === "image" &&
-          <img src={props.content}/>
-        }
-      </CardContent>
       <Grid>
-        <Grid container spacing={2}>
+        <Grid container spacing={0.5}>
+          <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            <Typography sx={{ fontSize: 26, fontWeight: 'bold', marginLeft: 3 }} color="text.primary" align='left'>
+              {props.title}
+            </Typography>
+          </Grid>
+          <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 'bold', marginRight: 1 }} color="text.secondary" align='right'>
+              Post by {postAuthor.displayName}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sx={
+              { 
+                display: 'flex', 
+                alignItems: 'flex-start', 
+                justifyContent: props.contentType === "image" ? 'center' : 'flex-start', 
+                marginLeft: 3.5 
+              }}
+          >
+            { props.contentType === "text/plain" &&
+              <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
+                {props.content}
+              </Typography>
+            }
+            { props.contentType === "text/markdown" &&
+              <ReactMarkdown children={props.content} remarkPlugins={[remarkGfm]} />
+            }
+            { props.contentType === "image" &&
+              <img src={props.content}/>
+            }
+          </Grid>
           <Grid item xs align="center">
             <Like authorId={props.authorId} postId={props.postId} showCount={props.visibility === "FRIEND"}/>
           </Grid>

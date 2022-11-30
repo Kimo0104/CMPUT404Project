@@ -8,15 +8,10 @@ export default function BasicCard(props) {
   //likes show the title of the post with a desc "User liked this post!"
 
   return (
-    <Card sx={{ minWidth: 275 }}>
-      <CardContent style={{backgroundColor: "#FAF9F6"}}>
-        <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
-          {props.summary}
-        </Typography>
-        <Typography sx={{ mb: 1.5, frontSize: 14 }} color="text.secondary">
-          {props.context}
-        </Typography>
-      </CardContent>
+    <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#FAF9F6"}}> 
+      <Typography sx={{ fontSize: 18, marginLeft: 3 }} color="text.primary" align='left'>
+        {props.summary}: {props.context}
+      </Typography>
     </Card>
   );
 }
