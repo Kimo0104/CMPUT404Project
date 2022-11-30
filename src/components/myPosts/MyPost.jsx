@@ -92,12 +92,12 @@ export default function BasicCard(props) {
           </Grid>
           <Grid item xs={12} sx={{ marginLeft: 3.5 }}>
             { props.item.contentType === "text/plain" &&
-              <Typography sx={{ mb: 0, frontSize: 24, alignItems: 'flex-start', marginLeft: 3.5 }} color="text.secondary" align='left'>
+              <Typography sx={{ mb: 0, frontSize: 24, alignItems: 'flex-start'}} color="text.secondary" align='left'>
                 {props.item.content}
               </Typography>
             }
             { props.item.contentType === "text/markdown" &&
-              <ReactMarkdown children={props.item.content} remarkPlugins={[remarkGfm]} align='left'/>
+              <ReactMarkdown children={props.item.content} remarkPlugins={[remarkGfm]}/>
             }
             { props.item.contentType === "image" &&
               <img src={props.item.content}/>
