@@ -40,10 +40,17 @@ export default function BasicCard(props) {
           </Grid>
           <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
             <Typography sx={{ fontSize: 16, fontWeight: 'bold', marginRight: 1 }} color="text.secondary" align='right'>
-            Post by {postAuthor.displayName}
+              Post by {postAuthor.displayName}
             </Typography>
           </Grid>
-          <Grid item xs={12} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', marginLeft: 3.5 }}>
+          <Grid item xs={12} sx={
+              { 
+                display: 'flex', 
+                alignItems: 'flex-start', 
+                justifyContent: props.contentType === "image" ? 'center' : 'flex-start', 
+                marginLeft: 3.5 
+              }}
+          >
             { props.contentType === "text/plain" &&
               <Typography sx={{ mb: 1.5, frontSize: 24 }} color="text.secondary">
                 {props.content}
