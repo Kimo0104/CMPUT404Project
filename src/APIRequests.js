@@ -163,12 +163,13 @@ export const getCommentLikes = async(commentId) => {
 export const getAuthor = async(authorId) => {
     let path = SERVER_URL + `/authors/${authorId}`;
     let response = await axios.get(path);
-    if (response.data !== "Author does not exist") { return response.data; }
+    if (response.data !== "") { return response.data; }
 
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/`;
     response = await axios.get(path, TEAM12_CONFIG);
     if (!response.data.detail) { 
+        response.data.displayName = response.data.username;
         response.data.type = "author";
         response.data.url = `${response.data.host}/authors/${authorId}/`;
         response.data.accepted = true;
@@ -201,10 +202,14 @@ export const createPost = async (authorId, data) => {
     let data12 = {};
     data12.author = author.id;
     data12.title = data.title;
+    if (!data12.title || data12.title === "") { data12.title = "image post"; }
     data12.id = response.data.id;
     data12.description = data.description;
-    data12.contentType = data.contentType;
-    data12.content = data.content;
+    if (data.contentType === 'image') {
+        data12.image_url = data.content;
+    } else {
+        data12.content = data.content;
+    }
     if (data.visiblity == "UNLISTED") {
         data12.visibility = "PUBLIC";
         data12.unlisted = true;
@@ -212,7 +217,6 @@ export const createPost = async (authorId, data) => {
         data12.visibility = data.visibility;
         data12.unlisted = false;
     }
-    data12.image_url = "";
     axios.post(path, data12, TEAM12_CONFIG);
 
     // TEAM 19
@@ -249,8 +253,10 @@ export const createPost = async (authorId, data) => {
         }
         
         for (let inboxee of inboxees) {
-            path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
-            axios.post(path, data19, TEAM19_CONFIG);
+            if (inboxee.host === TEAM19_URL) {
+                path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
+                axios.post(path, data19, TEAM19_CONFIG);
+            }
         }
     }
 
@@ -367,6 +373,7 @@ export const checkFollowStatus = async (authorId, foreignAuthorId) => {
 export const requestToFollow = async (authorId, foreignAuthorId) => {
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
+    console.log("jesus", foreignAuthor);
     let path = SERVER_URL + `/authors/${authorId}/followers/${foreignAuthorId}`
     let data = {
         foreignAuthor: {
@@ -379,6 +386,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
     let author = await getAuthor(authorId);
     if (author === "Author does not exist") { return author; }
 
+    console.log(foreignAuthor.host);
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
         let path = TEAM12_URL + `/friendrequest/from_external/13/${authorId}/${author.displayName}/send/${foreignAuthorId}/`
