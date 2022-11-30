@@ -443,7 +443,6 @@ export const addFollower = async (authorId, foreignAuthorId) => {
     const response = await axios.put(`${path}`);
 
     let foreignAuthor = await getAuthor(foreignAuthorId);
-    console.log(foreignAuthor);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
 
     if (foreignAuthor.host === TEAM12_URL) {
