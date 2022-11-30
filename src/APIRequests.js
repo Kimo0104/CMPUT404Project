@@ -203,8 +203,11 @@ export const createPost = async (authorId, data) => {
     data12.title = data.title;
     data12.id = response.data.id;
     data12.description = data.description;
-    data12.contentType = data.contentType;
-    data12.content = data.content;
+    if (data.contentType === 'image') {
+        data12.image_url = data.content;
+    } else {
+        data12.content = data.content;
+    }
     if (data.visiblity == "UNLISTED") {
         data12.visibility = "PUBLIC";
         data12.unlisted = true;
@@ -212,7 +215,6 @@ export const createPost = async (authorId, data) => {
         data12.visibility = data.visibility;
         data12.unlisted = false;
     }
-    data12.image_url = "";
     axios.post(path, data12, TEAM12_CONFIG);
 
     // TEAM 19
