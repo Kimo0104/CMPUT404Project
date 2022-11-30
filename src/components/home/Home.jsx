@@ -72,11 +72,11 @@ export default function Home() {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
+                <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700}} />
                 <Grid item xs={5.5}>
                   <HomeTab authorId={userId}/>
                 </Grid>
-                <Divider orientation="vertical" flexItem sx={{ mr: "-1px" }} />
+                <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700 }} />
                 <Grid item xs={3.5}>
                 {(authorId !== userId || showSearch == "true") &&
                         <Grid container>
