@@ -35,7 +35,6 @@ export default function Profile(props)  {
    
     return (
         <div>
-            {/*<TopBar />*/}
             <Typography variant="h3">{author.displayName}</Typography>
             <img alt="Profile" src={author.profileImage} style={{width:"40%"}}/>
             <Typography>Github URL: {author.github}</Typography>

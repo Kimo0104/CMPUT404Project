@@ -35,7 +35,7 @@ export default function SearchPage(props) {
         const data = await searchForAuthors(query, page, size);
 
         if (page > data.numPages) {
-            page = data.numPages
+            page = data.numPages;
         }
 
         setAuthors(data.authorsPage);
@@ -65,7 +65,7 @@ export default function SearchPage(props) {
 
     let pagination = "";
     if (numPages != 0 && authors.length > 0) {
-        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} page={query[1]} 
+        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} 
                                  style={{justifyContent: "center", display: "flex"}}/>;
     }
 
