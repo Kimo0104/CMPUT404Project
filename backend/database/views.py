@@ -412,21 +412,21 @@ class PostsAPIs(viewsets.ViewSet):
             id = uuidGenerator()
         if not 'type' in body: body['type'] = "post"
         if not 'title' in body:
-            if body['contentType'] != Posts.IMAGE: return Response({'title must be supplied for non-image posts'})
+            if body['contentType'] != Posts.IMAGE: return Response({'title must be supplied for non-image posts'}, status=status.HTTP_400_BAD_REQUEST)
             else: body['title'] = ""
         if not 'source' in body: body['source'] = remote_host
         if not 'origin' in body: body['origin'] = remote_host
         if not 'description' in body:
-            if body['contentType'] != Posts.IMAGE: return Response({'description must be supplied for non-image posts'})
+            if body['contentType'] != Posts.IMAGE: return Response({'description must be supplied for non-image posts'}, status=status.HTTP_400_BAD_REQUEST)
             else: body['description'] = ""
-        if not 'contentType' in body: return Response({'contentType must be supplied'})
-        if not 'content' in body: return Response({'content must be supplied'})
-        if not 'visibility' in body: return Response({'visibility must be supplied'})
+        if not 'contentType' in body: return Response({'contentType must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if not 'content' in body: return Response({'content must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
+        if not 'visibility' in body: return Response({'visibility must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
         if (body['visibility'] != Posts.PUBLIC and body['visibility'] != Posts.FRIENDS and body['visibility'] != Posts.UNLISTED):
-            return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'})
+            return Response({'invalid post visibility, must be PUBLIC, FRIENDS or UNLISTED'}, status=status.HTTP_400_BAD_REQUEST)
         if (body['contentType'] != Posts.PLAINTEXT and body['contentType'] != Posts.MARKDOWN and body['contentType'] != Posts.IMAGE):
             return Response({'invalid post contentType, must be text/plain, text/markdown or image'})
-        if not 'originalAuthor' in body: return Response({'originalAuthor must be supplied'})
+        if not 'originalAuthor' in body: return Response({'originalAuthor must be supplied'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             originalAuthorId = body['originalAuthor']['id']
             Authors.objects.get(id = originalAuthorId)
@@ -453,7 +453,7 @@ class PostsAPIs(viewsets.ViewSet):
             visibility = body['visibility']
         )
         serializer = PostsSerializer(post)
-        return Response(serializer.data)
+        return Response(serializer.data, status = status.HTTP_200_OK)
 
 class CommentsAPIs(viewsets.ViewSet):
 

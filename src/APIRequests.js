@@ -260,7 +260,7 @@ export const createPost = async (authorId, data) => {
         }
     }
 
-    return response.data;
+    return response;
 }
 
 export const createComment = async (authorId, postId, data) => {

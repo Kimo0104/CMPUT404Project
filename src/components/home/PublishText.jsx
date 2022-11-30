@@ -60,7 +60,6 @@ export default function PublishText(props) {
 
     const handlePublish = () => {
         props.handleCancel();
-        // Api calls here
         const data = {
             type: "post",
             title: title,
@@ -71,10 +70,15 @@ export default function PublishText(props) {
             originalAuthor: userId
         }
         async function sendPostToInbox(){
-            const response = await createPost(userId, data);
-            const postId = response.id
-            if (visibility === "PUBLIC") sendPublicInbox(userId, postId)
-            if (visibility === "FRIENDS") sendFriendInbox(userId, postId)
+            await createPost(userId, data)
+                .then((response) => {
+                    const postId = response.data.id
+                    if (visibility === "PUBLIC") sendPublicInbox(userId, postId)
+                    if (visibility === "FRIENDS") sendFriendInbox(userId, postId)
+                })
+                .catch((reason) => {
+                    props.handleError();
+                });
         }
         sendPostToInbox();
     }
