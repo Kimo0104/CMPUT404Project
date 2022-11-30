@@ -59,7 +59,6 @@ export default function PublishImage(props) {
                         if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
                     })
                     .catch((reason) => {
-                        
                         props.handleError();
                     });
             }
@@ -69,7 +68,25 @@ export default function PublishImage(props) {
     }
 
     const handleUploadURL = () => {
-        
+        props.handleCancel();
+        const data = {
+            contentType: 'image',
+            content: imageURL,
+            visibility: visibility,
+            originalAuthor: authorId
+        }
+        async function sendPostToInbox(){
+            await createPost(authorId, data)
+                .then((response) => {
+                    const postId = response.data.id
+                    if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
+                    if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
+                })
+                .catch((reason) => {
+                    props.handleError();
+                });
+        }
+        sendPostToInbox();
     }
 
     return (
