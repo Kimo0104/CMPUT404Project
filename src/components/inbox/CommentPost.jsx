@@ -27,19 +27,6 @@ export default function BasicCard(props) {
 
   return (
     <Card sx={{ minWidth: 275 }} style={{backgroundColor: "#FAF9F6"}}>
-      <CardContent>
-        <Typography sx={{ fontSize: 18 }} color="text.primary" gutterBottom>
-          {commenterAuthor.displayName} commented on "{commentPost.title}":
-        </Typography>
-        { props.contentType === "text/plain" &&
-          <Typography sx={{ mb: 1.5, frontSize: 16 }} color="text.secondary">
-            {props.comment}
-          </Typography>
-        }
-        { props.contentType === "text/markdown" &&
-          <ReactMarkdown children={props.comment} remarkPlugins={[remarkGfm]} />
-        }
-      </CardContent>
       <Grid>
         <Grid container spacing={0.5}>
           <Grid item xs = {12}>
