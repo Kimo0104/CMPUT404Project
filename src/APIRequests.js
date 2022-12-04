@@ -70,6 +70,7 @@ export const createPostLike = async(likerId, postId) => {
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
         data19.author = liker;
+        data19.author.github = undefined;
         data19.object = TEAM19_URL + `/authors/${post.author.id}/posts/${postId}`;
         path = TEAM19_URL + `/authors/${post.author.id}/inbox/likes`;
         axios.post(path, data19, TEAM19_CONFIG);
@@ -97,6 +98,7 @@ export const createCommentLike = async(likerId, commentId) => {
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
         data19.author = liker;
+        data19.author.github = undefined;
         data19.object = TEAM19_URL + `/authors/${post.author.id}/posts/${post.id}/coments/${comment.id}`;
         path = TEAM19_URL + `/authors/${comment.author.id}/inbox/likes`;
         axios.post(path, data19, TEAM19_CONFIG);
@@ -163,6 +165,7 @@ export const getAuthor = async(authorId) => {
     let response = await axios.get(path);
     if (response.data !== "") { return response.data; }
 
+    var globalResponse = false;
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/`;
     await axios.get(path, TEAM12_CONFIG).then((response) => {
@@ -173,9 +176,11 @@ export const getAuthor = async(authorId) => {
             response.data.accepted = true;
             response.data.profileImage = response.data.profile_image;
             response.data.host = TEAM12_URL;
+            globalResponse = response.data;
             return response.data 
         }
-    }).catch((reason) => {});
+    }).catch((reason) => { console.clear(); });
+    if (globalResponse) { return globalResponse; }
 
     // TEAM 19
     path = TEAM19_URL + `/authors/${authorId}`;
@@ -183,11 +188,14 @@ export const getAuthor = async(authorId) => {
         if (response.data !== "Author matching query does not exist.") { 
             response.data.accepted = true;
             response.data.host = TEAM19_URL;
+            response.data.id = response.data.id.split('/authors/')[1];
+            globalResponse = response.data;
             return response.data; 
         }
-    }).catch((reason) => {});
+    }).catch((reason) => { console.clear(); });
+    if (globalResponse) { return globalResponse; }
 
-    return "Author does not exist";
+    return "Author not found";
 };
 
 export const createPost = async (authorId, data) => {
@@ -240,7 +248,6 @@ export const createPost = async (authorId, data) => {
             host: author.host,
             url: author.url,
             displayName: author.displayName,
-            github: author.github,
             profileImage: author.profileImage
         };
         data19.categories = "[]";
@@ -288,6 +295,7 @@ export const createComment = async (authorId, postId, data) => {
     if (poster && poster.host === TEAM19_URL) {
         let data19 = {};
         data19.author = author;
+        data19.author.github = undefined;
         data19.comment = data.comment;
         data19.post = data.postId;
         data19.contentType = data.contentType;
@@ -405,9 +413,10 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             host: SERVER_URL,
             url: `${SERVER_URL}/authors/${authorId}`,
             displayName: author.displayName,
-            github: author.github,
             profileImage: author.profileImage
         }
+        console.log(path);
+        console.log(data19);
         axios.post(path, data19, TEAM19_CONFIG);
     }
 
