@@ -165,25 +165,27 @@ export const getAuthor = async(authorId) => {
 
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/`;
-    response = await axios.get(path, TEAM12_CONFIG);
-    if (!response.data.detail) { 
-        response.data.displayName = response.data.username;
-        response.data.type = "author";
-        response.data.url = `${response.data.host}/authors/${authorId}/`;
-        response.data.accepted = true;
-        response.data.profileImage = response.data.profile_image;
-        response.data.host = TEAM12_URL;
-        return response.data 
-    }
+    await axios.get(path, TEAM12_CONFIG).then((response) => {
+        if (!response.data.detail) { 
+            response.data.displayName = response.data.username;
+            response.data.type = "author";
+            response.data.url = `${response.data.host}/authors/${authorId}/`;
+            response.data.accepted = true;
+            response.data.profileImage = response.data.profile_image;
+            response.data.host = TEAM12_URL;
+            return response.data 
+        }
+    }).catch((reason) => {});
 
     // TEAM 19
     path = TEAM19_URL + `/authors/${authorId}`;
-    response = await axios.get(path, TEAM19_CONFIG);
-    if (response.data !== "Author matching query does not exist.") { 
-        response.data.accepted = true;
-        response.data.host = TEAM19_URL;
-        return response.data; 
-    }
+    await axios.get(path, TEAM19_CONFIG).then((response) => {
+        if (response.data !== "Author matching query does not exist.") { 
+            response.data.accepted = true;
+            response.data.host = TEAM19_URL;
+            return response.data; 
+        }
+    }).catch((reason) => {});
 
     return "Author does not exist";
 };
@@ -395,7 +397,7 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19
-        let path = TEAM19_URL + `/authors/${authorId}/inbox/follows`;
+        let path = TEAM19_URL + `/authors/${foreignAuthorId}/inbox/follows`;
         let data19 = {};
         data19.summary = `${author.displayName} wants to follow you`;
         data19.actor = {
