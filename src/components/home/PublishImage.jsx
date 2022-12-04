@@ -55,6 +55,7 @@ export default function PublishImage(props) {
                 await createPost(authorId, data)
                     .then((response) => {
                         const postId = response.data.id
+                        props.updateMyPosts(props.page, props.size);
                         if (visibility === "PUBLIC") sendPublicInbox(authorId, postId)
                         if (visibility === "FRIENDS") sendFriendInbox(authorId, postId)
                     })

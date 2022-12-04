@@ -38,6 +38,7 @@ export default function BasicCard(props) {
   const handleDelete = () => {
     async function callDeletePost(){
       await deletePost(props.item.author, props.item.id)
+      props.updateMyPosts(props.page, props.size)
     }
     callDeletePost();
     setDeleteOpen(false);
@@ -67,6 +68,9 @@ export default function BasicCard(props) {
                 content = {props.item.content}
                 description = {props.item.description}
                 title = {props.item.title}
+                updateMyPosts={props.updateMyPosts}
+                page={props.page} 
+                size={props.size}
                 />
                 <Dialog
                   open={deleteOpen}

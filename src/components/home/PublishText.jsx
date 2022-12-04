@@ -73,6 +73,7 @@ export default function PublishText(props) {
             await createPost(userId, data)
                 .then((response) => {
                     const postId = response.data.id
+                    props.updateMyPosts(props.page, props.size);
                     if (visibility === "PUBLIC") sendPublicInbox(userId, postId)
                     if (visibility === "FRIENDS") sendFriendInbox(userId, postId)
                 })
