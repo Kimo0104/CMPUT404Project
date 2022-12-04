@@ -73,6 +73,7 @@ export default function ModifyPost(props) {
             };
             reader.readAsDataURL(selectedImage);
         }
+        props.updateMyPosts(props.page, props.size);
     }
     const [selectedImage, setSelectedImage] = useState(null);
     const [urlTextBox, setUrlTextBox] = useState(false);

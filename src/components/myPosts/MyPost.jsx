@@ -68,6 +68,9 @@ export default function BasicCard(props) {
                 content = {props.item.content}
                 description = {props.item.description}
                 title = {props.item.title}
+                updateMyPosts={props.updateMyPosts}
+                page={props.page} 
+                size={props.size}
                 />
                 <Dialog
                   open={deleteOpen}
