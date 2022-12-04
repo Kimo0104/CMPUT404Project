@@ -434,7 +434,9 @@ export const removeFollower = async (authorId, foreignAuthorId) => {
     const response = await axios.delete(`${path}`);
 
     if (foreignAuthor.host === TEAM12_URL) {
-        // TEAM 12 NOT IMPLEMENTED
+        // TEAM 12
+        path = TEAM12_URL + `/${foreignAuthorId}/unfollow/${authorId}/`
+        axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
         path = TEAM19_URL + `/authors/${foreignAuthorId}/followers/${authorId}`
