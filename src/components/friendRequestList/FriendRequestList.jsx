@@ -21,7 +21,7 @@ export default function FriendRequestList(props) {
   };
 
   const handleDeny = async (foreignAuthorId) => {
-    const removeFollowRequestResponse = 1//await removeFollowRequest(userId, foreignAuthorId);
+    const removeFollowRequestResponse = await removeFollowRequest(userId, foreignAuthorId);
     if (removeFollowRequestResponse === 200) {
       console.log("Follow request has been denied")
     }

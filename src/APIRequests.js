@@ -424,6 +424,8 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
 }
 
 export const removeFollower = async (authorId, foreignAuthorId) => {
+    // authorId is the followee
+    // foreignAuthorId is the follower
 
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
@@ -467,7 +469,9 @@ export const addFollower = async (authorId, foreignAuthorId) => {
     return response.data;
 }
 
-export const removeFollowRequest = async (authorId, foreignAuthorId) => {   
+export const removeFollowRequest = async (authorId, foreignAuthorId) => {  
+    // authorId is the followee
+    // foreignAuthorId is the follower  
     const path = SERVER_URL + `/authors/${authorId}/followRequest/${foreignAuthorId}`
     const response = await axios.delete(`${path}`);
  
