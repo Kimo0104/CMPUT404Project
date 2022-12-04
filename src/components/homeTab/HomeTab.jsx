@@ -41,7 +41,16 @@ export default function TabsWrappedLabel(props) {
           value === "one" && <Inbox authorId={props.authorId}/>
         }
         {
-          value === "two" && <MyPosts authorId={props.authorId}/>
+          value === "two" && 
+            <MyPosts 
+              authorId={props.authorId} 
+              inbox={props.inbox} 
+              numPages={props.numPages} 
+              handlePostsChange={props.handlePostsChange} 
+              updateMyPosts={props.updateMyPosts} 
+              page={props.page} 
+              size={props.size} 
+              />
         }
         {
           value === "three" && <GithubEvents github={author.github}/>
