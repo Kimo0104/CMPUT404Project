@@ -94,7 +94,8 @@ export default function Home() {
                     <Grid item xs={12} align="center" justify="top">
                       <PublishButton 
                         updateMyPosts={updateMyPosts} 
-                        page={page} size={size} 
+                        page={page} 
+                        size={size} 
                         handlePostsChange={handlePostsChange} 
                         setInbox={setInbox}
                         />
@@ -113,7 +114,10 @@ export default function Home() {
                     authorId={userId} 
                     inbox={inbox} 
                     numPages={numPages} 
+                    page={page} 
+                    size={size} 
                     handlePostsChange={handlePostsChange}
+                    updateMyPosts={updateMyPosts}
                     />
                 </Grid>
                 <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700 }} />

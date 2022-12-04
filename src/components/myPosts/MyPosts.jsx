@@ -20,7 +20,13 @@ export default function BasicStack(props) {
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
           props.inbox.map((item) => (
-            <MyPost item={item} key={key++}/>
+            <MyPost 
+              item={item} 
+              key={key++} 
+              updateMyPosts={props.updateMyPosts} 
+              page={props.page} 
+              size={props.size}
+              />
             ))
         }
       </Stack>

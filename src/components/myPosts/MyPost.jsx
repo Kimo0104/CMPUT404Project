@@ -38,6 +38,7 @@ export default function BasicCard(props) {
   const handleDelete = () => {
     async function callDeletePost(){
       await deletePost(props.item.author, props.item.id)
+      props.updateMyPosts(props.page, props.size)
     }
     callDeletePost();
     setDeleteOpen(false);
