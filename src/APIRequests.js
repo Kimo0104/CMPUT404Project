@@ -424,8 +424,8 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
 }
 
 export const removeFollower = async (authorId, foreignAuthorId) => {
-    // authorId is the followee
-    // foreignAuthorId is the follower
+    // authorId is the follower
+    // foreignAuthorId is the followee
 
     let foreignAuthor = await getAuthor(foreignAuthorId);
     if (foreignAuthor === "Author does not exist") { return foreignAuthor; }
@@ -435,7 +435,7 @@ export const removeFollower = async (authorId, foreignAuthorId) => {
 
     if (foreignAuthor.host === TEAM12_URL) {
         // TEAM 12
-        path = TEAM12_URL + `/${foreignAuthorId}/unfollow/${authorId}/`
+        path = TEAM12_URL + `/${authorId}/unfollow/${foreignAuthorId}/`
         axios.post(path, {}, TEAM12_CONFIG);
     } else if (foreignAuthor.host === TEAM19_URL) {
         // TEAM 19 has no logic required
