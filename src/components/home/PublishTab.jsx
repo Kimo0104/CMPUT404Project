@@ -11,7 +11,6 @@ export default function PublishTab(props) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
   return (
     <Box >
       <Tabs value={value} onChange={handleChange} centered>
@@ -23,6 +22,9 @@ export default function PublishTab(props) {
               handleClickOpen={props.handleClickOpen} 
               handleCancel={props.handleCancel}
               handleError = {props.handleError}
+              updateMyPosts={props.updateMyPosts} 
+              page={props.page} 
+              size={props.size}
               />
         }
         {
@@ -30,6 +32,9 @@ export default function PublishTab(props) {
               handleClickOpen={props.handleClickOpen} 
               handleCancel={props.handleCancel}
               handleError = {props.handleError}
+              updateMyPosts={props.updateMyPosts} 
+              page={props.page} 
+              size={props.size}
               />
         }
     </Box>

@@ -35,6 +35,9 @@ export default function PublishButton(props) {
                     handleClickOpen={handleClickOpen} 
                     handleCancel={handleCancel}
                     handleError = {handleError}
+                    updateMyPosts={props.updateMyPosts} 
+                    page={props.page} 
+                    size={props.size}
                      />
             </Dialog>
             { error && <Snackbar open={error} autoHideDuration={3000} onClose={handleCloseError}>
