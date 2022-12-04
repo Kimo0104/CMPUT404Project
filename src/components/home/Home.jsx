@@ -49,7 +49,6 @@ export default function Home() {
     // State change will cause component re-render
     async function fetchPublicPosts() {
       const output = await getPublicPosts(authorId, page, size);
-      if (output.posts.length == 0) { return; }
       setInbox(output.posts);
       setNumPages(Math.ceil(output.count/size));
     }
