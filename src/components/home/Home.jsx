@@ -65,7 +65,6 @@ export default function Home(props) {
   const fetchPost = () => {
     async function fetch(){
         const data = await getPost(userId, id);
-        console.log(data)
         setUnlistedPost(data);
     }
     fetch()
