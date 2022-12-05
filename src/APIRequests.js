@@ -261,7 +261,7 @@ export const createPost = async (authorId, data) => {
         
         for (let inboxee of inboxees) {
             if (inboxee.followerObj.host === TEAM19_URL) {
-                path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
+                path = TEAM19_URL + `/authors/${inboxee.follower}/inbox/posts`
                 axios.post(path, data19, TEAM19_CONFIG);
             }
         }
