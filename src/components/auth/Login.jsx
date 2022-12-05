@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser, authUser } from '../../APIRequests';
+import { loginUser, authUser, setAuthorizationHeader } from '../../APIRequests';
 import { userIdContext } from '../../App'
 
 export default function Login() {
@@ -33,6 +33,7 @@ export default function Login() {
                     let id = String(userID.id);
                     setUserId(id);
                     localStorage.setItem("userId", id);
+                    await setAuthorizationHeader();
                     navigate('/home');
                 }
             }

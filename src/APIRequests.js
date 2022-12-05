@@ -15,6 +15,12 @@ const TEAM19_CONFIG = {
     headers: {"Content-Type": "application/json",}
 };
 
+export const setAuthorizationHeader = async () => {
+    if (localStorage.getItem("token")) {
+        axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
+    }
+}
+
 if (localStorage.getItem("token")) {
     axios.defaults.headers.common = {'Authorization': `Bearer ${JSON.parse(localStorage.getItem("token")).jwt}`}
 }
