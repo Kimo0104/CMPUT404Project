@@ -214,11 +214,17 @@ export const createPost = async (authorId, data) => {
 
     let author = await getAuthor(authorId);
     if (author === "Author does not exist") { return author; }
+    let originalAuthor = author;
+    if (data.originalAuthor !== authorId) {
+        originalAuthor = await getAuthor(data.originalAuthor);
+    }
     
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/${author.displayName}/posts/`;
     let data12 = {};
     data12.author = author.id;
+    data12.original_author_id = originalAuthor.id;
+    data12.original_author = originalAuthor.displayName;
     data12.title = data.title;
     if (!data12.title || data12.title === "") { data12.title = "image post"; }
     data12.id = response.data.id;
