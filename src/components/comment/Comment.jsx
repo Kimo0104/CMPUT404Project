@@ -11,7 +11,7 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 
-import { createComment, checkFollowStatus } from '../../APIRequests';
+import { createComment } from '../../APIRequests';
 
 const contentTypes = [
     {
@@ -35,21 +35,6 @@ export default function FormDialog(props) {
   const handleClose = () => {
     setOpen(false);
   };
-
-  const [isFriends, setIsFriends] = React.useState(false);
-  
-  React.useEffect(() => {
-    async function loadAuthor() {
-      if (props.authorId === props.posterId) {
-        setIsFriends(true);
-      } else {
-        const following = await checkFollowStatus(props.authorId, props.posterId);
-        const followed = await checkFollowStatus(props.posterId, props.authorId);
-        setIsFriends(following === 2 && followed === 2);
-      }
-    }
-    loadAuthor();
-  }, []);
   
   const [contentType, setContentType] = React.useState("text/plain");
   
@@ -73,10 +58,6 @@ export default function FormDialog(props) {
     createComment(props.authorId, props.postId, data);
     setOpen(false);
   };
-
-  if (!isFriends) {
-    return;
-  }
 
   return (
     <DialogContentText align="center">
