@@ -229,11 +229,13 @@ export const createPost = async (authorId, data) => {
 
     // TEAM 19
     var inboxees = [];
+    console.log(data.visibility);
     if (data.visibility === "PUBLIC") {
         inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/followers`)).data;
     } else if (data.visiblity == "FRIENDS") {
         inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/friends`)).data;
     }
+    console.log(inboxees)
     if (inboxees.length > 0) {
         let data19 = {};
         data19.title = data.title;
@@ -261,6 +263,7 @@ export const createPost = async (authorId, data) => {
         
         for (let inboxee of inboxees) {
             if (inboxee.host === TEAM19_URL) {
+                console.log(path);
                 path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
                 axios.post(path, data19, TEAM19_CONFIG);
             }
