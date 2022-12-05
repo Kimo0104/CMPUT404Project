@@ -40,7 +40,7 @@ function App() {
                 <Route path={`profile/${userId}/manage`} element={<ManageProfile userId={userId}/>}/>
                 <Route path="follow" element={<Follow authorId={userId} foreignAuthorId="2" />}/>
                 <Route path="friendRequestList" element={<FriendRequestList authorId={userId} />}/>
-                <Route path={`unlisted`} element={<Home unlisted={true}/>}/>
+                <Route path="unlisted" element={<Home unlisted={true}/>}/>
               </Routes>
           </div>
         </div>
