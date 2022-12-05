@@ -18,9 +18,7 @@ export default function Follow(props) {
     const unfollow = async () => {
         // Unfollow another user
         const reqToUnfollow = await removeFollower(userId, props.foreignAuthorId);
-        if (reqToUnfollow === 200) {
-            setFollowing(0)
-        }
+        setFollowing(0)
     };
     
     React.useEffect(() => {
