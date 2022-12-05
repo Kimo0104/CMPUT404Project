@@ -10,7 +10,7 @@ import SearchPage from "../search/SearchPage.jsx";
 import IconButton from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Divider from '@mui/material/Divider';
-import { getPublicPosts } from '../../APIRequests'
+import { getPosts } from '../../APIRequests'
 import {useSearchParams} from "react-router-dom";
 import { getPost } from "../../APIRequests";
 import TextPost from '../inbox/TextPost.jsx'
@@ -54,12 +54,12 @@ export default function Home(props) {
 
   const updateMyPosts = (page, size) => {
     // State change will cause component re-render
-    async function fetchPublicPosts() {
-      const output = await getPublicPosts(authorId, page, size);
+    async function fetchPosts() {
+      const output = await getPosts(authorId, page, size, "ALL");
       setInbox(output.posts);
       setNumPages(Math.ceil(output.count/size));
     }
-    fetchPublicPosts();
+    fetchPosts();
   }
 
   const fetchPost = () => {

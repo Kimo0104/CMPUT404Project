@@ -25,9 +25,9 @@ export const getPost  = async (authorId, postId) => {
     return response.data;
 };
 
-export const getPublicPosts = async (authorId, page, size) => {
+export const getPosts = async (authorId, page, size, visibility = "PUBLIC") => {
     const path = SERVER_URL + `/authors/${authorId}/posts`;
-    const response = await axios.get(path, {params: {page: page, size: size}});
+    const response = await axios.get(path, {params: {visibility: visibility, page: page, size: size}});
     return response.data;
 }
 
