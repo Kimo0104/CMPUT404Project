@@ -307,7 +307,7 @@ export const createComment = async (authorId, postId, data) => {
         data19.author = author;
         data19.author.github = undefined;
         data19.comment = data.comment;
-        data19.post = data.postId;
+        data19.post = postId;
         data19.contentType = data.contentType;
         data19.published = new Date();
         path = TEAM19_URL + `/authors/${post.author.id}/inbox/comments`;
