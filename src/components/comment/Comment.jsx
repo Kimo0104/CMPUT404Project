@@ -40,9 +40,13 @@ export default function FormDialog(props) {
   
   React.useEffect(() => {
     async function loadAuthor() {
+      if (props.authorId === props.posterId) {
+        setIsFriends(true);
+      } else {
         const following = await checkFollowStatus(props.authorId, props.posterId);
         const followed = await checkFollowStatus(props.posterId, props.authorId);
         setIsFriends(following === 2 && followed === 2);
+      }
     }
     loadAuthor();
   }, []);
