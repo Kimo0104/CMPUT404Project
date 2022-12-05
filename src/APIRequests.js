@@ -56,7 +56,6 @@ export const createPostLike = async(likerId, postId) => {
     let liker = await getAuthor(likerId);
     if (liker === "Author does not exist") { return liker; }
     let post = (await axios.get(SERVER_URL + `/authors/1/posts/${postId}`)).data;
-    let poster = await getAuthor(post.author.id);
 
     // TEAM 12
     // ALWAYS send
@@ -65,7 +64,7 @@ export const createPostLike = async(likerId, postId) => {
 
     // TEAM 19
     // Only send if poster is from team 19
-    if (poster && poster.host === TEAM19_URL) {
+    if (post && post.author.host === TEAM19_URL) {
         let data19 = {};
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
@@ -86,14 +85,18 @@ export const createCommentLike = async(likerId, commentId) => {
     let liker = await getAuthor(likerId);
     if (liker === "Author does not exist") { return liker; }
     let comment = (await axios.get(SERVER_URL + `/authors/1/posts/1/comments/${commentId}`)).data;
-    let commenter = await getAuthor(comment.author.id);
     let post = (await axios.get(SERVER_URL + `/authors/1/posts/${comment.post.id}`)).data;
 
-    // TEAM 12 NOT IMPLEMENTED
+    // TEAM 12
+    // only create if commenter is from team 12 or team 13
+    if (comment && (comment.author.host === TEAM12_URL || comment.author.host === SERVER_URL)) {
+        path = TEAM12_URL + `/comments/${commentId}/likes/`;
+        axios.post(path, {}, TEAM12_CONFIG);
+    }
 
     // TEAM 19
     // ONLY send if author of comment is from TEAM 19
-    if (commenter && commenter.host == TEAM19_URL) {
+    if (comment && comment.author.host == TEAM19_URL) {
         let data19 = {};
         data19.context = SERVER_URL;
         data19.summary = `${liker.displayName} liked your post`;
@@ -113,14 +116,12 @@ export const deletePostLike = async(likerId, postId) => {
     let liker = await getAuthor(likerId);
     if (liker === "Author does not exist") { return liker; }
     let post = (await axios.get(SERVER_URL + `/authors/1/posts/${postId}`)).data;
-    let poster = await getAuthor(post.author.id);
 
     // TEAM 12
-    // only delete if poster is from team 12 or team 13
-    if (poster && (poster.host === TEAM12_URL || poster.host === SERVER_URL)) {
-        path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
-        axios.post(path, {}, TEAM12_CONFIG);
-    }
+    path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
+    axios.post(path, {}, TEAM12_CONFIG);
+
+    // TEAM 19 has no logic for this
 
     return response.data;
 };
@@ -129,7 +130,16 @@ export const deleteCommentLike = async(likerId, commentId) => {
     const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
     const response = await axios.delete(path);
 
-    // TEAM 12 NOT IMPLEMENTED
+    let liker = await getAuthor(likerId);
+    if (liker === "Author does not exist") { return liker; }
+    let comment = (await axios.get(SERVER_URL + `/authors/1/posts/1/comments/${commentId}`)).data;
+
+    // TEAM 12
+    // only delete if commenter is from team 12 or team 13
+    if (comment && (comment.author.host === TEAM12_URL || comment.author.host === SERVER_URL)) {
+        path = TEAM12_URL + `/comments/${commentId}/likes/`;
+        axios.post(path, {}, TEAM12_CONFIG);
+    }
 
     // TEAM 19 not required
 
@@ -278,7 +288,6 @@ export const createComment = async (authorId, postId, data) => {
     let author = await getAuthor(authorId);
     if (author === "Author does not exist") { return author; }
     let post = (await axios.get(SERVER_URL + `/authors/${authorId}/posts/${postId}`)).data;
-    let poster = await getAuthor(post.author.id);
 
     // TEAM 12
     // always send
@@ -293,7 +302,7 @@ export const createComment = async (authorId, postId, data) => {
 
     // TEAM 19
     // Only send comment if author of post is a team 19 author
-    if (poster && poster.host === TEAM19_URL) {
+    if (post && post.author.host === TEAM19_URL) {
         let data19 = {};
         data19.author = author;
         data19.author.github = undefined;
