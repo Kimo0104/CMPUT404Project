@@ -204,7 +204,7 @@ export const createPost = async (authorId, data) => {
 
     let author = await getAuthor(authorId);
     if (author === "Author does not exist") { return author; }
-
+    
     // TEAM 12
     path = TEAM12_URL + `/authors/${authorId}/${author.displayName}/posts/`;
     let data12 = {};
@@ -262,7 +262,7 @@ export const createPost = async (authorId, data) => {
         }
         
         for (let inboxee of inboxees) {
-            if (inboxee.host === TEAM19_URL) {
+            if (inboxee.followerHost === TEAM19_URL) {
                 console.log(path);
                 path = TEAM19_URL + `/authors/${inboxee.id}/inbox/posts`
                 axios.post(path, data19, TEAM19_CONFIG);

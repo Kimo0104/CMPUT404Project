@@ -1314,6 +1314,11 @@ class FollowsAPIs(viewsets.ViewSet):
         except Followers.DoesNotExist:
             followers = None
         serializer = FollowersSerializer(followers, many=True)
+
+        # get the host of each follower
+        for i in range(len(serializer.data)):
+            serializer.data[i]["followerHost"] = Authors.objects.get(id = serializer.data[i])
+
         return Response(serializer.data)
 
     #GET authors/{AUTHOR_ID}/friends
