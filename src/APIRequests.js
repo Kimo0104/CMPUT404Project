@@ -79,7 +79,7 @@ export const createPostLike = async(likerId, postId) => {
 };
 
 export const createCommentLike = async(likerId, commentId) => {
-    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
+    let path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
     const response = await axios.post(path);
 
     let liker = await getAuthor(likerId);
@@ -110,12 +110,12 @@ export const createCommentLike = async(likerId, commentId) => {
 };
 
 export const deletePostLike = async(likerId, postId) => {
-    const path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
+    let path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
     const response = await axios.delete(path);
 
     let liker = await getAuthor(likerId);
     if (liker === "Author does not exist") { return liker; }
-    let post = (await axios.get(SERVER_URL + `/authors/1/posts/${postId}`)).data;
+    // let post = (await axios.get(SERVER_URL + `/authors/1/posts/${postId}`)).data;
 
     // TEAM 12
     path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/posts/${postId}/likes/`;
@@ -127,7 +127,7 @@ export const deletePostLike = async(likerId, postId) => {
 };
 
 export const deleteCommentLike = async(likerId, commentId) => {
-    const path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
+    let path = SERVER_URL + `/authors/1/posts/1/comments/${commentId}/likes/${likerId}`;
     const response = await axios.delete(path);
 
     let liker = await getAuthor(likerId);
