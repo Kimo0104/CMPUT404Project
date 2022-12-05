@@ -1317,7 +1317,8 @@ class FollowsAPIs(viewsets.ViewSet):
 
         # get the host of each follower
         for i in range(len(serializer.data)):
-            serializer.data[i]["followerHost"] = Authors.objects.get(id = serializer.data[i])
+            serializer.data[i]["followerObj"] = AuthorsSerializer(Authors.objects.get(id = serializer.data[i]["follower"])).data
+            serializer.data[i]["followedObj"] = AuthorsSerializer(Authors.objects.get(id = serializer.data[i]["followed"])).data
 
         return Response(serializer.data)
 
