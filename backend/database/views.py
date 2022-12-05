@@ -289,15 +289,15 @@ class PostsAPIs(viewsets.ViewSet):
             return Response({"Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         author = Authors.objects.get(id=authorId)
-        if visibility == Posts.PUBLIC: publicPosts = Posts.objects.filter(author=author, visibility=Posts.PUBLIC).order_by('-published')
-        elif visibility == Posts.FRIENDS: publicPosts = Posts.objects.filter(author=author, visibility=Posts.FRIENDS).order_by('-published')
-        elif visibility == Posts.UNLISTED: publicPosts = Posts.objects.filter(author=author, visibility=Posts.UNLISTED).order_by('-published')
-        elif visibility == "ALL": publicPosts = Posts.objects.filter(author=author).order_by('-published')
+        if visibility == Posts.PUBLIC: posts = Posts.objects.filter(author=author, visibility=Posts.PUBLIC).order_by('-published')
+        elif visibility == Posts.FRIENDS: posts = Posts.objects.filter(author=author, visibility=Posts.FRIENDS).order_by('-published')
+        elif visibility == Posts.UNLISTED: posts = Posts.objects.filter(author=author, visibility=Posts.UNLISTED).order_by('-published')
+        elif visibility == "ALL": posts = Posts.objects.filter(author=author).order_by('-published')
         else: return Response("Invalid Visibility", status=status.HTTP_400_BAD_REQUEST )
 
         outputDic = {}
-        outputDic["count"] = publicPosts.count()
-        serializer = PostsSerializer(publicPosts[(page-1)*size:page*size], many=True)
+        outputDic["count"] = posts.count()
+        serializer = PostsSerializer(posts[(page-1)*size:page*size], many=True)
         outputDic["posts"] = serializer.data
         return Response(outputDic)
 
