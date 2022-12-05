@@ -231,9 +231,10 @@ export const createPost = async (authorId, data) => {
     var inboxees = [];
     if (data.visibility === "PUBLIC") {
         inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/followers`)).data;
-    } else if (data.visiblity == "FRIENDS") {
+    } else if (data.visibility === "FRIENDS") {
         inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/friends`)).data;
     }
+    console.log(inboxees);
     if (inboxees.length > 0) {
         let data19 = {};
         data19.title = data.title;

@@ -1341,13 +1341,11 @@ class FollowsAPIs(viewsets.ViewSet):
 
         friends = []
         for follower in Followers.objects.filter(followed=authorId):
-            if Followers.objects.filter(followed=follower.id, follower=authorId):
-                friends.append(FollowersSerializer(follower, many=False).data)
-
-        # get the host of each follower
-        for i in range(len(friends)):
-            friends[i]["followerObj"] = AuthorsSerializer(Authors.objects.get(id = friends[i]["follower"])).data
-            friends[i]["followedObj"] = AuthorsSerializer(Authors.objects.get(id = friends[i]["followed"])).data
+            if Followers.objects.filter(followed=follower.follower, follower=authorId).count() > 0:
+                friendSerialized = FollowersSerializer(follower, many=False).data
+                friendSerialized["followerObj"] = AuthorsSerializer(Authors.objects.get(id = follower.follower.id)).data
+                friendSerialized["followedObj"] = AuthorsSerializer(Authors.objects.get(id = follower.followed.id)).data
+                friends.append(friendSerialized)
         
         return Response(friends)
     
