@@ -998,8 +998,12 @@ class InboxAPIs(viewsets.ViewSet):
             #get enough comments, sorted
             for comment in Comments.objects.filter(post_id=post.id):
                 inboxObjs.append(DjangoObj(comment, CommentsSerializer(comment, many=False).data))
-                for commentLike in LikesComments.objects.filter(comment_id=comment.id):
-                    inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
+
+        # enough comment likes, sorted
+        for myComment in Comments.objects.filter(author_id=authorId):
+            for commentLike in LikesComments.objects.filter(comment_id=myComment.id):
+                inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
+
         #paginate
         inboxObjs.sort()
         outputDic = {}
