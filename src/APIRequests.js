@@ -1,6 +1,5 @@
 import axios from 'axios';
 import {TEAM14_URL, TEAM14_CONFIG, Team14AuthorToLocalAuthor} from './interactionUtils'
-//import React from 'react';
 
 export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000";
 const TEAM12_URL = "https://true-friends-404.herokuapp.com";
