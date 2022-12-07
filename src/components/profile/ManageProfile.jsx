@@ -1,7 +1,7 @@
 import * as React from 'react';
 import TopBar from '../topbar/TopBar.jsx'
 import { getAuthor, modifyAuthor, uploadImage } from '../../APIRequests'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Tooltip, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { userIdContext } from '../../App.js';
 import { SERVER_URL } from '../../APIRequests';
@@ -130,7 +130,9 @@ export default function ManageProfile(props)  {
         <div>
             <TopBar />
             <Typography variant="h3">{author.displayName}</Typography>
-            <img id="profileImage" alt="Profile" src={imageLink} style={{width:"40%"}} onClick={handleImagePress} />
+            <Tooltip title="Change Profile Image" followCursor>
+                <img id="profileImage" alt="Profile" src={imageLink} style={{width:"40%"}} onClick={handleImagePress} />
+            </Tooltip>
             <Grid container spacing={1} style={{justifyContent: "center", display: "flex"}}>
                 <Grid item xs={2} style={{paddingTop:"20px"}}>
                     <Typography>Github URL/Username: </Typography>
