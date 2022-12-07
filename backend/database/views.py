@@ -219,9 +219,6 @@ class UserAPIs(viewsets.ViewSet):
         return Response(data)
 
     def check_token(self, request, authorId):
-        token = request.headers["Authorization"].split()[1]
-        payload = jwt.decode(token, "secret", algorithms=["HS256"])
-        userId = payload["id"]
         try:
             token = request.headers["Authorization"].split()[1]
             payload = jwt.decode(token, "secret", algorithms=["HS256"])
