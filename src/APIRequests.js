@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {TEAM14_URL, TEAM14_CONFIG, Team14AuthorToLocalAuthor} from './interactionUtils'
 //import React from 'react';
 
 export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000";
@@ -203,6 +204,14 @@ export const getAuthor = async(authorId) => {
             return response.data; 
         }
     }).catch((reason) => { console.clear(); });
+
+    path = TEAM14_URL + `api/authors/${authorId}/   `
+    await axios.get(path, TEAM14_CONFIG).then((response) => {
+        if (response.data !== "Author not found") { 
+            globalResponse = Team14AuthorToLocalAuthor(response.data)
+        }
+    }).catch((reason) => { console.clear(); });
+
     if (globalResponse) { return globalResponse; }
 
     return "Author not found";
@@ -351,6 +360,15 @@ export const searchForAuthors = async (query, page, size) => {
             response.data.authorsPage.push(author);
         }
     }
+
+    path = TEAM14_URL + `api/authors/`
+    if (page!== null){
+        path += `?page=${page}`
+        if (size!== null) path += `&size=${size}`
+    } 
+    const team14Authors = (await axios.get(path, TEAM14_CONFIG)).data
+    for (const author of team14Authors.results)
+        if (author.display_name.includes(query)) response.data.authorsPage.push(Team14AuthorToLocalAuthor(author))
 
     return response.data;
 }
