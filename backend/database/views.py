@@ -334,9 +334,9 @@ class PostsAPIs(viewsets.ViewSet):
         postId = kwargs["postId"]
 
         #check that postId exist
-        if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
+        if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to update non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
-        post = Posts.objects.get(id=postId, visibility = Posts.PUBLIC)
+        post = Posts.objects.get(id=postId)
         body = request.data
         editableColumns = ["title", "description", "content"]
         edited = False
