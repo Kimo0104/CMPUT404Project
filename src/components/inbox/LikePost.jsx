@@ -6,8 +6,8 @@ export default function BasicCard(props) {
   //props has summary, context
   //likes show the title of the post with a desc "User liked this post!"
 
-  var message = `${props.summary}: ${props.context}`
-  if (!context || context === "") {
+  var message = `${props.summary}: ${props.context}`;
+  if (!props.context || props.context === "") {
     message = props.summary;
   }
 
