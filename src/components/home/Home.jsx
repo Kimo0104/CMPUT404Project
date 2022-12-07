@@ -11,6 +11,9 @@ import IconButton from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Divider from '@mui/material/Divider';
 import { getPublicPosts } from '../../APIRequests'
+import NotAcceptedPage from "./NotAcceptedPage.jsx";
+import { getAuthor } from "../../APIRequests";
+import { useNavigate } from "react-router-dom";
 
 // https://stackoverflow.com/a/64517088
 export const AuthorIdContext = React.createContext({
@@ -28,15 +31,19 @@ export const QueryContext = React.createContext({
 
 export default function Home() {
   const { userId } = React.useContext(userIdContext);
-
+  let navigate = useNavigate();
+  
   const [authorId, setAuthorId] = useState(localStorage.getItem("authorId") ? localStorage.getItem("authorId") : userId);
   const [showSearch, setShowSearch] = useState(localStorage.getItem("showSearch") ? localStorage.getItem("showSearch") : "false");
   const [query, setQuery] = useState(localStorage.getItem("query") ? localStorage.getItem("query") : "");
+
+  const [showHome, setShowHome] = useState(undefined);
 
   // Code for PublishTab and Myposts
   const size = 5;
   const [numPages, setNumPages] = React.useState(0);
   const [page, setPage] = React.useState(1);
+
 
   const handlePostsChange = (event, value) => {
     setPage(value);
@@ -53,7 +60,19 @@ export default function Home() {
       setNumPages(Math.ceil(output.count/size));
     }
     fetchPublicPosts();
+
+    async function fetchAuthor() {
+      const author = await getAuthor(userId);
+      if (author == "Author not found") {
+        navigate("/");
+      } else {
+        setShowHome(author.accepted);
+      }
+    }
+    fetchAuthor();
   }
+
+  
 
   React.useEffect(() => {
     updateMyPosts(page, size);
@@ -80,63 +99,69 @@ export default function Home() {
     rightPane = <Profile authorId={authorId}/>;
   }
 
-  return (
-    <AuthorIdContext.Provider value={{authorId, setAuthorId}}>
-      <ShowSearchContext.Provider value={{showSearch, setShowSearch}}>
-        <QueryContext.Provider value={{query, setQuery}}>
-          <div>
-            <TopBar/>
+  if (showHome) {
+    return (
+      <AuthorIdContext.Provider value={{authorId, setAuthorId}}>
+        <ShowSearchContext.Provider value={{showSearch, setShowSearch}}>
+          <QueryContext.Provider value={{query, setQuery}}>
             <div>
-              <Grid container>
-                <Grid item xs={3}>
-                  <Grid container rowSpacing={3} sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
-                    <Grid item xs={12} align="center" justify="top">
-                      <PublishButton 
-                        updateMyPosts={updateMyPosts} 
-                        page={page} 
-                        size={size} 
-                        handlePostsChange={handlePostsChange} 
-                        setInbox={setInbox}
-                        />
-                    </Grid>
-                    <Grid item xs={12} align="center" justify="center">
-                      <Divider orientation="horizontal" flexItem sx={{ mr: "-1px" }} />
-                    </Grid>
-                    <Grid item xs={12} align="center" justify="center">
-                      <FriendRequestList authorId={userId} />
+              <TopBar/>
+              <div>
+                <Grid container>
+                  <Grid item xs={3}>
+                    <Grid container rowSpacing={3} sx={{ width: '90%', marginRight: 3, marginLeft: 3, marginTop: 3}}>
+                      <Grid item xs={12} align="center" justify="top">
+                        <PublishButton 
+                          updateMyPosts={updateMyPosts} 
+                          page={page} 
+                          size={size} 
+                          handlePostsChange={handlePostsChange} 
+                          setInbox={setInbox}
+                          />
+                      </Grid>
+                      <Grid item xs={12} align="center" justify="center">
+                        <Divider orientation="horizontal" flexItem sx={{ mr: "-1px" }} />
+                      </Grid>
+                      <Grid item xs={12} align="center" justify="center">
+                        <FriendRequestList authorId={userId} />
+                      </Grid>
                     </Grid>
                   </Grid>
-                </Grid>
-                <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700}} />
-                <Grid item xs={5.5}>
-                  <HomeTab 
-                    authorId={userId} 
-                    inbox={inbox} 
-                    numPages={numPages} 
-                    page={page} 
-                    size={size} 
-                    handlePostsChange={handlePostsChange}
-                    updateMyPosts={updateMyPosts}
-                    />
-                </Grid>
-                <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700 }} />
-                <Grid item xs={3.5}>
-                {(authorId !== userId || showSearch == "true") &&
-                        <Grid container>
-                          <Grid item xs={2}>
-                            <IconButton onClick={handleBack} size="medium">
-                              <ArrowBackIcon/>
-                            </IconButton>
+                  <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700}} />
+                  <Grid item xs={5.5}>
+                    <HomeTab 
+                      authorId={userId} 
+                      inbox={inbox} 
+                      numPages={numPages} 
+                      page={page} 
+                      size={size} 
+                      handlePostsChange={handlePostsChange}
+                      updateMyPosts={updateMyPosts}
+                      />
+                  </Grid>
+                  <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700 }} />
+                  <Grid item xs={3.5}>
+                  {(authorId !== userId || showSearch == "true") &&
+                          <Grid container>
+                            <Grid item xs={2}>
+                              <IconButton onClick={handleBack} size="medium">
+                                <ArrowBackIcon/>
+                              </IconButton>
+                            </Grid>
                           </Grid>
-                        </Grid>
-                        }
-                {rightPane}
+                          }
+                  {rightPane}
+                  </Grid>
                 </Grid>
-              </Grid>
+              </div>
             </div>
-          </div>
-        </QueryContext.Provider>
-      </ShowSearchContext.Provider>
-    </AuthorIdContext.Provider>
-  )
+          </QueryContext.Provider>
+        </ShowSearchContext.Provider>
+      </AuthorIdContext.Provider>
+    )
+  } else {
+    if (showHome != undefined) {
+      return <NotAcceptedPage/>
+    }
+  }
 }

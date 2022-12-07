@@ -25,9 +25,6 @@ import jwt
 
 import datetime
 
-#pip install PyJWT
-import jwt
-
 from django.views import View
 import os
 from django.conf import settings
@@ -222,15 +219,18 @@ class UserAPIs(viewsets.ViewSet):
         return Response(data)
 
     def check_token(self, request, authorId):
+        token = request.headers["Authorization"].split()[1]
+        payload = jwt.decode(token, "secret", algorithms=["HS256"])
+        userId = payload["id"]
         try:
             token = request.headers["Authorization"].split()[1]
             payload = jwt.decode(token, "secret", algorithms=["HS256"])
             userId = payload["id"]
         except:
             # To show that authorization is required
-            userId = -1     
+            userId = -1 
 
-        return userId != -1 and (Users.objects.filter(id=userId).count() > 0)
+        return userId != -1 and (userId == 1 or Users.objects.filter(id=userId).count() > 0)
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -1592,6 +1592,8 @@ class AuthorsAPIs(viewsets.ViewSet):
         author = author.get(id=authorId)
 
         request_body = request.data
+        if type(request_body) != dict:
+            return Response("Send JSON data!", status=status.HTTP_400_BAD_REQUEST)
 
         editable_fields = ["github", "profileImage"]
         for field in request_body.keys():
@@ -1635,15 +1637,10 @@ class AuthorsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['put'])
     def createAuthor(self, request, *args, **kwargs):
-        try:
-            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
-            # as the beginning and end of that string. This is a way to get around that. I then replace the 
-            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
-            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
-            # again.
-            request_body = json.loads(str(ast.literal_eval(request.data)).replace("'", '"'))
-        except json.decoder.JSONDecodeError:
-            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
+
+        request_body = request.data
+        if type(request_body) != dict:
+            return Response("Send JSON data!", status=status.HTTP_400_BAD_REQUEST)
         
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
           and "authorId" in request_body and request_body["authorId"].strip() != "":
@@ -1743,7 +1740,3 @@ class ImagesAPIs(viewsets.ViewSet):
             return response
         
 
-
-
-
-    

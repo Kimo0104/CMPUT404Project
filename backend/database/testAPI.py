@@ -1,15 +1,19 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
 from rest_framework import status
-from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers
+from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers, Users
 from django.db.utils import IntegrityError
+from .views import remote_host
 import ast
+
+testAuthToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzAxOTM1MDY3LCJpYXQiOjE2NzAzNzM4Njd9.qU2PYOcfqakXXWEhDkmI90B5EhLTkCxvpaZpWW2gH7k"
+headers = {"HTTP_AUTHORIZATION": f"Bearer {testAuthToken}"}
 
 class AccountsTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user. 
-        self.test_user = User.objects.create_user(
+        self.test_user = Users.objects.create_user(
             username="testuser", 
             password="12345"
         )
@@ -17,17 +21,6 @@ class AccountsTest(APITestCase):
     # Test whether user exists 
     def test_user_exists(self):
         self.assertEqual(self.test_user.username,"testuser")
-        self.assertEqual(self.test_user.email,"testuser@gmail.com")
-
-    # Test whether user gets created
-    def test_create_user_with_preexisting_email(self):
-        data = {
-            "username": "testuser2",
-            "email": "testuser2@gmail.com",
-            "password": "testuser2"
-        }
-        response = self.client.post(reverse('users'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # Test user with empty credentials
     def test_create_user_with_no_info(self):
@@ -43,6 +36,7 @@ class AccountsTest(APITestCase):
 
 class CommentsAPITest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         self.test_author1 = Authors.objects.create(
             id = "1",
             host = "test-host",
@@ -160,6 +154,7 @@ class CommentsAPITest(APITestCase):
 
 class LikesTest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         #create three authors
         #author 1 makes a post
         #author 2 makes a comment
@@ -482,6 +477,7 @@ class LikesTest(APITestCase):
 
 class LikedTests(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         # make two authors
         # author 1 makes a post
         # author 1 makes a comment
@@ -665,6 +661,7 @@ class LikedTests(APITestCase):
 
 class InboxTest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         # make two authors
         # author 1 makes a post
         # author 1 makes a comment on post
@@ -894,6 +891,7 @@ class InboxTest(APITestCase):
 
 class PostTest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         self.test_author = Authors.objects.create(
             id = 1,
             host = "test-host",
@@ -1058,6 +1056,7 @@ class PostTest(APITestCase):
 
 class FollowRequestsAPITest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         self.test_author = Authors.objects.create(
             id = 1,
             host = "test-host",
@@ -1108,6 +1107,7 @@ class FollowRequestsAPITest(APITestCase):
 
 class FollowsAPITest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         self.test_author = Authors.objects.create(
             id = 1,
             host = "test-host",
@@ -1182,21 +1182,12 @@ class FollowsAPITest(APITestCase):
 
 class AccountsTest(APITestCase):
     def setUp(self):
-        self.test_user = User.objects.create_user(
+        self.client.credentials(**headers)
+        self.test_user = Users.objects.create_user(
             username="testuser", 
             email="testuser@gmail.com",
             password="12345"
         )
-    
-    # Test whether user gets created
-    def test_create_user_with_preexisting_email(self):
-        data = {
-            "username": "testuser2",
-            "email": "testuser2@gmail.com",
-            "password": "testuser2"
-        }
-        response = self.client.post(reverse('users'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # Test user with empty credentials
     def test_create_user_with_no_info(self):
@@ -1208,32 +1199,33 @@ class AccountsTest(APITestCase):
 
         response = self.client.put(reverse('authors'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    
+
 class AuthorsTest(APITestCase):
     def setUp(self):
+        self.client.credentials(**headers)
         # Creates Authors with IDs 1 to 10 (We need multiple authors to test
         # pagination in some API methods)
         self.test_author = Authors.objects.create(
                             id="1", 
-                            host="//service", 
+                            host=remote_host, 
                             displayName="test_author_1", 
                             url="//service/author/1", 
                             github="http://github.com/test_author_1", 
                             accepted=True, 
                             profileImage="url_to_profile_image"
                             )
-        User.objects.create(username=self.test_author.displayName, email="test_", password="test")
+        Users.objects.create(username=self.test_author.displayName, email="test_", password="test")
         for i in range(2, 11):
             test_author_i = Authors.objects.create(
                                 id=str(i), 
-                                host="//service", 
+                                host=remote_host, 
                                 displayName=f"test_author_{i}", 
                                 url=f"//service/author/{i}", 
                                 github=f"http://github.com/test_author_{i}", 
                                 accepted=True, 
                                 profileImage="url_to_profile_image"
                                 )
-            User.objects.create(username=test_author_i.displayName, email=f"test_{i}", password="test")
+            Users.objects.create(username=test_author_i.displayName, email=f"test_{i}", password="test")
         
 
     '''
@@ -1258,7 +1250,7 @@ class AuthorsTest(APITestCase):
     '''
     def testGetNonExistingAuthor(self):
         response = self.client.get(reverse('manage-authors', args=["100"]), format="json")
-        assert(response.status_code == status.HTTP_404_NOT_FOUND)
+        assert(response.status_code == status.HTTP_204_NO_CONTENT)
     
     '''
     Tests that editing an existing author actually modifies that Authors object in the
@@ -1287,7 +1279,8 @@ class AuthorsTest(APITestCase):
             "github": "http://github.com/new_github_url",
             "profileImage": "new_profileImage_url"
         }
-        response = self.client.post(reverse('manage-authors', args=["100"]), data, format="json")
+        
+        response = self.client.post(reverse('manage-authors', args=["100"]), data, format="json")#, HTTP_AUTHORIZATION=testAuthToken)
         assert(response.status_code == status.HTTP_404_NOT_FOUND)
     
     '''

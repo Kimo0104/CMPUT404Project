@@ -7,6 +7,9 @@ class Users(AbstractUser):
         id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 class Authors(models.Model):
+    class Meta:
+        verbose_name_plural = 'Authors'
+
     id = models.CharField(max_length = 255, primary_key = True)
     type = models.CharField(max_length = 255, default = "author")
     host = models.CharField(max_length = 255)
@@ -17,6 +20,9 @@ class Authors(models.Model):
     profileImage = models.TextField()
 
 class Posts(models.Model):
+    class Meta:
+        verbose_name_plural = 'Posts'
+
     PLAINTEXT = 'text/plain'
     MARKDOWN = 'text/markdown'
     IMAGE = 'image'
@@ -49,18 +55,27 @@ class Posts(models.Model):
 
 
 class Followers(models.Model):
+    class Meta:
+        verbose_name_plural = 'Followers'
+        
     id = models.CharField(max_length = 255, primary_key = True)
     followed = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "follower")
     follower = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "followed")
 
 
 class FollowRequests(models.Model):
+    class Meta:
+        verbose_name_plural = 'FollowRequests'
+        
     id = models.CharField(max_length = 255, primary_key = True)
     receiver = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "receiver")
     requester = models.ForeignKey(Authors, on_delete= models.CASCADE, related_name = "requester")
 
 
 class Comments(models.Model):
+    class Meta:
+        verbose_name_plural = 'Comments'
+        
     PLAINTEXT = 'text/plain'
     MARKDOWN = 'text/markdown'
     choices = [
@@ -80,6 +95,9 @@ class Comments(models.Model):
     published = models.DateTimeField(auto_now_add = True)
 
 class Likes(models.Model):
+    class Meta:
+        verbose_name_plural = 'Likes'
+        
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
@@ -89,6 +107,9 @@ class Likes(models.Model):
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
 
 class LikesComments(models.Model):
+    class Meta:
+        verbose_name_plural = 'LikesComments'
+        
     id = models.CharField(max_length=255, primary_key = True)
     context = models.CharField(max_length=255)
     summary = models.CharField(max_length=64)
@@ -98,6 +119,9 @@ class LikesComments(models.Model):
     comment = models.ForeignKey(Comments, on_delete = models.CASCADE)
 
 class Inbox(models.Model):
+    class Meta:
+        verbose_name_plural = 'Inboxes'
+        
     id = models.CharField(max_length=255, primary_key = True)
     author = models.ForeignKey(Authors, on_delete = models.CASCADE)
     post = models.ForeignKey(Posts, on_delete = models.CASCADE)
