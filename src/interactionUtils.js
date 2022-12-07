@@ -1,5 +1,3 @@
-import { TransformRounded } from "@mui/icons-material";
-
 //const TEAM14_URL = "https://social-distribution-14degrees.herokuapp.com/"
 export const TEAM14_URL = "http://localhost:5900/"
 export const TEAM14_CONFIG = {
