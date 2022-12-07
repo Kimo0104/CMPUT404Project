@@ -603,7 +603,10 @@ class CommentsAPIs(viewsets.ViewSet):
             comment = comment
         )
 
-        return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
+        output = {}
+        output["message"] = "Comment Created Successfully"
+        output["id"] = id
+        return Response(output, status=status.HTTP_200_OK)
 
 class LikesAPIs(viewsets.ViewSet):
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
