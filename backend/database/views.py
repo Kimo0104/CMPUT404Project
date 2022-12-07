@@ -366,7 +366,7 @@ class PostsAPIs(viewsets.ViewSet):
             
         postId = kwargs["postId"]
         try:
-            Posts.objects.get(id = postId, visibility = Posts.PUBLIC).delete()
+            Posts.objects.get(id = postId).delete()
         except Posts.DoesNotExist:
             return Response({"No Public Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
         return Response({"Success"}, status=status.HTTP_200_OK)
