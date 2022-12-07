@@ -10,14 +10,15 @@ Defines a transformation from a team 14 author object
 to a local author object.
 */
 export const Team14AuthorToLocalAuthor = (author) => {
-    let transformed = {}
-    transformed.id = author.id
-    transformed.type = "author"
-    transformed.host = TEAM14_URL
-    transformed.displayName = author.display_name
-    transformed.url = author.url
-    transformed.github = author.github_handle
-    transformed.accepted = true
-    transformed.profileImage = author.profile_image
+    let transformed = {
+        id: author.id,
+        type: "author",
+        host: TEAM14_URL,
+        displayName: author.display_name,
+        url: author.url,
+        github: author.github_handle,
+        accepted: true,
+        profileImage: author.profile_image
+    }
     return transformed
 }
