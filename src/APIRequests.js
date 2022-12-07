@@ -96,7 +96,7 @@ export const createCommentLike = async(likerId, commentId) => {
     // TEAM 12
     // only create if commenter is from team 12 or team 13
     if (comment && (comment.author.host === TEAM12_URL || comment.author.host === SERVER_URL)) {
-        path = TEAM12_URL + `/comments/${commentId}/likes/`;
+        path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/comments/${commentId}/likes/`;
         axios.post(path, {}, TEAM12_CONFIG);
     }
 
@@ -231,6 +231,7 @@ export const createPost = async (authorId, data) => {
     data12.author = author.id;
     data12.original_author_id = originalAuthor.id;
     data12.original_author = originalAuthor.displayName;
+    data12.original_author_host = originalAuthor.host;
     data12.title = data.title;
     if (!data12.title || data12.title === "") { data12.title = "image post"; }
     data12.id = response.data.id;
