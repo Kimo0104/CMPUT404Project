@@ -1,6 +1,9 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
+<<<<<<< HEAD
 #from django.contrib.auth.models import User
+=======
+>>>>>>> 37a31a44a2639aeca3792ebca275e16830345c33
 from rest_framework import status
 from .models import Posts, Authors, Comments, Likes, LikesComments, Inbox, FollowRequests, Followers, Users
 from django.db.utils import IntegrityError
