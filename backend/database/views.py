@@ -271,7 +271,7 @@ class PostsAPIs(viewsets.ViewSet):
         }
     )
     @action(detail=True, methods=['get'])
-    def getPublicPosts(self, request, *args, **kwargs):
+    def getPosts(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         authenticated = UserAPIs().check_token(request, authorId)
         if not authenticated:
@@ -283,15 +283,21 @@ class PostsAPIs(viewsets.ViewSet):
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
 
+        visibility = request.GET.get('visibility',"PUBLIC")
+
         if Authors.objects.filter(id=authorId).count() == 0:
             return Response({"Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         author = Authors.objects.get(id=authorId)
-        publicPosts = Posts.objects.filter(author=author, visibility="PUBLIC").order_by('-published')
+        if visibility == Posts.PUBLIC: posts = Posts.objects.filter(author=author, visibility=Posts.PUBLIC).order_by('-published')
+        elif visibility == Posts.FRIENDS: posts = Posts.objects.filter(author=author, visibility=Posts.FRIENDS).order_by('-published')
+        elif visibility == Posts.UNLISTED: posts = Posts.objects.filter(author=author, visibility=Posts.UNLISTED).order_by('-published')
+        elif visibility == "ALL": posts = Posts.objects.filter(author=author).order_by('-published')
+        else: return Response("Invalid Visibility", status=status.HTTP_400_BAD_REQUEST )
 
         outputDic = {}
-        outputDic["count"] = publicPosts.count()
-        serializer = PostsSerializer(publicPosts[(page-1)*size:page*size], many=True)
+        outputDic["count"] = posts.count()
+        serializer = PostsSerializer(posts[(page-1)*size:page*size], many=True)
         outputDic["posts"] = serializer.data
         return Response(outputDic)
 

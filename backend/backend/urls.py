@@ -52,7 +52,7 @@ urlpatterns = [
     path('admin/', admin.site.urls, name = 'admin'),
 
     #posts
-    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost", "get": "getPublicPosts"}), name = 'post'),
+    path('authors/<str:authorId>/posts', PostsAPIs.as_view({"put": "createPost", "get": "getPosts"}), name = 'post'),
     path('authors/<str:authorId>/posts/<str:postId>', PostsAPIs.as_view({
         "get": "getPost",
         "post": "updatePost",
