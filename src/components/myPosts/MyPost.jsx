@@ -15,9 +15,13 @@ import { deletePost } from "../../APIRequests.js";
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import ModifyPost from './ModifyPost.jsx'
+import LinkIcon from '@mui/icons-material/Link';
+import UnlistedPostDialog from "./UnlistedPostDialog.jsx";
 
 export default function BasicCard(props) {
   const [editOpen, setEditOpen] = useState(false);
+  const [unlistedDialogOpen, setUnlistedDialogOpen] = useState(false);
+
   const handleClickEditOpen = () => {
     setEditOpen(true);
   };
@@ -44,6 +48,14 @@ export default function BasicCard(props) {
     setDeleteOpen(false);
   };
 
+  const handleGetUnlistedLink = () => {
+    setUnlistedDialogOpen(true)
+  }
+
+  const handleCloseUnlistedDialog = () => {
+    setUnlistedDialogOpen(false)
+  }
+
   //props contains title, content
   return (
     <Card sx={{ minWidth: 275 }}  style={{backgroundColor: "#FAF9F6"}}>
@@ -57,7 +69,15 @@ export default function BasicCard(props) {
                 </Typography>
               </Grid>
             <Grid item xs={3.7} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end' }}>
-              <EditIcon variant="outlined" onClick={handleClickEditOpen}/>
+              {props.item.visibility == 'UNLISTED' && <LinkIcon onClick={handleGetUnlistedLink}/>}
+              {!(props.item.visibility == 'UNLISTED') && <EditIcon variant="outlined" onClick={handleClickEditOpen}/>}
+              {unlistedDialogOpen && <UnlistedPostDialog
+                  open={unlistedDialogOpen}
+                  handleOpen={handleGetUnlistedLink}
+                  handleClose={handleCloseUnlistedDialog}
+                  id = {props.item.id}
+                />
+              }
               <DeleteIcon variant="outlined" onClick={handleClickDeleteOpen}/>
               <ModifyPost 
                 handleEditCancel={handleEditCancel}

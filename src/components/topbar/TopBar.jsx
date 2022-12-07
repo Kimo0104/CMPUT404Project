@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { QueryContext, ShowSearchContext } from '../home/Home';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const SearchInput = () => {
 
@@ -93,6 +93,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function SearchAppBar() {
+  const navigate = useNavigate();
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -101,8 +102,12 @@ export default function SearchAppBar() {
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
+            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, cursor:'pointer' }}
             align = "justify"
+            onClick={()=> {
+              navigate("/home");
+              navigate(0);
+            }}
           >
             Social Distribution
           </Typography>
