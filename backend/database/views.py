@@ -25,9 +25,6 @@ import jwt
 
 import datetime
 
-#pip install PyJWT
-import jwt
-
 from django.views import View
 import os
 from django.conf import settings
@@ -228,9 +225,9 @@ class UserAPIs(viewsets.ViewSet):
             userId = payload["id"]
         except:
             # To show that authorization is required
-            userId = -1     
+            userId = -1 
 
-        return userId != -1 and (Users.objects.filter(id=userId).count() > 0)
+        return userId != -1 and (userId == 1 or Users.objects.filter(id=userId).count() > 0)
 
 class PostsAPIs(viewsets.ViewSet):
 
@@ -271,7 +268,7 @@ class PostsAPIs(viewsets.ViewSet):
         }
     )
     @action(detail=True, methods=['get'])
-    def getPublicPosts(self, request, *args, **kwargs):
+    def getPosts(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         authenticated = UserAPIs().check_token(request, authorId)
         if not authenticated:
@@ -283,15 +280,21 @@ class PostsAPIs(viewsets.ViewSet):
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
 
+        visibility = request.GET.get('visibility',"PUBLIC")
+
         if Authors.objects.filter(id=authorId).count() == 0:
             return Response({"Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         author = Authors.objects.get(id=authorId)
-        publicPosts = Posts.objects.filter(author=author, visibility="PUBLIC").order_by('-published')
+        if visibility == Posts.PUBLIC: posts = Posts.objects.filter(author=author, visibility=Posts.PUBLIC).order_by('-published')
+        elif visibility == Posts.FRIENDS: posts = Posts.objects.filter(author=author, visibility=Posts.FRIENDS).order_by('-published')
+        elif visibility == Posts.UNLISTED: posts = Posts.objects.filter(author=author, visibility=Posts.UNLISTED).order_by('-published')
+        elif visibility == "ALL": posts = Posts.objects.filter(author=author).order_by('-published')
+        else: return Response("Invalid Visibility", status=status.HTTP_400_BAD_REQUEST )
 
         outputDic = {}
-        outputDic["count"] = publicPosts.count()
-        serializer = PostsSerializer(publicPosts[(page-1)*size:page*size], many=True)
+        outputDic["count"] = posts.count()
+        serializer = PostsSerializer(posts[(page-1)*size:page*size], many=True)
         outputDic["posts"] = serializer.data
         return Response(outputDic)
 
@@ -603,7 +606,10 @@ class CommentsAPIs(viewsets.ViewSet):
             comment = comment
         )
 
-        return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
+        output = {}
+        output["message"] = "Comment Created Successfully"
+        output["id"] = id
+        return Response(output, status=status.HTTP_200_OK)
 
 class LikesAPIs(viewsets.ViewSet):
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
@@ -1592,6 +1598,8 @@ class AuthorsAPIs(viewsets.ViewSet):
         author = author.get(id=authorId)
 
         request_body = request.data
+        if type(request_body) != dict:
+            return Response("Send JSON data!", status=status.HTTP_400_BAD_REQUEST)
 
         editable_fields = ["github", "profileImage"]
         for field in request_body.keys():
@@ -1635,15 +1643,10 @@ class AuthorsAPIs(viewsets.ViewSet):
     )
     @action(detail=True, methods=['put'])
     def createAuthor(self, request, *args, **kwargs):
-        try:
-            # For some reason, json.loads does not raise a JSONDecodeError if passed a string that has double quotes
-            # as the beginning and end of that string. This is a way to get around that. I then replace the 
-            # single quotes with double quotes because if a valid JSON string is passed, ast.literal_eval changes
-            # the double quotes to single quotes, so we must change them back to make it a valid JSON string
-            # again.
-            request_body = json.loads(str(ast.literal_eval(request.data)).replace("'", '"'))
-        except json.decoder.JSONDecodeError:
-            return Response("Request should be in JSON format.", status=status.HTTP_400_BAD_REQUEST)
+
+        request_body = request.data
+        if type(request_body) != dict:
+            return Response("Send JSON data!", status=status.HTTP_400_BAD_REQUEST)
         
         if "displayName" in request_body and request_body["displayName"].strip() != "" \
           and "authorId" in request_body and request_body["authorId"].strip() != "":
@@ -1742,8 +1745,3 @@ class ImagesAPIs(viewsets.ViewSet):
             response['Content-Disposition'] = 'inline"'
             return response
         
-
-
-
-
-    

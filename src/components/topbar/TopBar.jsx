@@ -94,14 +94,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function SearchAppBar() {
-
   let navigate = useNavigate();
 
   function handleLogout() {
     localStorage.clear();
     navigate("/");
   }
-
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -110,8 +109,12 @@ export default function SearchAppBar() {
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
+            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, cursor:'pointer' }}
             align = "justify"
+            onClick={()=> {
+              navigate("/home");
+              navigate(0);
+            }}
           >
             Social Distribution
           </Typography>
