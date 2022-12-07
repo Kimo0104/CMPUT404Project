@@ -55,7 +55,7 @@ export default function Home(props) {
   const updateMyPosts = (page, size) => {
     // State change will cause component re-render
     async function fetchPosts() {
-      const output = await getPosts(authorId, page, size, "ALL");
+      const output = await getPosts(userId, page, size, "ALL");
       setInbox(output.posts);
       setNumPages(Math.ceil(output.count/size));
     }
