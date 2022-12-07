@@ -1,6 +1,6 @@
-//const TEAM14_URL = "https://social-distribution-14degrees.herokuapp.com/"
 export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000";
 export const TEAM14_URL = "http://localhost:5900/"
+//export const TEAM14_URL = "https://social-distribution-14degrees.herokuapp.com/"
 export const TEAM14_CONFIG = {
     auth: {username: 'team13', password: 'kareem'}, 
     headers: {"Content-Type": "application/json"}
