@@ -7,7 +7,8 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { QueryContext, ShowSearchContext } from '../home/Home';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Button } from '@mui/material';
 
 const SearchInput = () => {
 
@@ -93,7 +94,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function SearchAppBar() {
-  const navigate = useNavigate();
+  let navigate = useNavigate();
+
+  function handleLogout() {
+    localStorage.clear();
+    navigate("/");
+  }
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -111,6 +118,7 @@ export default function SearchAppBar() {
           >
             Social Distribution
           </Typography>
+          <Button variant="contained" onClick={handleLogout}>Logout</Button>
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
