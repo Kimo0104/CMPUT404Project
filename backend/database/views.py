@@ -23,7 +23,7 @@ import datetime
 #pip install PyJWT
 import jwt
 
-import datetime
+from datetime import datetime
 
 from django.views import View
 import os
@@ -36,7 +36,7 @@ def uuidGenerator():
     return str(uuid.uuid4())
 
 def getCurrentDate():
-    return datetime.today().strftime('%Y-%m-%dT%H:%M:%S')
+    return datetime.today().isoformat()
 
 def expandPost(post):
     serializedPost = PostsSerializer(post).data
@@ -989,23 +989,30 @@ class InboxAPIs(viewsets.ViewSet):
 
         inboxObjs = []
         #get enough posts, sorted
+        oldestDate = getCurrentDate()
         for inbox in Inbox.objects.filter(author_id=authorId):
             post = Posts.objects.get(id=inbox.post_id)
             inboxObjs.append(DjangoObj(post, PostsSerializer(post, many=False).data))
+            if post.published < oldestDate:
+                oldestDate = post.published
 
+        # only include objects that were published after the oldest publish date of a post
         for post in Posts.objects.filter(author_id=authorId):
             #get enough likes, sorted
             for like in Likes.objects.filter(post_id=post.id):
-                inboxObjs.append(DjangoObj(like, LikesSerializer(like, many=False).data))
+                if like.published >= oldestDate:
+                    inboxObjs.append(DjangoObj(like, LikesSerializer(like, many=False).data))
 
             #get enough comments, sorted
             for comment in Comments.objects.filter(post_id=post.id):
-                inboxObjs.append(DjangoObj(comment, CommentsSerializer(comment, many=False).data))
+                if comment.published >= oldestDate:
+                    inboxObjs.append(DjangoObj(comment, CommentsSerializer(comment, many=False).data))
 
         # enough comment likes, sorted
         for myComment in Comments.objects.filter(author_id=authorId):
             for commentLike in LikesComments.objects.filter(comment_id=myComment.id):
-                inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
+                if commentLike.published >= oldestDate:
+                    inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
 
         #paginate
         inboxObjs.sort()

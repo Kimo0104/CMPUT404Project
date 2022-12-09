@@ -684,19 +684,5 @@ class AuthorsTest(TestCase):
                 profileImage="url_to_profile_image"
             )
     
-    '''
-    Ensures that the UNIQUE constraint on the displayName field of the Authors model
-    is actually met.
-    '''
-    def testDuplicateDisplayName(self):
-        with self.assertRaisesRegex(IntegrityError, "duplicate key value violates unique constraint"):
-            Authors.objects.create(
-                id=3,
-                host="//service", 
-                displayName="test_author_1", 
-                url=f"//service/author/2", 
-                profileImage="url_to_profile_image"
-            )
-    
 
 
