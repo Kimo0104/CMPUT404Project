@@ -1,5 +1,5 @@
 import './App.css';
-import React from "react";
+import React, { useEffect } from "react";
 import Login from './components/auth/Login.jsx'
 import Register from './components/auth/Register.jsx'
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
@@ -21,7 +21,7 @@ export const userIdContext = React.createContext({
   });
 
 function App() {
-
+  
   const [userId, setUserId] = React.useState(localStorage.getItem("userId") ? localStorage.getItem("userId") : "1");
   
   return (
@@ -34,8 +34,8 @@ function App() {
               } */}
               <Routes>
                 <Route path="/" element={<Login/>} exact/>
-                <Route path="register" element={<Register/>}/>
-                <Route path="home" element={<Home/>}/>
+                <Route path="/register" element={<Register/>}/>
+                <Route path="home" element={<Home unlisted={false}/>}/>
                 <Route path="profile" element={<Navigate to={`/profile/${userId}`}/>}/>
                 <Route path={"profile/:exact"} element={<Profile userId={userId}/>}/>
                 <Route path="search" element={<SearchPage userId={userId}/>}/>
@@ -43,6 +43,7 @@ function App() {
                 <Route path="follow" element={<Follow authorId={userId} foreignAuthorId="2" />}/>
                 <Route path="friendRequestList" element={<FriendRequestList authorId={userId} />}/>
                 <Route path="notAccepted" element={<NotAcceptedPage/>}/>
+                <Route path="unlisted" element={<Home unlisted={true}/>}/>
               </Routes>
           </div>
         </div>

@@ -271,7 +271,7 @@ class PostsAPIs(viewsets.ViewSet):
         }
     )
     @action(detail=True, methods=['get'])
-    def getPublicPosts(self, request, *args, **kwargs):
+    def getPosts(self, request, *args, **kwargs):
         authorId = kwargs["authorId"]
         authenticated = UserAPIs().check_token(request, authorId)
         if not authenticated:
@@ -283,15 +283,21 @@ class PostsAPIs(viewsets.ViewSet):
         except:
             return Response("{Page or Size not an integer}", status=status.HTTP_400_BAD_REQUEST )
 
+        visibility = request.GET.get('visibility',"PUBLIC")
+
         if Authors.objects.filter(id=authorId).count() == 0:
             return Response({"Author does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
         author = Authors.objects.get(id=authorId)
-        publicPosts = Posts.objects.filter(author=author, visibility="PUBLIC").order_by('-published')
+        if visibility == Posts.PUBLIC: posts = Posts.objects.filter(author=author, visibility=Posts.PUBLIC).order_by('-published')
+        elif visibility == Posts.FRIENDS: posts = Posts.objects.filter(author=author, visibility=Posts.FRIENDS).order_by('-published')
+        elif visibility == Posts.UNLISTED: posts = Posts.objects.filter(author=author, visibility=Posts.UNLISTED).order_by('-published')
+        elif visibility == "ALL": posts = Posts.objects.filter(author=author).order_by('-published')
+        else: return Response("Invalid Visibility", status=status.HTTP_400_BAD_REQUEST )
 
         outputDic = {}
-        outputDic["count"] = publicPosts.count()
-        serializer = PostsSerializer(publicPosts[(page-1)*size:page*size], many=True)
+        outputDic["count"] = posts.count()
+        serializer = PostsSerializer(posts[(page-1)*size:page*size], many=True)
         outputDic["posts"] = serializer.data
         return Response(outputDic)
 
@@ -331,9 +337,9 @@ class PostsAPIs(viewsets.ViewSet):
         postId = kwargs["postId"]
 
         #check that postId exist
-        if not Posts.objects.filter(id=postId, visibility = Posts.PUBLIC).count() == 1:
+        if not Posts.objects.filter(id=postId).count() == 1:
             return Response({"Tried to update non-existent post or non-public post"}, status=status.HTTP_400_BAD_REQUEST)
-        post = Posts.objects.get(id=postId, visibility = Posts.PUBLIC)
+        post = Posts.objects.get(id=postId)
         body = request.data
         editableColumns = ["title", "description", "content"]
         edited = False
@@ -363,7 +369,7 @@ class PostsAPIs(viewsets.ViewSet):
             
         postId = kwargs["postId"]
         try:
-            Posts.objects.get(id = postId, visibility = Posts.PUBLIC).delete()
+            Posts.objects.get(id = postId).delete()
         except Posts.DoesNotExist:
             return Response({"No Public Post Exists with this ID"}, status = status.HTTP_400_BAD_REQUEST)
         return Response({"Success"}, status=status.HTTP_200_OK)
@@ -603,7 +609,10 @@ class CommentsAPIs(viewsets.ViewSet):
             comment = comment
         )
 
-        return Response({"Comment Created Successfully"}, status=status.HTTP_200_OK)
+        output = {}
+        output["message"] = "Comment Created Successfully"
+        output["id"] = id
+        return Response(output, status=status.HTTP_200_OK)
 
 class LikesAPIs(viewsets.ViewSet):
     #POST authors/{AUTHOR_ID}/posts/{POST_ID}/likes/{LIKER_ID}
@@ -992,8 +1001,12 @@ class InboxAPIs(viewsets.ViewSet):
             #get enough comments, sorted
             for comment in Comments.objects.filter(post_id=post.id):
                 inboxObjs.append(DjangoObj(comment, CommentsSerializer(comment, many=False).data))
-                for commentLike in LikesComments.objects.filter(comment_id=comment.id):
-                    inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
+
+        # enough comment likes, sorted
+        for myComment in Comments.objects.filter(author_id=authorId):
+            for commentLike in LikesComments.objects.filter(comment_id=myComment.id):
+                inboxObjs.append(DjangoObj(commentLike, LikesCommentsSerializer(commentLike, many=False).data))
+
         #paginate
         inboxObjs.sort()
         outputDic = {}
@@ -1739,4 +1752,3 @@ class ImagesAPIs(viewsets.ViewSet):
             response['Content-Disposition'] = 'inline"'
             return response
         
-

@@ -10,7 +10,10 @@ import SearchPage from "../search/SearchPage.jsx";
 import IconButton from '@mui/material/Button';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Divider from '@mui/material/Divider';
-import { getPublicPosts } from '../../APIRequests'
+import { getPosts } from '../../APIRequests'
+import {useSearchParams} from "react-router-dom";
+import { getPost } from "../../APIRequests";
+import TextPost from '../inbox/TextPost.jsx'
 import NotAcceptedPage from "./NotAcceptedPage.jsx";
 import { getAuthor } from "../../APIRequests";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +32,11 @@ export const QueryContext = React.createContext({
   setQuery: (value) => {}
 })
 
-export default function Home() {
+export default function Home(props) {
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get('id');
+  const [unlistedPost, setUnlistedPost] = React.useState({});
+
   const { userId } = React.useContext(userIdContext);
   let navigate = useNavigate();
   
@@ -54,12 +61,12 @@ export default function Home() {
 
   const updateMyPosts = (page, size) => {
     // State change will cause component re-render
-    async function fetchPublicPosts() {
-      const output = await getPublicPosts(authorId, page, size);
+    async function fetchPosts() {
+      const output = await getPosts(userId, page, size, "ALL");
       setInbox(output.posts);
       setNumPages(Math.ceil(output.count/size));
     }
-    fetchPublicPosts();
+    fetchPosts();
 
     async function fetchAuthor() {
       const author = await getAuthor(userId);
@@ -72,12 +79,19 @@ export default function Home() {
     fetchAuthor();
   }
 
+  const fetchPost = () => {
+    async function fetch(){
+        const data = await getPost(userId, id);
+        setUnlistedPost(data);
+    }
+    fetch()
+  }
+
   
 
   React.useEffect(() => {
-    updateMyPosts(page, size);
-    // disable this warning because updateMyPosts has to be used outside of the useEffect as well
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!props.unlisted) updateMyPosts(page, size);
+    if (props.unlisted) fetchPost();
   }, []);
 
   // https://stackoverflow.com/a/53455443
@@ -129,7 +143,7 @@ export default function Home() {
                   </Grid>
                   <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700}} />
                   <Grid item xs={5.5}>
-                    <HomeTab 
+                  {!props.unlisted && <HomeTab 
                       authorId={userId} 
                       inbox={inbox} 
                       numPages={numPages} 
@@ -137,7 +151,20 @@ export default function Home() {
                       size={size} 
                       handlePostsChange={handlePostsChange}
                       updateMyPosts={updateMyPosts}
-                      />
+                      />}
+                      {props.unlisted && 
+                        <TextPost 
+                          authorId={unlistedPost.authorId} 
+                          title={unlistedPost.title} 
+                          source={unlistedPost.source}
+                          origin={unlistedPost.origin}
+                          description={unlistedPost.description}
+                          contentType={unlistedPost.contentType}
+                          content={unlistedPost.content} 
+                          originalAuthor={unlistedPost.originalAuthor}
+                          visibility={unlistedPost.visibility}
+                          postId={unlistedPost.id}/>
+                      }
                   </Grid>
                   <Divider orientation="vertical" flexItem sx={{ mr: "-1px", minHeight: 700 }} />
                   <Grid item xs={3.5}>
@@ -155,10 +182,10 @@ export default function Home() {
                 </Grid>
               </div>
             </div>
-          </QueryContext.Provider>
-        </ShowSearchContext.Provider>
-      </AuthorIdContext.Provider>
-    )
+            </QueryContext.Provider>
+          </ShowSearchContext.Provider>
+        </AuthorIdContext.Provider>
+      )
   } else {
     if (showHome != undefined) {
       return <NotAcceptedPage/>

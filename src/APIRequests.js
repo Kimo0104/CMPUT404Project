@@ -1,19 +1,15 @@
 import axios from 'axios';
-//import React from 'react';
+import {SERVER_URL,
+    TEAM12_URL,
+    TEAM12_CONFIG,
+    TEAM19_URL,
+    TEAM19_CONFIG,
+    TEAM14_URL, 
+    TEAM14_CONFIG, 
+    Team14AuthorToLocalAuthor,
+    Team14FollowRequestBody
+} from './interactionUtils'
 
-export const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:8000";
-const TEAM12_URL = "https://true-friends-404.herokuapp.com";
-const TEAM12_CONFIG = {
-    headers: {
-        Authorization: "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc4NDQxOTA4LCJpYXQiOjE2Njk4MDE5MDgsImp0aSI6IjIxMjYzYTFjMmY0YTQwMTViNmJkMjllNGViMTVhZTAyIiwidXNlcl9lbWFpbCI6InRlYW0xM0BtYWlsLmNvbSJ9.UiyWRyd4RUbE6GZALe-HkuegXhJrE_ufx5hNoAeIArk",
-        "Content-Type": "application/json"
-    }
-}
-const TEAM19_URL = "https://social-distribution-404.herokuapp.com";
-const TEAM19_CONFIG = {
-    auth: {username: 'Admin13', password: 'password'}, 
-    headers: {"Content-Type": "application/json",}
-};
 
 export const setAuthorizationHeader = async () => {
     if (localStorage.getItem("token")) {
@@ -31,9 +27,9 @@ export const getPost  = async (authorId, postId) => {
     return response.data;
 };
 
-export const getPublicPosts = async (authorId, page, size) => {
+export const getPosts = async (authorId, page, size, visibility = "PUBLIC") => {
     const path = SERVER_URL + `/authors/${authorId}/posts`;
-    const response = await axios.get(path, {params: {page: page, size: size}});
+    const response = await axios.get(path, {params: {visibility: visibility, page: page, size: size}});
     return response.data;
 }
 
@@ -96,7 +92,7 @@ export const createCommentLike = async(likerId, commentId) => {
     // TEAM 12
     // only create if commenter is from team 12 or team 13
     if (comment && (comment.author.host === TEAM12_URL || comment.author.host === SERVER_URL)) {
-        path = TEAM12_URL + `/comments/${commentId}/likes/`;
+        path = TEAM12_URL + `/authors/${likerId}/${liker.displayName}/comments/${commentId}/likes/`;
         axios.post(path, {}, TEAM12_CONFIG);
     }
 
@@ -209,6 +205,14 @@ export const getAuthor = async(authorId) => {
             return response.data; 
         }
     }).catch((reason) => { console.clear(); });
+
+    // path = TEAM14_URL + `api/authors/${authorId}/   `
+    // await axios.get(path, TEAM14_CONFIG).then((response) => {
+    //     if (response.data !== "Author not found") { 
+    //         globalResponse = Team14AuthorToLocalAuthor(response.data)
+    //     }
+    // }).catch((reason) => { console.clear(); });
+
     if (globalResponse) { return globalResponse; }
 
     return "Author not found";
@@ -231,6 +235,7 @@ export const createPost = async (authorId, data) => {
     data12.author = author.id;
     data12.original_author_id = originalAuthor.id;
     data12.original_author = originalAuthor.displayName;
+    data12.original_author_host = originalAuthor.host;
     data12.title = data.title;
     if (!data12.title || data12.title === "") { data12.title = "image post"; }
     data12.id = response.data.id;
@@ -256,7 +261,6 @@ export const createPost = async (authorId, data) => {
     } else if (data.visibility === "FRIENDS") {
         inboxees = (await axios.get(SERVER_URL+`/authors/${authorId}/friends`)).data;
     }
-    console.log(inboxees);
     if (inboxees.length > 0) {
         let data19 = {};
         data19.title = data.title;
@@ -364,6 +368,15 @@ export const searchForAuthors = async (query, page, size) => {
         }
     }
 
+    // path = TEAM14_URL + `api/authors/`
+    // if (page!== null){
+    //     path += `?page=${page}`
+    //     if (size!== null) path += `&size=${size}`
+    // } 
+    // const team14Authors = (await axios.get(path, TEAM14_CONFIG)).data
+    // for (const author of team14Authors.results)
+    //     if (author.display_name.includes(query)) response.data.authorsPage.push(Team14AuthorToLocalAuthor(author))
+
     return response.data;
 }
 
@@ -437,9 +450,12 @@ export const requestToFollow = async (authorId, foreignAuthorId) => {
             displayName: author.displayName,
             profileImage: author.profileImage
         }
-        console.log(path);
-        console.log(data19);
         axios.post(path, data19, TEAM19_CONFIG);
+    }
+    else if (foreignAuthor.host === TEAM14_URL){
+        // let path = TEAM14_URL + `api/authors/${foreignAuthorId}/inbox/`
+        // let body = Team14FollowRequestBody(authorId, foreignAuthorId)
+        // axios.post(path, body, TEAM14_CONFIG)
     }
 
     return response.data;

@@ -5,7 +5,6 @@ import Divider from '@mui/material/Divider';
 import Pagination from '@mui/material/Pagination';
 
 import MyPost from './MyPost'
-import { getPublicPosts } from '../../APIRequests'
 
 export default function BasicStack(props) {
   //props contains authorId
