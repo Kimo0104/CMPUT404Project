@@ -24,6 +24,7 @@ import datetime
 import jwt
 
 import datetime
+from datetime import datetime as dt
 
 from django.views import View
 import os
@@ -36,7 +37,7 @@ def uuidGenerator():
     return str(uuid.uuid4())
 
 def getCurrentDate():
-    return datetime.datetime.today().isoformat()
+    return dt.today().isoformat()
 
 def expandPost(post):
     serializedPost = PostsSerializer(post).data
@@ -989,11 +990,11 @@ class InboxAPIs(viewsets.ViewSet):
 
         inboxObjs = []
         #get enough posts, sorted
-        oldestDate = getCurrentDate()
+        oldestDate = None
         for inbox in Inbox.objects.filter(author_id=authorId):
             post = Posts.objects.get(id=inbox.post_id)
             inboxObjs.append(DjangoObj(post, PostsSerializer(post, many=False).data))
-            if post.published < oldestDate:
+            if not oldestDate or post.published < oldestDate:
                 oldestDate = post.published
 
         # only include objects that were published after the oldest publish date of a post
