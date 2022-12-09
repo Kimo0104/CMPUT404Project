@@ -33,7 +33,7 @@ const SearchInput = () => {
     localStorage.setItem("showSearch", "true");
     localStorage.setItem("query", [searchValue, 1]);
     //navigate(`/search?query=${searchValue}`);
-    if (window.location.href.split("/")[-1] == "manage") {
+    if (window.location.href.split("/").slice(-1)[0] == "manage") {
       navigate("/home");
     }
   }

@@ -12,6 +12,7 @@ export default function SearchPage(props) {
     const [authors, setAuthors] = React.useState([]);
     const [numPages, setNumPages] = React.useState(0);
     const [lastQuery, setLastQuery] = React.useState('');
+    const [authorsPage, setAuthorsPage] = React.useState([]);
 
     const { setQuery } = React.useContext(QueryContext);
 
@@ -41,10 +42,12 @@ export default function SearchPage(props) {
         }
 
         setAuthors(data.authorsPage);
+        setAuthorsPage(data.authorsPage.slice(0, size));
         setNumPages(parseInt(data.numPages));
         if (data.authorsPage.length == 0) {
             document.getElementById("searchtext").innerText = "No search results were found";
         }
+        setLastQuery(query);
         //setSearchParams(`query=${query}&page=${page}&size=${size}`);
 
     }
@@ -61,31 +64,40 @@ export default function SearchPage(props) {
         localStorage.setItem("query", [query[0], pageNumber]);
         if (query !== lastQuery) {
             setLastQuery(query);
-            fetchFilteredAuthors(query[0], query[1], size);
+            //fetchFilteredAuthors(query[0], query[1], size);
         }
+        setAuthorsPage(authors.slice((pageNumber-1)*size, pageNumber*size));
 
         //navigate(searchPath);
         //navigate(0);
     }
 
     React.useEffect(() => {
-        fetchFilteredAuthors(query[0], query[1], size);
-    }, [lastQuery]);
+        fetchFilteredAuthors(query[0], 1, size);
+        if (document.getElementById("searchtext")) {
+            document.getElementById("searchtext").innerText = "Loading...";
+        }
+    }, [query]);
 
     let pagination = "";
     if (numPages != 0 && authors.length > 0) {
-        pagination = <Pagination count={numPages} color="secondary" onChange={handlePageChange} page={+query[1]} 
+        pagination = <Pagination count={Math.ceil(authors.length/size)} color="secondary" onChange={handlePageChange} page={+query[1]} 
                                  style={{justifyContent: "center", display: "flex"}}/>;
     }
 
     return (
         <div>
-            {authors.length > 0 ?
-                <SearchList filteredAuthors={authors}/>
+            {authors.length > 0 && (query[0] == lastQuery[0] || query[0] == lastQuery)?
+                <SearchList filteredAuthors={authorsPage}/>
             :
                 <Typography id="searchtext" variant="h5">Loading...</Typography>   
             }
-            {pagination}
+            {authors.length > 0 && numPages != 0 && (query[0] == lastQuery[0] || query[0] == lastQuery) ?
+                <Pagination count={Math.ceil(authors.length/size)} color="secondary" onChange={handlePageChange} page={+query[1]} 
+                style={{justifyContent: "center", display: "flex"}}/>
+                :
+                ""
+            }   
         </div>
     );
 
