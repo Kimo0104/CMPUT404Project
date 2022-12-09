@@ -23,7 +23,7 @@ import datetime
 #pip install PyJWT
 import jwt
 
-from datetime import datetime
+import datetime
 
 from django.views import View
 import os
@@ -36,7 +36,7 @@ def uuidGenerator():
     return str(uuid.uuid4())
 
 def getCurrentDate():
-    return datetime.today().isoformat()
+    return datetime.datetime.today().isoformat()
 
 def expandPost(post):
     serializedPost = PostsSerializer(post).data
