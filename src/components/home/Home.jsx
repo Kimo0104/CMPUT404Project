@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid';
 import TopBar from '../topbar/TopBar.jsx'
 import HomeTab from '../homeTab/HomeTab'
 import PublishButton from "./PublishButton.jsx";
+import ClearInbox from "./../inbox/ClearInbox.jsx"
 import FriendRequestList from "../friendRequestList/FriendRequestList";
 import { userIdContext } from '../../App';
 import Profile from "../profile/Profile.jsx";
@@ -132,6 +133,9 @@ export default function Home(props) {
                           handlePostsChange={handlePostsChange} 
                           setInbox={setInbox}
                           />
+                      </Grid>
+                      <Grid item xs={12} align="center" justify="top">
+                        <ClearInbox authorId={userId} setInbox={setInbox}/>
                       </Grid>
                       <Grid item xs={12} align="center" justify="center">
                         <Divider orientation="horizontal" flexItem sx={{ mr: "-1px" }} />
