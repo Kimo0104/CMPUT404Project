@@ -58,6 +58,7 @@ export default function Home(props) {
     updateMyPosts(value, size);
   };
 
+  const [realInbox, setRealInbox] = React.useState([]);
   const [inbox, setInbox] = React.useState([]);
 
   const updateMyPosts = (page, size) => {
@@ -135,7 +136,7 @@ export default function Home(props) {
                           />
                       </Grid>
                       <Grid item xs={12} align="center" justify="top">
-                        <ClearInbox authorId={userId} setInbox={setInbox}/>
+                        <ClearInbox authorId={userId} setInbox={setRealInbox}/>
                       </Grid>
                       <Grid item xs={12} align="center" justify="center">
                         <Divider orientation="horizontal" flexItem sx={{ mr: "-1px" }} />
@@ -155,6 +156,8 @@ export default function Home(props) {
                       size={size} 
                       handlePostsChange={handlePostsChange}
                       updateMyPosts={updateMyPosts}
+                      realInbox={realInbox}
+                      setRealInbox={setRealInbox}
                       />}
                       {props.unlisted && 
                         <TextPost 

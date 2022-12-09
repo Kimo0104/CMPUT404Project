@@ -11,7 +11,7 @@ import GithubEvents from '../githubEvents/GithubEvents';
 import { getAuthor } from '../../APIRequests'
 
 export default function TabsWrappedLabel(props) {
-  // contains authorId
+  // contains authorId, realInbox, setRealInbox
   const [value, setValue] = React.useState('one');
 
   const [author, setAuthor] = React.useState(null);
@@ -38,7 +38,7 @@ export default function TabsWrappedLabel(props) {
         }
       </Tabs>
         {
-          value === "one" && <Inbox authorId={props.authorId}/>
+          value === "one" && <Inbox authorId={props.authorId} inbox={props.realInbox} setInbox={props.setRealInbox}/>
         }
         {
           value === "two" && 
