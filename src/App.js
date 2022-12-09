@@ -10,6 +10,8 @@ import SearchPage from './components/search/SearchPage';
 import Follow from './components/follow/Follow.jsx'
 import FriendRequestList from './components/friendRequestList/FriendRequestList.jsx'
 import axios from 'axios';
+import NotAcceptedPage from './components/home/NotAcceptedPage';
+
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 
@@ -40,6 +42,7 @@ function App() {
                 <Route path={`profile/${userId}/manage`} element={<ManageProfile userId={userId}/>}/>
                 <Route path="follow" element={<Follow authorId={userId} foreignAuthorId="2" />}/>
                 <Route path="friendRequestList" element={<FriendRequestList authorId={userId} />}/>
+                <Route path="notAccepted" element={<NotAcceptedPage/>}/>
                 <Route path="unlisted" element={<Home unlisted={true}/>}/>
               </Routes>
           </div>
