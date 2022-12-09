@@ -345,7 +345,8 @@ export const searchForAuthors = async (query, page, size) => {
         path += `&page=${page}`;
     }
     if (size !== null) {
-        path += `&size=${size}`;
+        //path += `&size=${size}`;
+        path += `&size=${1000000}`;
     }
     const response = await axios.get(path);
 
