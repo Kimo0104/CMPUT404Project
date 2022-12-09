@@ -8,7 +8,7 @@ import InboxItem from './InboxItem'
 import { getInbox } from '../../APIRequests'
 
 export default function BasicStack(props) {
-  //props contains authorId
+  //props contains authorId, inbox, setInbox
 
   var key = 1;
 
@@ -21,14 +21,12 @@ export default function BasicStack(props) {
     updateInbox(value, size);
   };
 
-  const [inbox, setInbox] = React.useState([]);
-
   const updateInbox = (page, size) => {
     // State change will cause component re-render
     async function fetchInbox() {
       const output = await getInbox(props.authorId, page, size);
       if (output == "{Nothing to show}") { return; }
-      setInbox(output.inbox);
+      props.setInbox(output.inbox);
       setNumPages(Math.ceil(output.count/size));
     }
     fetchInbox();
@@ -47,7 +45,7 @@ export default function BasicStack(props) {
       </Stack>
       <Stack spacing={2} divider={<Divider orientation="horizontal" flexItem />}>
         {
-          inbox.map((item) => (
+          props.inbox.map((item) => (
             <InboxItem authorId={props.authorId} item={item} key={key++}/>
             ))
         }

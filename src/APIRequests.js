@@ -51,6 +51,12 @@ export const sendFriendInbox = async(authorId, postId) => {
     return response.data;
 };
 
+export const deleteInbox = async(authorId) => {
+    const path = SERVER_URL + `/authors/${authorId}/inbox`;
+    const response = await axios.delete(path);
+    return response.data;
+};
+
 export const createPostLike = async(likerId, postId) => {
     let path = SERVER_URL + `/authors/1/posts/${postId}/likes/${likerId}`;
     const response = await axios.post(path);

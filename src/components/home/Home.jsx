@@ -3,6 +3,7 @@ import Grid from '@mui/material/Grid';
 import TopBar from '../topbar/TopBar.jsx'
 import HomeTab from '../homeTab/HomeTab'
 import PublishButton from "./PublishButton.jsx";
+import ClearInbox from "./../inbox/ClearInbox.jsx"
 import FriendRequestList from "../friendRequestList/FriendRequestList";
 import { userIdContext } from '../../App';
 import Profile from "../profile/Profile.jsx";
@@ -57,6 +58,7 @@ export default function Home(props) {
     updateMyPosts(value, size);
   };
 
+  const [realInbox, setRealInbox] = React.useState([]);
   const [inbox, setInbox] = React.useState([]);
 
   const updateMyPosts = (page, size) => {
@@ -133,6 +135,9 @@ export default function Home(props) {
                           setInbox={setInbox}
                           />
                       </Grid>
+                      <Grid item xs={12} align="center" justify="top">
+                        <ClearInbox authorId={userId} setInbox={setRealInbox}/>
+                      </Grid>
                       <Grid item xs={12} align="center" justify="center">
                         <Divider orientation="horizontal" flexItem sx={{ mr: "-1px" }} />
                       </Grid>
@@ -151,6 +156,8 @@ export default function Home(props) {
                       size={size} 
                       handlePostsChange={handlePostsChange}
                       updateMyPosts={updateMyPosts}
+                      realInbox={realInbox}
+                      setRealInbox={setRealInbox}
                       />}
                       {props.unlisted && 
                         <TextPost 
